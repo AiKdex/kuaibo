@@ -1,0 +1,224 @@
+/* ============================================================
+   Jaded — 文章页专属样式
+   构建插件自动加 .th-jaded.th-view-post 作用域
+   ============================================================ */
+
+/* ── Post Reset ────────────────────────────────────────────── */
+.jdp-root, .jdp-root *, .jdp-root *::before, .jdp-root *::after {
+  margin: 0; padding: 0; box-sizing: border-box;
+}
+
+/* ── Post Top Bar ──────────────────────────────────────────── */
+.jdp-topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(11, 15, 26, 0.85);
+  backdrop-filter: blur(24px) saturate(1.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.jdp-topbar-in {
+  max-width: 800px; margin: 0 auto; padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px; min-width: 0;
+}
+.jdp-logo {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 18px; font-weight: 700; color: #fff; text-decoration: none;
+}
+.jdp-logo-dot { color: #2dd4a8; }
+.jdp-nav { display: flex; gap: 6px; }
+.jdp-nav-a {
+  padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500;
+  color: #94a3b8; text-decoration: none; transition: all .2s;
+}
+.jdp-nav-a:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
+.jdp-nav-right { display: flex; align-items: center; gap: 12px; }
+
+/* ── Post Status ───────────────────────────────────────────── */
+.jdp-status {
+  text-align: center; padding: 80px 24px;
+  font-size: 14px; color: #64748b;
+}
+
+/* ── Post Ambient BG ───────────────────────────────────────── */
+.jdp-bg-ambient {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 0%, rgba(45, 212, 168, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 80% 100%, rgba(45, 212, 168, 0.03) 0%, transparent 60%);
+}
+.jdp-bg-noise {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.3;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+/* ── Post Content ──────────────────────────────────────────── */
+.jdp-content { position: relative; z-index: 1; padding-bottom: 80px; }
+.jdp-wrapper { min-width: 0; }
+
+/* ── Post Header ───────────────────────────────────────────── */
+.jdp-head { padding: 60px 0 40px; }
+.jdp-head-tags { margin-bottom: 16px; }
+.jdp-chip {
+  display: inline-block; padding: 3px 10px; border-radius: 100px;
+  font-size: 11px; font-weight: 500;
+  background: rgba(45, 212, 168, 0.12); color: #2dd4a8;
+  border: 1px solid rgba(45, 212, 168, 0.15);
+}
+.jdp-h1 {
+  font-size: 40px; font-weight: 800; line-height: 1.25;
+  letter-spacing: -.02em; color: #fff; margin-bottom: 20px;
+}
+.jdp-meta {
+  display: flex; align-items: center; gap: 20px;
+  font-size: 13px; color: #64748b; flex-wrap: wrap;
+}
+.jdp-meta-item { display: flex; align-items: center; gap: 6px; }
+.jdp-author { display: flex; align-items: center; gap: 10px; }
+.jdp-author-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, #2dd4a8, #0f9d7a);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: #0b0f1a; font-weight: 700;
+}
+.jdp-author-name { color: #e2e8f0; font-weight: 500; }
+
+/* ── AI Summary ────────────────────────────────────────────── */
+.jdp-ai-summary {
+  margin: 32px 0; padding: 24px;
+  background: linear-gradient(135deg, rgba(45, 212, 168, 0.06), rgba(45, 212, 168, 0.02));
+  border: 1px solid rgba(45, 212, 168, 0.12); border-radius: 16px;
+}
+.jdp-ai-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .08em; color: #2dd4a8; margin-bottom: 12px;
+}
+.jdp-ai-summary p { font-size: 14px; color: #94a3b8; line-height: 1.7; margin: 0; }
+
+/* ── Post Body ─────────────────────────────────────────────── */
+.jdp-body {
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', Georgia, serif;
+  font-size: 17px; line-height: 1.9; color: #e2e8f0;
+}
+.jdp-body h2 {
+  font-family: 'Inter', -apple-system, 'Noto Sans SC', sans-serif;
+  font-size: 26px; font-weight: 700; color: #fff;
+  margin: 48px 0 20px; padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  letter-spacing: -.01em;
+}
+.jdp-body h3 {
+  font-family: 'Inter', -apple-system, 'Noto Sans SC', sans-serif;
+  font-size: 20px; font-weight: 600; color: #fff;
+  margin: 36px 0 16px;
+}
+.jdp-body h4 {
+  font-family: 'Inter', -apple-system, 'Noto Sans SC', sans-serif;
+  font-size: 17px; font-weight: 600; color: #fff;
+  margin: 28px 0 12px;
+}
+.jdp-body p { margin-bottom: 20px; }
+.jdp-body strong { color: #fff; font-weight: 600; }
+.jdp-body a { color: #2dd4a8; border-bottom: 1px solid rgba(45, 212, 168, 0.3); }
+.jdp-body a:hover { border-bottom-color: #2dd4a8; }
+.jdp-body blockquote {
+  margin: 28px 0; padding: 20px 24px;
+  background: rgba(45, 212, 168, 0.06);
+  border-left: 3px solid #2dd4a8; border-radius: 0 10px 10px 0;
+  color: #94a3b8; font-style: italic;
+}
+.jdp-body code {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 14px;
+  background: rgba(255, 255, 255, 0.06); padding: 2px 7px; border-radius: 4px;
+  color: #6ee7b7;
+}
+.jdp-body pre {
+  margin: 24px 0; padding: 24px;
+  background: #111827; border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px; overflow-x: auto;
+}
+.jdp-body pre code {
+  background: none; padding: 0; font-size: 14px; line-height: 1.7; color: #e2e8f0;
+}
+.jdp-body ul, .jdp-body ol { margin: 16px 0; padding-left: 24px; }
+.jdp-body li { margin-bottom: 8px; }
+.jdp-body img {
+  max-width: 100%; border-radius: 10px; margin: 28px 0;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.jdp-body table {
+  width: 100%; margin: 24px 0; border-collapse: collapse; font-size: 14px;
+}
+.jdp-body th, .jdp-body td {
+  padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: left;
+}
+.jdp-body th { color: #94a3b8; font-weight: 600; }
+.jdp-body td { color: #e2e8f0; }
+.jdp-body hr { margin: 40px 0; border: none; border-top: 1px solid rgba(255, 255, 255, 0.06); }
+
+/* ── Share Link ────────────────────────────────────────────── */
+.jdp-share {
+  margin: 32px 0; padding: 16px 20px; text-align: center;
+  background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+}
+.jdp-share a { font-size: 13px; color: #2dd4a8; }
+
+/* ── Tags ──────────────────────────────────────────────────── */
+.jdp-tags {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin: 40px 0; padding: 24px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ── Related Posts ─────────────────────────────────────────── */
+.jdp-related { margin: 48px 0; }
+.jdp-related-title { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 20px; }
+.jdp-related-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.jdp-related-card {
+  padding: 20px; background: #1a2236; border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px; transition: all .3s; cursor: pointer;
+  text-decoration: none; color: inherit; min-width: 0;
+}
+.jdp-related-card:hover {
+  border-color: rgba(45, 212, 168, 0.2); transform: translateY(-2px); color: inherit;
+}
+.jdp-related-card h4 {
+  font-size: 14px; font-weight: 600; color: #fff;
+  line-height: 1.4; margin-bottom: 8px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.jdp-related-card p { font-size: 12px; color: #64748b; }
+
+/* ── Post Footer ───────────────────────────────────────────── */
+.jdp-footer {
+  position: relative; z-index: 1;
+  padding: 48px 0; border-top: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: center;
+}
+.jdp-footer-brand {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 12px;
+}
+.jdp-footer-copy { font-size: 12px; color: #64748b; }
+
+/* ── Post Responsive ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .jdp-head { padding: 40px 0 28px; }
+  .jdp-h1 { font-size: 28px; }
+  .jdp-body { font-size: 15px; }
+  .jdp-related-grid { grid-template-columns: 1fr 1fr; }
+  .jdp-wrapper { padding: 0 16px; }
+}
+@media (max-width: 480px) {
+  .jdp-related-grid { grid-template-columns: 1fr; }
+  .jdp-topbar-in { padding: 0 16px; }
+}
+
+/* ── 文章页两栏（正文 + 侧栏 SideWidget）── */
+.jd-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;max-width:1100px;margin:0 auto;align-items:start;padding:0 24px 80px}
+.jd-article{min-width:0}
+.jd-aside{position:sticky;top:20px}
+@media(max-width:860px){.jd-layout{grid-template-columns:1fr;padding:0 16px}.jd-aside{position:static;margin-top:20px}}

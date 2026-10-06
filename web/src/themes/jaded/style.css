@@ -1,0 +1,370 @@
+/* ============================================================
+   Jaded — 暗色翡翠绿博客主题
+   色彩/字体/圆角/间距对齐 AiKlog 爱库录博客 HTML
+   ============================================================ */
+
+/* ── Reset（规范 §5.1 四件套）─────────────────────────────── */
+.jd-root, .jd-root *, .jd-root *::before, .jd-root *::after {
+  margin: 0; padding: 0; box-sizing: border-box;
+}
+
+/* ── Design Tokens ─────────────────────────────────────────── */
+.jd-root {
+  --th-jade: #2dd4a8;
+  --th-jade-l: #6ee7b7;
+  --th-jade-d: #0f9d7a;
+  --th-jade-glow: rgba(45, 212, 168, 0.12);
+  --th-jade-subtle: rgba(45, 212, 168, 0.06);
+  --th-ink: #0b0f1a;
+  --th-ink-1: #111827;
+  --th-ink-2: #1a2236;
+  --th-ink-3: #243049;
+  --th-text: #e2e8f0;
+  --th-text-2: #94a3b8;
+  --th-text-3: #64748b;
+  --th-border: rgba(255, 255, 255, 0.06);
+  --th-border-h: rgba(45, 212, 168, 0.2);
+  --th-r: 16px;
+  --th-rs: 10px;
+  --th-rxs: 6px;
+  --th-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Noto Sans SC', sans-serif;
+  --th-font-serif: 'Noto Serif SC', 'Source Han Serif SC', Georgia, serif;
+  --th-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  font-family: var(--th-font);
+  background: var(--th-ink);
+  color: var(--th-text);
+  line-height: 1.7;
+  overflow-x: hidden;
+  min-height: 100vh;
+  position: relative;
+}
+.jd-root a { color: var(--th-jade); text-decoration: none; transition: all .2s; }
+.jd-root a:hover { color: var(--th-jade-l); }
+.jd-root ::selection { background: rgba(45, 212, 168, 0.25); color: #fff; }
+.jd-root button { font-family: inherit; cursor: pointer; }
+
+/* ── Ambient Background ────────────────────────────────────── */
+.jd-bg-ambient {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 0%, rgba(45, 212, 168, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 80% 100%, rgba(45, 212, 168, 0.03) 0%, transparent 60%);
+}
+.jd-bg-noise {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.3;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+/* ── Top Bar ───────────────────────────────────────────────── */
+.jd-topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(11, 15, 26, 0.85);
+  backdrop-filter: blur(24px) saturate(1.2);
+  border-bottom: 1px solid var(--th-border);
+}
+.jd-topbar-in {
+  max-width: 1200px; margin: 0 auto; padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px; min-width: 0;
+}
+.jd-logo {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 18px; font-weight: 700; color: #fff;
+  letter-spacing: -.01em; flex-shrink: 0;
+}
+.jd-logo-dot { color: var(--th-jade); }
+.jd-logo-sub { font-size: 11px; color: var(--th-text-3); font-weight: 400; margin-left: 2px; }
+.jd-nav { display: flex; gap: 6px; }
+.jd-nav-a {
+  padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500;
+  color: var(--th-text-2); transition: all .2s;
+}
+.jd-nav-a:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
+.jd-nav-a.jd-active { color: var(--th-jade); background: var(--th-jade-glow); }
+.jd-nav-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.jd-search-trigger {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 14px; background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--th-border); border-radius: 8px;
+  color: var(--th-text-3); font-size: 13px; cursor: pointer;
+  transition: all .2s;
+}
+.jd-search-trigger:hover { border-color: var(--th-border-h); color: var(--th-text-2); }
+
+/* ── Search Modal ──────────────────────────────────────────── */
+.jd-search-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding-top: 20vh;
+}
+.jd-search-modal {
+  width: 520px; max-width: 90vw;
+  background: var(--th-ink-2); border: 1px solid var(--th-border);
+  border-radius: var(--th-r); overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+.jd-search-input {
+  width: 100%; padding: 16px 20px; border: none; outline: none;
+  background: transparent; color: var(--th-text);
+  font-size: 16px; font-family: var(--th-font);
+  border-bottom: 1px solid var(--th-border);
+}
+.jd-search-input::placeholder { color: var(--th-text-3); }
+.jd-search-results { max-height: 320px; overflow-y: auto; }
+.jd-search-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; color: var(--th-text-2); font-size: 14px;
+  border-bottom: 1px solid var(--th-border); transition: all .15s;
+}
+.jd-search-item:hover { background: rgba(255, 255, 255, 0.03); color: var(--th-text); }
+.jd-search-item-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jd-search-item-cat { font-size: 11px; color: var(--th-text-3); margin-left: 12px; flex-shrink: 0; }
+.jd-search-empty { padding: 24px; text-align: center; color: var(--th-text-3); font-size: 14px; }
+
+/* ── Hero ──────────────────────────────────────────────────── */
+.jd-hero {
+  position: relative; z-index: 1;
+  padding: 80px 24px 60px; text-align: center;
+}
+.jd-hero-h1 {
+  font-size: 44px; font-weight: 800; letter-spacing: -.03em;
+  line-height: 1.2; margin-bottom: 16px;
+  background: linear-gradient(135deg, #fff, var(--th-text-2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.jd-hero-line { display: block; }
+.jd-hero-p {
+  font-size: 17px; color: var(--th-text-2);
+  max-width: 520px; margin: 0 auto;
+}
+.jd-hero-meta {
+  display: flex; align-items: center; justify-content: center; gap: 24px;
+  margin-top: 24px; font-size: 13px; color: var(--th-text-3);
+}
+.jd-hero-meta strong { color: var(--th-text); }
+
+/* ── Status ────────────────────────────────────────────────── */
+.jd-status {
+  position: relative; z-index: 1;
+  text-align: center; padding: 80px 24px;
+  font-size: 14px; color: var(--th-text-3);
+}
+
+/* ── Content Layout ────────────────────────────────────────── */
+.jd-content { position: relative; z-index: 1; padding-bottom: 80px; }
+.jd-wrapper {
+  display: grid; grid-template-columns: 1fr 300px;
+  gap: 48px; max-width: 1200px; margin: 0 auto; padding: 0 24px;
+}
+
+/* ── Main ──────────────────────────────────────────────────── */
+.jd-main { min-width: 0; }
+
+/* ── Featured Post ─────────────────────────────────────────── */
+.jd-featured {
+  display: block; position: relative; overflow: hidden;
+  padding: 0; margin-bottom: 28px;
+  background: var(--th-ink-2); border: 1px solid var(--th-border);
+  border-radius: var(--th-r); transition: all .3s;
+  text-decoration: none; color: inherit;
+}
+.jd-featured:hover {
+  border-color: var(--th-border-h);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  color: inherit;
+}
+.jd-featured-img {
+  aspect-ratio: 21/9; border-radius: var(--th-r);
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.jd-featured-emoji { font-size: 60px; opacity: .2; }
+.jd-featured-body {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 40px 32px;
+  background: linear-gradient(to top, rgba(11, 15, 26, 0.95) 0%, transparent 100%);
+}
+.jd-featured-h2 {
+  font-size: 28px; font-weight: 700; color: #fff;
+  line-height: 1.3; margin-bottom: 10px; letter-spacing: -.01em;
+}
+.jd-featured-desc {
+  font-size: 14px; color: var(--th-text-2); line-height: 1.7;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Post Card ─────────────────────────────────────────────── */
+.jd-card {
+  display: grid; grid-template-columns: 260px 1fr; gap: 28px;
+  padding: 28px; margin-bottom: 20px;
+  background: var(--th-ink-2); border: 1px solid var(--th-border);
+  border-radius: var(--th-r); transition: all .3s;
+  text-decoration: none; color: inherit; cursor: pointer;
+  min-width: 0;
+}
+.jd-card:hover {
+  border-color: var(--th-border-h);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  color: inherit;
+}
+.jd-card-img {
+  border-radius: var(--th-rs); overflow: hidden;
+  aspect-ratio: 16/10; position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.jd-card-emoji { font-size: 40px; opacity: .3; }
+.jd-card-body {
+  display: flex; flex-direction: column; justify-content: center;
+  min-width: 0;
+}
+.jd-card-tags { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.jd-chip {
+  padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 500;
+  background: var(--th-jade-glow); color: var(--th-jade);
+  border: 1px solid rgba(45, 212, 168, 0.15); flex-shrink: 0;
+}
+.jd-card-h2 {
+  font-size: 20px; font-weight: 700; color: #fff;
+  line-height: 1.4; margin-bottom: 10px; letter-spacing: -.01em;
+}
+.jd-card-desc {
+  font-size: 14px; color: var(--th-text-2); line-height: 1.7;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.jd-card-foot {
+  display: flex; align-items: center; gap: 16px;
+  margin-top: 16px; font-size: 12px; color: var(--th-text-3);
+}
+
+/* ── Sidebar ───────────────────────────────────────────────── */
+.jd-side { position: sticky; top: 88px; align-self: start; min-width: 0; }
+.jd-sb {
+  background: var(--th-ink-2); border: 1px solid var(--th-border);
+  border-radius: var(--th-r); padding: 24px; margin-bottom: 20px;
+}
+.jd-sb-title {
+  font-size: 12px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--th-text-3); margin-bottom: 16px;
+}
+
+/* ── Sidebar About ─────────────────────────────────────────── */
+.jd-sb-about { text-align: center; }
+.jd-avatar {
+  width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 14px;
+  background: linear-gradient(135deg, var(--th-jade), var(--th-jade-d));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; color: var(--th-ink); font-weight: 800;
+  box-shadow: 0 0 0 3px var(--th-ink-2), 0 0 0 5px rgba(45, 212, 168, 0.2);
+}
+.jd-sb-name { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+.jd-sb-desc { font-size: 13px; color: var(--th-text-2); line-height: 1.6; }
+.jd-sb-stats {
+  display: flex; justify-content: center; gap: 24px;
+  margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--th-border);
+}
+.jd-stat { text-align: center; }
+.jd-stat strong { display: block; font-size: 18px; font-weight: 700; color: #fff; }
+.jd-stat span { font-size: 11px; color: var(--th-text-3); }
+
+/* ── Sidebar AI ────────────────────────────────────────────── */
+.jd-sb-ai {
+  background: linear-gradient(135deg, rgba(45, 212, 168, 0.06), rgba(45, 212, 168, 0.02));
+  border-color: rgba(45, 212, 168, 0.12);
+}
+.jd-ai-box { display: flex; gap: 8px; }
+.jd-ai-input {
+  flex: 1; padding: 10px 14px; background: var(--th-ink);
+  border: 1px solid var(--th-border); border-radius: var(--th-rxs);
+  color: var(--th-text); font-size: 13px; outline: none;
+  transition: border-color .2s; min-width: 0;
+}
+.jd-ai-input:focus { border-color: var(--th-jade); }
+.jd-ai-input::placeholder { color: var(--th-text-3); }
+.jd-ai-btn {
+  padding: 10px 16px;
+  background: linear-gradient(135deg, var(--th-jade), var(--th-jade-d));
+  border: none; border-radius: var(--th-rxs); color: var(--th-ink);
+  font-size: 13px; font-weight: 600; transition: all .2s; flex-shrink: 0;
+}
+.jd-ai-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(45, 212, 168, 0.3); }
+.jd-ai-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+.jd-ai-reply {
+  margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--th-rxs); font-size: 13px; color: var(--th-text-2);
+  line-height: 1.6;
+}
+.jd-ai-error { margin-top: 12px; font-size: 12px; color: #ef4444; }
+.jd-ai-features { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+.jd-ai-feat { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--th-text-3); }
+.jd-ai-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--th-jade); flex-shrink: 0; }
+
+/* ── Tag Cloud ─────────────────────────────────────────────── */
+.jd-tag-cloud { display: flex; gap: 6px; flex-wrap: wrap; }
+.jd-tag-item {
+  padding: 5px 12px; border-radius: 100px; font-size: 12px;
+  background: rgba(255, 255, 255, 0.04); color: var(--th-text-2);
+  border: 1px solid var(--th-border);
+}
+
+/* ── Archives ──────────────────────────────────────────────── */
+.jd-archive-list { list-style: none; }
+.jd-archive-list li {
+  padding: 8px 0; border-bottom: 1px solid var(--th-border);
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px;
+}
+.jd-archive-list li:last-child { border-bottom: none; }
+.jd-archive-link {
+  background: none; border: none; color: var(--th-text-2);
+  font-size: 13px; padding: 0; text-align: left;
+}
+.jd-archive-link:hover { color: var(--th-jade); }
+.jd-archive-cnt {
+  font-size: 11px; color: var(--th-text-3);
+  background: rgba(255, 255, 255, 0.04); padding: 2px 8px; border-radius: 100px;
+}
+
+/* ── Sidebar Links ─────────────────────────────────────────── */
+.jd-sb-links { display: flex; flex-direction: column; gap: 10px; }
+.jd-sb-links a { font-size: 13px; color: var(--th-text-2); }
+.jd-sb-links a:hover { color: var(--th-jade); }
+
+/* ── Footer ────────────────────────────────────────────────── */
+.jd-footer {
+  position: relative; z-index: 1;
+  padding: 48px 0; border-top: 1px solid var(--th-border);
+  text-align: center;
+}
+.jd-footer-brand {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 12px;
+}
+.jd-footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 16px; }
+.jd-footer-links a { font-size: 13px; color: var(--th-text-3); }
+.jd-footer-links a:hover { color: var(--th-jade); }
+.jd-footer-copy { font-size: 12px; color: var(--th-text-3); }
+
+/* ── Responsive（规范 §5.3）────────────────────────────────── */
+@media (max-width: 900px) {
+  .jd-wrapper { grid-template-columns: 1fr; }
+  .jd-side { display: none; }
+  .jd-card { grid-template-columns: 1fr; }
+  .jd-card-img { aspect-ratio: 16/6; }
+  .jd-hero-h1 { font-size: 28px; }
+  .jd-hero { padding: 48px 16px 40px; }
+}
+@media (max-width: 600px) {
+  .jd-topbar-in { padding: 0 16px; }
+  .jd-nav { display: none; }
+  .jd-content { padding-bottom: 40px; }
+  .jd-wrapper { padding: 0 16px; gap: 32px; }
+  .jd-featured-h2 { font-size: 22px; }
+  .jd-featured-body { padding: 24px 20px; }
+}

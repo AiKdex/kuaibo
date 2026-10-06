@@ -1,0 +1,124 @@
+.mn-root, .th-minimal {
+  --th-ink: #1c1917;
+  --th-ink-2: #57534e;
+  --th-ink-3: #a8a29e;
+  --th-paper: #fafaf9;
+  --th-card: #fff;
+  --th-line: #e7e5e4;
+  --th-accent: #0f766e;
+  --th-font-d: Georgia, 'Songti SC', 'SimSun', serif;
+  --th-font-b: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+
+  min-height: 100vh;
+  background: var(--th-paper);
+  color: var(--th-ink);
+  font-family: var(--th-font-b);
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.mn-root * { box-sizing: border-box; }
+
+.mn-head {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 64px 24px 28px;
+  text-align: center;
+  border-bottom: 1px solid var(--th-line);
+}
+
+.mn-brand {
+  font-family: var(--th-font-d);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--th-ink);
+  text-decoration: none;
+  letter-spacing: 0.06em;
+}
+
+.mn-sub {
+  margin: 10px 0 14px;
+  font-size: 14px;
+  color: var(--th-ink-2);
+}
+
+.mn-nav {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  font-size: 13px;
+}
+
+.mn-nav a {
+  color: var(--th-accent);
+  text-decoration: none;
+}
+
+.mn-main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 36px 24px 80px;
+}
+
+.mn-state {
+  text-align: center;
+  color: var(--th-ink-3);
+  padding: 48px 0;
+  font-size: 14px;
+}
+
+.mn-item {
+  padding: 28px 0;
+  border-bottom: 1px solid var(--th-line);
+}
+
+.mn-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.mn-title {
+  font-family: var(--th-font-d);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0 0 10px;
+}
+
+.mn-link:hover .mn-title {
+  color: var(--th-accent);
+}
+
+.mn-excerpt {
+  margin: 0;
+  font-size: 15px;
+  color: var(--th-ink-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mn-meta {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--th-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.mn-foot {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
+  border-top: 1px solid var(--th-line);
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--th-ink-3);
+}
+
+.mn-foot a {
+  color: var(--th-accent);
+  text-decoration: none;
+}

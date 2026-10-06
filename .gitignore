@@ -1,0 +1,36 @@
+# Binaries / build
+bin/
+*.exe
+*.test
+*.out
+
+# Node
+node_modules/
+web/dist/
+web/dist-ssr/
+
+# Go embed build artifact (regenerate: cp -r web/dist server/internal/handler/webdist)
+server/internal/handler/webdist/
+
+# Data & secrets
+data/
+*.db
+*.db-shm
+*.db-wal
+secrets/
+.env
+.env.*
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Local scratch
+_ui/
+qiuzhi-site/
+*.log
+
+# License signing tool & keys (local only, never commit)
+licensegen/

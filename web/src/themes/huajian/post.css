@@ -1,0 +1,238 @@
+/* ============================================================
+   Huajian Theme — post.css（文章页专属样式，视图隔离）
+   构建插件自动加 .th-huajian.th-view-post 作用域 → 列表页永远拿不到。
+   文章根是 .hj-post，但视图根容器是 .hj-root，reset 四件套须自带。
+   ============================================================ */
+
+/* ── Reset（四件套，不可漏）── */
+.hj-root,
+.hj-root *,
+.hj-root *::before,
+.hj-root *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ── 文章页 ── */
+.hj-post-main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 32px;
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 36px;
+  align-items: start;
+}
+.hj-post-col {
+  min-width: 0;
+}
+.hj-post-cat {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--th-accent);
+  margin-bottom: 14px;
+}
+.hj-post-tags {
+  margin-bottom: 14px;
+}
+.hj-post-title {
+  font-family: var(--th-font-d);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 16px;
+}
+.hj-post-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--th-ink-3);
+  margin-bottom: 36px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--th-line);
+  flex-wrap: wrap;
+}
+.hj-post-meta .hj-meta-dot {
+  background: var(--th-line);
+}
+.hj-post-author {
+  color: var(--th-ink-2);
+  font-weight: 600;
+}
+.hj-post-share {
+  color: var(--th-accent);
+  font-weight: 500;
+}
+.hj-post-share:hover {
+  color: var(--th-accent-deep);
+}
+
+/* ── 正文 ── */
+.hj-post-body {
+  font-family: var(--th-font-d);
+  font-size: 17px;
+  line-height: 2;
+  color: var(--th-ink);
+}
+.hj-post-body h1,
+.hj-post-body h2,
+.hj-post-body h3 {
+  font-family: var(--th-font-d);
+  font-weight: 700;
+  color: var(--th-ink);
+  letter-spacing: -0.3px;
+}
+.hj-post-body h1 {
+  font-size: 26px;
+  margin: 2em 0 0.6em;
+}
+.hj-post-body h2 {
+  font-size: 22px;
+  margin: 2em 0 0.6em;
+}
+.hj-post-body h3 {
+  font-size: 18px;
+  margin: 1.5em 0 0.5em;
+  letter-spacing: 0;
+}
+.hj-post-body p {
+  margin-bottom: 1.2em;
+}
+.hj-post-body blockquote {
+  border-left: 3px solid var(--th-accent);
+  padding: 12px 20px;
+  margin: 1.5em 0;
+  background: var(--th-accent-soft);
+  border-radius: 0 6px 6px 0;
+  font-style: italic;
+  color: var(--th-ink-2);
+}
+.hj-post-body pre {
+  background: #2c1810;
+  color: #e8d8c8;
+  border-radius: 6px;
+  padding: 18px 22px;
+  overflow-x: auto;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 1.5em 0;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+.hj-post-body code {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.88em;
+}
+.hj-post-body :not(pre) > code {
+  background: var(--th-accent-soft);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: var(--th-accent);
+}
+.hj-post-body a {
+  color: var(--th-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(194, 112, 62, 0.3);
+}
+.hj-post-body a:hover {
+  text-decoration-color: var(--th-accent);
+}
+.hj-post-body ul,
+.hj-post-body ol {
+  padding-left: 1.5em;
+  margin-bottom: 1.2em;
+}
+.hj-post-body li {
+  margin-bottom: 0.4em;
+}
+.hj-post-body img {
+  max-width: 100%;
+  border-radius: 6px;
+  margin: 1.5em 0;
+}
+.hj-post-body hr {
+  border: none;
+  border-top: 1px solid var(--th-line);
+  margin: 2em 0;
+}
+
+/* ── 相关文章 ── */
+.hj-related {
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid var(--th-line);
+}
+.hj-related-title {
+  font-family: var(--th-font-d);
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.hj-related-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.hj-related-item {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--th-line);
+  min-width: 0;
+}
+.hj-related-item:last-child {
+  border-bottom: none;
+}
+.hj-related-name {
+  font-family: var(--th-font-d);
+  font-size: 15px;
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hj-related-date {
+  font-size: 12px;
+  color: var(--th-ink-3);
+  flex-shrink: 0;
+}
+
+/* ── 评论插件槽 ── */
+.hj-plugins {
+  margin-top: 40px;
+  padding-top: 28px;
+  border-top: 1px solid var(--th-line);
+}
+
+/* ── 响应式（文章页）── */
+@media (max-width: 900px) {
+  .hj-post-main {
+    grid-template-columns: 1fr;
+  }
+  .hj-post-main .hj-side {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+@media (max-width: 600px) {
+  .hj-post-title {
+    font-size: 24px;
+  }
+  .hj-post-body {
+    font-size: 16px;
+  }
+  .hj-post-main {
+    padding: 24px 16px;
+  }
+  .hj-post-main .hj-side {
+    grid-template-columns: 1fr;
+  }
+}

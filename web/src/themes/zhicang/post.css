@@ -1,0 +1,190 @@
+/* ============================================================
+   Zhicang — 文章页专属样式
+   构建插件自动加 .th-zhicang.th-view-post 作用域
+   ============================================================ */
+
+/* ── Post Reset ────────────────────────────────────────────── */
+.zcp-root, .zcp-root *, .zcp-root *::before, .zcp-root *::after {
+  margin: 0; padding: 0; box-sizing: border-box;
+}
+
+/* ── Post Top Bar ──────────────────────────────────────────── */
+.zcp-top {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255, 255, 255, .82);
+  backdrop-filter: blur(20px) saturate(1.3);
+  border-bottom: 1px solid rgba(99, 102, 241, .08);
+}
+.zcp-top-in {
+  max-width: 800px; margin: 0 auto; padding: 0 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px; min-width: 0;
+}
+.zcp-logo { display: flex; align-items: center; gap: 10px; font-size: 19px; font-weight: 800; }
+.zcp-logo-icon {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.zcp-logo-text { color: #1e1b4b; text-decoration: none; }
+.zcp-logo-text:hover { color: #6366f1; }
+.zcp-nav { display: flex; gap: 8px; align-items: center; }
+.zcp-nav-a {
+  padding: 8px 16px; border-radius: 10px; font-size: 14px;
+  font-weight: 500; color: #64748b; text-decoration: none; transition: all .2s;
+}
+.zcp-nav-a:hover { color: #1e1b4b; background: #f1f0fb; }
+
+/* ── Post Status ───────────────────────────────────────────── */
+.zcp-status {
+  text-align: center; padding: 80px 28px;
+  font-size: 14px; color: #94a3b8;
+}
+
+/* ── Post Content ──────────────────────────────────────────── */
+.zcp-content { padding-bottom: 80px; }
+.zcp-wrapper { min-width: 0; }
+
+/* ── Post Header ───────────────────────────────────────────── */
+.zcp-head { padding: 48px 0 32px; }
+.zcp-head-tags { margin-bottom: 14px; }
+.zcp-chip {
+  display: inline-block; padding: 4px 14px; border-radius: 100px;
+  font-size: 12px; font-weight: 500;
+  background: rgba(99, 102, 241, .07); color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, .15);
+}
+.zcp-h1 {
+  font-size: 36px; font-weight: 800; color: #1e1b4b;
+  line-height: 1.25; letter-spacing: -.02em; margin-bottom: 16px;
+}
+.zcp-meta {
+  display: flex; align-items: center; gap: 20px;
+  font-size: 13px; color: #94a3b8; flex-wrap: wrap;
+}
+.zcp-meta-item { display: flex; align-items: center; gap: 6px; }
+
+/* ── AI Summary ────────────────────────────────────────────── */
+.zcp-summary {
+  margin: 24px 0 32px; padding: 20px 24px;
+  background: #f1f0fb;
+  border: 1px solid rgba(99, 102, 241, .1);
+  border-radius: 20px;
+}
+.zcp-summary-label {
+  font-size: 12px; font-weight: 600; color: #6366f1;
+  margin-bottom: 8px;
+}
+.zcp-summary p { font-size: 14px; color: #64748b; line-height: 1.7; margin: 0; }
+
+/* ── Post Body ─────────────────────────────────────────────── */
+.zcp-body {
+  font-size: 16px; line-height: 1.85; color: #334155;
+}
+.zcp-body h2 {
+  font-size: 24px; font-weight: 700; color: #1e1b4b;
+  margin: 40px 0 16px; padding-bottom: 10px;
+  border-bottom: 1px solid rgba(99, 102, 241, .08);
+  letter-spacing: -.01em;
+}
+.zcp-body h3 {
+  font-size: 20px; font-weight: 600; color: #1e1b4b;
+  margin: 32px 0 12px;
+}
+.zcp-body h4 {
+  font-size: 17px; font-weight: 600; color: #1e1b4b;
+  margin: 24px 0 10px;
+}
+.zcp-body p { margin-bottom: 16px; }
+.zcp-body strong { color: #1e1b4b; font-weight: 600; }
+.zcp-body a { color: #6366f1; border-bottom: 1px solid rgba(99, 102, 241, .3); }
+.zcp-body a:hover { border-bottom-color: #6366f1; }
+.zcp-body blockquote {
+  margin: 24px 0; padding: 16px 20px;
+  background: rgba(99, 102, 241, .04);
+  border-left: 3px solid #6366f1; border-radius: 0 14px 14px 0;
+  color: #64748b; font-style: italic;
+}
+.zcp-body code {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 14px;
+  background: #f1f0fb; padding: 2px 7px; border-radius: 6px;
+  color: #4f46e5;
+}
+.zcp-body pre {
+  margin: 24px 0; padding: 20px;
+  background: #1e1b4b; border-radius: 14px; overflow-x: auto;
+}
+.zcp-body pre code { background: none; padding: 0; font-size: 14px; line-height: 1.7; color: #e2e8f0; }
+.zcp-body ul, .zcp-body ol { margin: 16px 0; padding-left: 24px; }
+.zcp-body li { margin-bottom: 6px; }
+.zcp-body img {
+  max-width: 100%; border-radius: 14px; margin: 24px 0;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, .08);
+}
+.zcp-body table { width: 100%; margin: 24px 0; border-collapse: collapse; font-size: 14px; }
+.zcp-body th, .zcp-body td { padding: 10px 14px; border-bottom: 1px solid rgba(99, 102, 241, .08); text-align: left; }
+.zcp-body th { color: #64748b; font-weight: 600; background: #faf8ff; }
+.zcp-body hr { margin: 36px 0; border: none; border-top: 1px solid rgba(99, 102, 241, .08); }
+
+/* ── Share ─────────────────────────────────────────────────── */
+.zcp-share {
+  margin: 32px 0; padding: 16px 20px; text-align: center;
+  background: #f1f0fb; border: 1px solid rgba(99, 102, 241, .1);
+  border-radius: 14px;
+}
+.zcp-share a { font-size: 13px; color: #6366f1; }
+
+/* ── Tags ──────────────────────────────────────────────────── */
+.zcp-tags {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin: 36px 0; padding: 20px 0;
+  border-top: 1px solid rgba(99, 102, 241, .08);
+  border-bottom: 1px solid rgba(99, 102, 241, .08);
+}
+
+/* ── Related ───────────────────────────────────────────────── */
+.zcp-related { margin: 40px 0; }
+.zcp-related-title { font-size: 18px; font-weight: 600; color: #1e1b4b; margin-bottom: 16px; }
+.zcp-related-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.zcp-related-card {
+  padding: 20px; background: #fff; border: 1px solid rgba(99, 102, 241, .08);
+  border-radius: 14px; transition: all .3s; cursor: pointer;
+  text-decoration: none; color: inherit; min-width: 0;
+  box-shadow: 0 1px 3px rgba(99, 102, 241, .04);
+}
+.zcp-related-card:hover {
+  border-color: rgba(99, 102, 241, .18);
+  box-shadow: 0 8px 32px rgba(99, 102, 241, .1);
+  transform: translateY(-2px); color: inherit;
+}
+.zcp-related-card h4 {
+  font-size: 14px; font-weight: 600; color: #1e1b4b;
+  line-height: 1.4; margin-bottom: 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.zcp-related-card p { font-size: 12px; color: #94a3b8; }
+
+/* ── Post Footer ───────────────────────────────────────────── */
+.zcp-footer {
+  padding: 40px 0; border-top: 1px solid rgba(99, 102, 241, .08);
+  text-align: center; font-size: 12px; color: #94a3b8;
+}
+
+/* ── Post Responsive ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .zcp-head { padding: 32px 0 24px; }
+  .zcp-h1 { font-size: 26px; }
+  .zcp-body { font-size: 15px; }
+  .zcp-related-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .zcp-related-grid { grid-template-columns: 1fr; }
+  .zcp-top-in { padding: 0 16px; }
+}
+
+/* ── 文章页两栏（正文 + 侧栏 SideWidget）── */
+.zc-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;max-width:1100px;margin:0 auto;align-items:start;padding:0 28px 80px}
+.zc-article{min-width:0}
+.zc-aside{position:sticky;top:20px}
+@media(max-width:860px){.zc-layout{grid-template-columns:1fr;padding:0 16px}.zc-aside{position:static;margin-top:20px}}

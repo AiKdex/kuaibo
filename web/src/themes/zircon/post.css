@@ -1,0 +1,407 @@
+/* ============================================================================
+   青璃 Zircon —— 文章内页专属样式
+   构建插件会把本文件整体加 .th-zircon.th-view-post 作用域（仅文章视图生效），
+   因此这里绝不写列表页样式，列表页样式一律在 style.css（规范 §0.4）。
+   ========================================================================== */
+
+/* 文章页根钩子（模板在 .zc-root 上追加 .zc-post） */
+.zc-post .zc-main {
+  padding-top: 18px;
+}
+
+/* ── 面包屑 ──────────────────────────────────────────────────────── */
+.zc-crumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--th-ink-3);
+}
+
+.zc-crumb-link {
+  color: var(--th-primary);
+  transition: color .2s;
+}
+
+.zc-crumb-link:hover {
+  color: var(--th-primary-deep);
+}
+
+.zc-crumb-mid {
+  color: var(--th-ink-2);
+}
+
+.zc-crumb-now {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 46%;
+}
+
+.zc-crumb-sep {
+  color: var(--th-ink-3);
+  opacity: .6;
+}
+
+/* ── 文章头 ──────────────────────────────────────────────────────── */
+.zc-post-head {
+  padding: 26px 30px 22px;
+  background: var(--th-card);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-r-md);
+  box-shadow: var(--th-shadow);
+}
+
+.zc-post-cat {
+  display: inline-block;
+  padding: 3px 14px;
+  border-radius: var(--th-r-pill);
+  background: var(--th-primary-soft);
+  color: var(--th-primary);
+  font-size: 12.5px;
+  margin-bottom: 10px;
+}
+
+.zc-post-title {
+  font-family: var(--th-font-d);
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--th-ink);
+}
+
+.zc-post-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: var(--th-ink-3);
+}
+
+.zc-post-meta-i {
+  display: inline-flex;
+  align-items: center;
+}
+
+.zc-post-meta-i + .zc-post-meta-i::before {
+  content: "";
+  width: 1px;
+  height: 11px;
+  margin-right: 8px;
+  background: var(--th-line);
+}
+
+/* ── 双栏：正文 + 侧栏（目录/相关文章） ─────────────────────────── */
+.zc-post-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 16px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.zc-post-main {
+  min-width: 0;
+}
+
+.zc-post-layout .zc-side {
+  position: sticky;
+  top: 74px;
+}
+
+/* ── 正文排版容器 ────────────────────────────────────────────────── */
+.zc-article {
+  padding: 28px 30px 26px;
+  background: var(--th-card);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-r-md);
+  box-shadow: var(--th-shadow);
+  font-size: 15.5px;
+  line-height: 1.85;
+  color: var(--th-ink);
+  overflow-wrap: break-word;
+}
+
+.zc-article > * + * {
+  margin-top: .9em;
+}
+
+.zc-article h2 {
+  margin-top: 1.6em;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--th-line);
+  font-family: var(--th-font-d);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.zc-article h3 {
+  margin-top: 1.5em;
+  font-family: var(--th-font-d);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.zc-article h4 {
+  margin-top: 1.4em;
+  font-size: 15.5px;
+  font-weight: 600;
+}
+
+.zc-article a {
+  color: var(--th-primary);
+  text-decoration: underline;
+  text-decoration-color: rgba(22, 181, 151, .4);
+  text-underline-offset: 3px;
+}
+
+.zc-article a:hover {
+  color: var(--th-primary-deep);
+}
+
+.zc-article blockquote {
+  margin-top: 1.1em;
+  padding: 12px 18px;
+  border-left: 3px solid var(--th-primary);
+  border-radius: 0 var(--th-r-sm) var(--th-r-sm) 0;
+  background: var(--th-primary-soft);
+  color: var(--th-ink-2);
+  font-size: 14.5px;
+}
+
+.zc-article code {
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--th-muted);
+  border: 1px solid var(--th-line);
+  font-family: ui-monospace, Menlo, Consolas, "Noto Sans Mono", monospace;
+  font-size: .88em;
+  color: var(--th-primary-deep);
+}
+
+.zc-article pre {
+  margin-top: 1.1em;
+  padding: 16px 18px;
+  border-radius: var(--th-r-sm);
+  background: #2B2D31;
+  color: #E5EEF7;
+  font-size: 13.5px;
+  line-height: 1.7;
+  overflow: auto;
+}
+
+.zc-article pre code {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+}
+
+.zc-article img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--th-r-sm);
+}
+
+.zc-article ul,
+.zc-article ol {
+  padding-left: 1.6em;
+}
+
+.zc-article li + li {
+  margin-top: .35em;
+}
+
+.zc-article hr {
+  margin: 1.6em 0;
+  border: 0;
+  border-top: 1px solid var(--th-line);
+}
+
+.zc-article table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.zc-article th,
+.zc-article td {
+  padding: 9px 12px;
+  border: 1px solid var(--th-line);
+  text-align: left;
+}
+
+.zc-article th {
+  background: var(--th-muted);
+  font-weight: 600;
+}
+
+/* ── 文章脚：操作 + 上下篇 ───────────────────────────────────────── */
+.zc-post-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.zc-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 22px;
+  border: 0;
+  border-radius: var(--th-r-pill);
+  background: var(--th-primary);
+  color: #fff;
+  font-size: 13.5px;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 1px 1px 6px rgba(22, 181, 151, .4);
+  transition: background .2s, transform .2s;
+}
+
+.zc-btn:hover {
+  background: var(--th-primary-deep);
+  transform: translateY(-1px);
+}
+
+.zc-btn-ghost {
+  background: none;
+  color: var(--th-primary);
+  box-shadow: none;
+  border: 1px solid var(--th-primary);
+}
+
+.zc-btn-ghost:hover {
+  background: var(--th-primary-soft);
+  color: var(--th-primary);
+}
+
+.zc-pn {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.zc-pn-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 15px 18px;
+  background: var(--th-card);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-r-md);
+  box-shadow: var(--th-shadow);
+  transition: transform .2s, box-shadow .2s, border-color .2s;
+}
+
+.zc-pn-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--th-shadow-lg);
+  border-color: rgba(22, 181, 151, .35);
+}
+
+.zc-pn-item-r {
+  grid-column: 2;
+  text-align: right;
+}
+
+.zc-pn-dir {
+  font-size: 12px;
+  color: var(--th-ink-3);
+}
+
+.zc-pn-t {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--th-ink);
+}
+
+.zc-pn-item:hover .zc-pn-t {
+  color: var(--th-primary);
+}
+
+/* ── 插件槽容器 ──────────────────────────────────────────────────── */
+.zc-plugins {
+  margin-top: 16px;
+}
+
+/* ── 目录（右侧栏内） ────────────────────────────────────────────── */
+.zc-toc {
+  list-style: none;
+  max-height: 420px;
+  overflow: auto;
+}
+
+.zc-toc-li + .zc-toc-li {
+  margin-top: 2px;
+}
+
+.zc-toc-btn {
+  display: block;
+  width: 100%;
+  padding: 5px 10px;
+  border: 0;
+  border-radius: var(--th-r-sm);
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--th-ink-2);
+  text-align: left;
+  cursor: pointer;
+  transition: color .2s, background .2s;
+}
+
+.zc-toc-btn:hover {
+  color: var(--th-primary);
+  background: var(--th-primary-soft);
+}
+
+.zc-toc-btn.sub {
+  padding-left: 24px;
+  font-size: 12.5px;
+}
+
+/* ── 响应式 ──────────────────────────────────────────────────────── */
+@media (max-width: 1080px) {
+  .zc-post-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .zc-post-layout .zc-side {
+    position: static;
+  }
+}
+
+@media (max-width: 760px) {
+  .zc-post-head,
+  .zc-article {
+    padding: 20px 18px;
+  }
+
+  .zc-post-title {
+    font-size: 20px;
+  }
+
+  .zc-pn {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .zc-pn-item-r {
+    grid-column: auto;
+  }
+
+  .zc-crumb-now {
+    max-width: 52%;
+  }
+}

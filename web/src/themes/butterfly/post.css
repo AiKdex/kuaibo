@@ -1,0 +1,784 @@
+/* ==========================================================================
+   Butterfly（蝶语）主题 · 文章页专属样式
+   ⚠️ 本文件由构建插件自动加 `.th-butterfly.th-view-post` 作用域 → 列表页永远拿不到。
+      文章视图的根是 `.bf-post` 而非 `.bf-root`，所以此处必须自带 reset 四件套。
+   ========================================================================== */
+
+.bf-post,
+.bf-post *,
+.bf-post *::before,
+.bf-post *::after {
+  box-sizing: border-box;
+}
+
+.bf-post {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--th-page);
+  color: var(--th-ink);
+  font-family: var(--th-font-b);
+  font-size: 15px;
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+}
+
+.bf-post a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.bf-post button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.bf-post img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 夜间模式（与列表页一致的令牌覆盖） */
+.bf-post.is-dark {
+  --th-ink: #c9ccd4;
+  --th-ink-head: #e8eaef;
+  --th-meta: #8b929e;
+  --th-quote: #9aa3ae;
+  --th-card: #1e2124;
+  --th-page: #121417;
+  --th-line: #2b2f35;
+  --th-line-2: #262a30;
+  --th-sky-soft: rgba(73, 177, 245, 0.18);
+  --th-shadow: 0 3px 8px 6px rgba(0, 0, 0, 0.24);
+  --th-shadow-hover: 0 3px 8px 6px rgba(0, 0, 0, 0.36);
+}
+
+/* ===== 面包屑 ===== */
+.bf-crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 18px 15px 0;
+  font-size: 13px;
+  color: var(--th-meta);
+}
+
+.bf-crumb a:hover {
+  color: var(--th-sky);
+}
+
+.bf-crumb-sep {
+  color: var(--th-line);
+}
+
+.bf-crumb-cat {
+  color: var(--th-sky);
+}
+
+.bf-crumb-now {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--th-ink);
+}
+
+/* ===== 两栏布局 ===== */
+.bf-post-layout {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 15px 40px;
+}
+
+.bf-post-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.bf-post-aside {
+  flex: 0 0 280px;
+  width: 280px;
+  position: sticky;
+  top: calc(var(--th-topbar-h) + 72px);
+}
+
+/* ===== 文章头部卡（紧凑版式，不做全屏 Banner） ===== */
+.bf-post-head {
+  position: relative;
+  padding: 26px 28px 22px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  background: var(--th-card);
+  border-radius: var(--th-r-lg);
+  box-shadow: var(--th-shadow);
+}
+
+.bf-post-head::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--th-sky), #7ec8f8 60%, transparent);
+}
+
+.bf-post-cat {
+  display: inline-block;
+  padding: 3px 12px;
+  margin-bottom: 10px;
+  border-radius: var(--th-r-sm);
+  background: var(--th-sky-soft);
+  color: var(--th-sky-deep);
+  font-size: 12.5px;
+}
+
+.bf-post.is-dark .bf-post-cat {
+  color: #8ecbf6;
+}
+
+.bf-post-h1 {
+  margin: 0 0 14px;
+  font-family: var(--th-font-d);
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--th-ink-head);
+  letter-spacing: 0.01em;
+  word-break: break-word;
+}
+
+.bf-post-meta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 1px dashed var(--th-line);
+}
+
+.bf-post-meta-i {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--th-meta);
+}
+
+.bf-post-ava {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--th-sky), #7ec8f8);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   正文排版（对齐 Butterfly 的文章样式：主色竖线标题 / 淡蓝引用 / 深色代码块）
+   ========================================================================== */
+.bf-article {
+  padding: 30px 34px 26px;
+  background: var(--th-card);
+  border-radius: var(--th-r-lg);
+  box-shadow: var(--th-shadow);
+  font-size: 15.5px;
+  line-height: 1.95;
+  color: var(--th-ink);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.bf-article > *:first-child {
+  margin-top: 0;
+}
+
+.bf-article > *:last-child {
+  margin-bottom: 0;
+}
+
+.bf-article p {
+  margin: 0 0 18px;
+}
+
+.bf-article h1,
+.bf-article h2,
+.bf-article h3,
+.bf-article h4,
+.bf-article h5,
+.bf-article h6 {
+  font-family: var(--th-font-d);
+  color: var(--th-ink-head);
+  line-height: 1.5;
+  scroll-margin-top: calc(var(--th-topbar-h) + 16px);
+}
+
+.bf-article h2 {
+  position: relative;
+  margin: 34px 0 16px;
+  padding: 4px 0 8px 14px;
+  font-size: 21px;
+  font-weight: 700;
+  border-left: 5px solid var(--th-sky);
+  border-bottom: 1px solid var(--th-line);
+}
+
+.bf-article h3 {
+  margin: 28px 0 12px;
+  padding-left: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  border-left: 3px solid var(--th-sky);
+}
+
+.bf-article h4 {
+  margin: 22px 0 10px;
+  font-size: 16.5px;
+  font-weight: 700;
+}
+
+.bf-article h5,
+.bf-article h6 {
+  margin: 18px 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--th-quote);
+}
+
+.bf-article a {
+  color: var(--th-sky-deep);
+  border-bottom: 1px solid var(--th-sky-soft);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.bf-article a:hover {
+  color: var(--th-orange);
+  border-bottom-color: var(--th-orange);
+}
+
+.bf-article ul,
+.bf-article ol {
+  margin: 0 0 18px;
+  padding-left: 26px;
+}
+
+.bf-article li {
+  margin-bottom: 7px;
+}
+
+.bf-article li::marker {
+  color: var(--th-sky);
+}
+
+.bf-article strong {
+  color: var(--th-ink-head);
+  font-weight: 700;
+}
+
+.bf-article hr {
+  position: relative;
+  height: 1px;
+  margin: 30px 0;
+  border: 0;
+  background: var(--th-line);
+}
+
+.bf-article hr::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: var(--th-sky);
+  border-radius: 1px;
+}
+
+/* 引用块：Butterfly 的淡蓝底 + 主色左竖线 */
+.bf-article blockquote {
+  margin: 0 0 18px;
+  padding: 12px 18px;
+  border-left: 4px solid var(--th-sky);
+  border-radius: 0 var(--th-r-sm) var(--th-r-sm) 0;
+  background: var(--th-sky-soft);
+  color: var(--th-quote);
+}
+
+.bf-article blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* 行内代码 */
+.bf-article code {
+  padding: 2px 6px;
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-r-sm);
+  background: var(--th-page);
+  color: var(--th-orange);
+  font-family: var(--th-font-m);
+  font-size: 0.88em;
+}
+
+/* 代码块：深色底（对应上游 preloader-bg #37474f） */
+.bf-article pre {
+  margin: 0 0 20px;
+  padding: 16px 18px;
+  overflow: auto;
+  border-radius: var(--th-r);
+  background: var(--th-dark-bg);
+  color: #e6e6e6;
+  font-family: var(--th-font-m);
+  font-size: 13.5px;
+  line-height: 1.75;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.bf-article pre code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+}
+
+/* 表格 */
+.bf-article table {
+  width: 100%;
+  margin: 0 0 20px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.bf-article th,
+.bf-article td {
+  padding: 9px 12px;
+  border: 1px solid var(--th-line);
+  text-align: left;
+}
+
+.bf-article th {
+  background: var(--th-line-2);
+  color: var(--th-ink-head);
+  font-weight: 700;
+}
+
+.bf-article tbody tr:hover {
+  background: var(--th-sky-soft);
+}
+
+/* 图片与图注 */
+.bf-article img {
+  display: block;
+  margin: 6px auto 20px;
+  border-radius: var(--th-r);
+  box-shadow: var(--th-shadow);
+}
+
+.bf-article figcaption {
+  margin-top: -12px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--th-meta);
+}
+
+/* ===== 版权卡（Butterfly 标志组件） ===== */
+.bf-copyright {
+  margin-top: 20px;
+  padding: 16px 20px;
+  border: 1px solid var(--th-line);
+  border-left: 4px solid var(--th-sky);
+  border-radius: var(--th-r-sm) var(--th-r) var(--th-r) var(--th-r-sm);
+  background: var(--th-card);
+  box-shadow: var(--th-shadow);
+  transition: box-shadow 0.3s ease;
+}
+
+.bf-copyright:hover {
+  box-shadow: var(--th-shadow-hover);
+}
+
+.bf-copyright-i {
+  display: flex;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 13.5px;
+  line-height: 1.75;
+}
+
+.bf-copyright-i b {
+  flex: 0 0 68px;
+  color: var(--th-ink-head);
+  font-weight: 600;
+}
+
+.bf-copyright-i span {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--th-quote);
+  word-break: break-all;
+}
+
+.bf-copyright-url {
+  font-family: var(--th-font-m);
+  font-size: 12.5px;
+  color: var(--th-sky) !important;
+}
+
+/* ===== 分享条 ===== */
+.bf-share {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.bf-share-btn {
+  padding: 8px 22px;
+  border-radius: var(--th-r);
+  background: var(--th-card);
+  color: var(--th-ink);
+  font-size: 13.5px;
+  box-shadow: var(--th-shadow);
+  transition: background 0.22s ease, color 0.22s ease;
+}
+
+.bf-share-btn:hover {
+  background: var(--th-sky);
+  color: #fff;
+}
+
+/* ===== 上下篇 ===== */
+.bf-pn {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.bf-pn-card {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  background: var(--th-card);
+  border-radius: var(--th-r-lg);
+  box-shadow: var(--th-shadow);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.bf-pn-card:hover {
+  box-shadow: var(--th-shadow-hover);
+  transform: translateY(-3px);
+}
+
+.bf-pn-card.is-next {
+  text-align: right;
+}
+
+.bf-pn-dir {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  color: var(--th-sky);
+}
+
+.bf-pn-card.is-next .bf-pn-dir {
+  justify-content: flex-end;
+}
+
+.bf-pn-dir svg {
+  width: 14px;
+  height: 14px;
+}
+
+.bf-pn-ttl {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--th-ink-head);
+}
+
+.bf-pn-empty {
+  flex: 1 1 0;
+  display: grid;
+  place-items: center;
+  padding: 16px 18px;
+  border: 1px dashed var(--th-line);
+  border-radius: var(--th-r-lg);
+  color: var(--th-meta);
+  font-size: 13px;
+}
+
+/* ===== 相关阅读（同分类优先，纯时间序，不表达热度） ===== */
+.bf-related {
+  margin-top: 20px;
+  padding: 20px 22px;
+  background: var(--th-card);
+  border-radius: var(--th-r-lg);
+  box-shadow: var(--th-shadow);
+}
+
+.bf-related-h {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--th-line);
+  font-family: var(--th-font-d);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--th-ink-head);
+}
+
+.bf-related-note {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--th-meta);
+}
+
+.bf-related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.bf-related-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--th-r);
+  background: var(--th-page);
+  transition: background 0.22s ease, transform 0.22s ease;
+}
+
+.bf-related-card:hover {
+  transform: translateY(-2px);
+}
+
+.bf-related-art {
+  height: 68px;
+}
+
+.bf-related-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px 12px;
+}
+
+.bf-related-cat {
+  font-size: 11.5px;
+  color: var(--th-meta);
+}
+
+.bf-related-ttl {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--th-ink-head);
+  transition: color 0.2s ease;
+}
+
+.bf-related-card:hover .bf-related-ttl {
+  color: var(--th-sky);
+}
+
+.bf-related-date {
+  font-size: 11.5px;
+  color: var(--th-meta);
+}
+
+/* ===== 评论插件槽 ===== */
+.bf-comments {
+  margin-top: 20px;
+}
+
+/* ===== 文章页侧栏 ===== */
+.bf-post-sb {
+  margin-bottom: 20px;
+  padding: 18px 20px;
+  background: var(--th-card);
+  border-radius: var(--th-r-lg);
+  box-shadow: var(--th-shadow);
+}
+
+.bf-post-sb-h {
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--th-line);
+  font-family: var(--th-font-d);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--th-ink-head);
+}
+
+.bf-post-toc {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 60vh;
+  overflow: auto;
+}
+
+.bf-post-toc-i {
+  border-left: 2px solid var(--th-line);
+  transition: border-color 0.2s ease;
+}
+
+.bf-post-toc-i.sub {
+  padding-left: 10px;
+}
+
+.bf-post-toc-i:hover {
+  border-left-color: var(--th-sky);
+}
+
+.bf-post-toc-b {
+  display: block;
+  width: 100%;
+  padding: 5px 8px;
+  color: var(--th-ink);
+  font-size: 13px;
+  line-height: 1.65;
+  text-align: left;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.bf-post-toc-i.sub .bf-post-toc-b {
+  font-size: 12.5px;
+  color: var(--th-meta);
+}
+
+.bf-post-toc-b:hover {
+  background: var(--th-sky-soft);
+  color: var(--th-sky-deep);
+}
+
+.bf-post-info {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bf-post-info li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--th-line);
+  font-size: 13px;
+}
+
+.bf-post-info li:last-child {
+  border-bottom: 0;
+}
+
+.bf-post-info span {
+  color: var(--th-meta);
+}
+
+.bf-post-info b {
+  color: var(--th-ink-head);
+  font-weight: 600;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 900px) {
+  .bf-post-layout {
+    flex-direction: column;
+  }
+
+  .bf-post-aside {
+    position: static;
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .bf-crumb {
+    padding: 14px 12px 0;
+  }
+
+  .bf-post-layout {
+    padding: 14px 12px 30px;
+  }
+
+  .bf-post-head {
+    padding: 20px 18px 16px;
+  }
+
+  .bf-post-h1 {
+    font-size: 21px;
+  }
+
+  .bf-article {
+    padding: 20px 18px 18px;
+    font-size: 15px;
+  }
+
+  .bf-article h2 {
+    font-size: 18.5px;
+  }
+
+  .bf-article h3 {
+    font-size: 16.5px;
+  }
+
+  .bf-article pre {
+    padding: 13px 14px;
+    font-size: 12.5px;
+  }
+
+  .bf-copyright-i {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .bf-copyright-i b {
+    flex: 0 0 auto;
+  }
+
+  .bf-pn {
+    flex-direction: column;
+  }
+
+  .bf-pn-card.is-next {
+    text-align: left;
+  }
+
+  .bf-pn-card.is-next .bf-pn-dir {
+    justify-content: flex-start;
+  }
+}

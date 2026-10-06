@@ -1,0 +1,1510 @@
+.qz-root {
+  --th-ink: #14202b;
+  --th-ink-2: #3d4d59;
+  --th-ink-3: #7a8a96;
+  --th-ink-4: #a8b3bc;
+  --th-paper: #f7f4ee;
+  --th-card: #ffffff;
+  --th-soft: #efe9dd;
+  --th-hover: #f2eee5;
+
+  --th-c-main: #0d5f6e;
+  --th-c-main-l: #167a8a;
+  --th-c-main-d: #073e47;
+  --th-c-coral: #ff6b4a;
+  --th-c-coral-d: #e5442a;
+  --th-c-coral-l: #ffb8a6;
+  --th-c-amber: #f5a623;
+  --th-c-amber-l: #ffd470;
+  --th-c-mint: #00b764;
+  --th-c-mint-l: #5ee0a0;
+  --th-c-violet: #7c5cd6;
+  --th-c-sky: #3aa6e0;
+
+  --th-st-live: #00b764;
+  --th-st-soon: #f5a623;
+  --th-st-ended: #a8b3bc;
+
+  --th-sh-xs: 0 1px 2px rgba(20, 32, 43, 0.05);
+  --th-sh-sm: 0 2px 8px rgba(20, 32, 43, 0.06);
+  --th-sh-md: 0 6px 24px rgba(20, 32, 43, 0.1);
+  --th-sh-lg: 0 16px 48px rgba(20, 32, 43, 0.14);
+  --th-sh-coral: 0 6px 20px rgba(255, 107, 74, 0.25);
+
+  --th-r: 12px;
+  --th-r-l: 18px;
+  --th-r-xl: 24px;
+
+  --th-t-fast: 0.16s cubic-bezier(0.4, 0, 0.2, 1);
+  --th-t-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --th-t-slow: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--th-paper);
+  color: var(--th-ink);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ==================== 容器 ==================== */
+.qz-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ==================== 顶栏 ==================== */
+.qz-topbar {
+  height: 56px;
+  background: linear-gradient(135deg, #0a4a52 0%, #0d5f6e 50%, #073e47 100%);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  z-index: 100;
+  position: relative;
+}
+.qz-topbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+.qz-topbar::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--th-c-coral) 0%, var(--th-c-amber) 30%, var(--th-c-mint) 60%, #1a8a9a 100%);
+}
+
+.qz-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.qz-brand-mark {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, var(--th-c-coral) 0%, var(--th-c-amber) 100%);
+  border-radius: 7px;
+  position: relative;
+}
+.qz-brand-mark::after {
+  content: "";
+  position: absolute;
+  width: 10px; height: 10px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  border-right-color: transparent;
+    border-top-color: transparent;
+  border-bottom-color: transparent;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+.qz-brand-name {
+  font-size: 17px; font-weight: 800;
+  color: #fff; letter-spacing: 0.5px;
+}
+.qz-brand-badge {
+  font-size: 10px;
+  color: var(--th-c-amber);
+  background: rgba(245, 166, 35, 0.15);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.2s;
+  position: relative;
+}
+.qz-brand-badge:hover {
+  background: rgba(245, 166, 35, 0.25);
+  color: var(--th-c-amber-l);
+}
+.qz-brand-badge::after {
+  content: "";
+  width: 0; height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-top: 3px solid currentColor;
+  margin-left: 1px;
+}
+
+.qz-city-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--th-card);
+  border: 1px solid #e2dccd;
+  border-radius: 10px;
+  box-shadow: var(--th-sh-md);
+  padding: 6px;
+  min-width: 100px;
+  z-index: 200;
+  display: none;
+}
+.qz-city-dropdown.show { display: block; }
+.qz-city-option {
+  padding: 7px 12px;
+  font-size: 13px;
+  color: var(--th-ink-2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.qz-city-option:hover { background: var(--th-hover); color: var(--th-ink); }
+.qz-city-option.active {
+  color: var(--th-c-main);
+  font-weight: 600;
+}
+.qz-city-option.active::after { content: "✓"; font-size: 11px; }
+
+.qz-search-box {
+  flex: 1;
+  max-width: 320px;
+  position: relative;
+}
+.qz-search-input {
+  width: 100%;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  color: #fff;
+  font-size: 14px;
+  padding: 0 14px 0 36px;
+  outline: none;
+  transition: all 0.2s;
+}
+.qz-search-input::placeholder { color: rgba(255, 255, 255, 0.4); }
+.qz-search-input:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 107, 74, 0.4);
+  background: rgba(255, 255, 255, 0.12);
+}
+.qz-search-icon {
+  position: absolute;
+  left: 10px; top: 50%;
+  transform: translateY(-50%);
+  width: 14px; height: 14px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.qz-top-nav {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.qz-top-nav-item {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 6px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.qz-top-nav-item:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+.qz-top-nav-item.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.qz-source-badge {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 5px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+/* ==================== 主布局 ==================== */
+.qz-app-layout {
+  display: flex;
+  height: calc(100vh - 56px);
+  overflow: hidden;
+}
+
+/* ==================== 左侧筛选 ==================== */
+.qz-sidebar {
+  width: 176px;
+  flex-shrink: 0;
+  background: var(--th-card);
+  border-right: 1px solid #e2dccd;
+  overflow-y: auto;
+  padding: 14px 0;
+}
+.qz-sidebar-group {
+  padding: 0 16px 16px;
+  border-bottom: 1px solid #f0ebe1;
+  margin-bottom: 12px;
+}
+.qz-sidebar-group:last-child { border-bottom: none; }
+.qz-sidebar-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--th-ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.qz-filter-list { display: flex; flex-direction: column; gap: 4px; }
+.qz-filter-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--th-ink-2);
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.qz-filter-item:hover {
+  background: var(--th-hover);
+  color: var(--th-c-main);
+}
+.qz-filter-item.active {
+  background: rgba(26, 77, 63, 0.08);
+  color: var(--th-c-main);
+  font-weight: 600;
+}
+.qz-filter-count {
+  font-size: 11px;
+  color: var(--th-ink-3);
+  background: var(--th-soft);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+.qz-filter-item.active .qz-filter-count {
+  background: var(--th-c-main);
+  color: #fff;
+}
+
+/* ==================== 主内容 ==================== */
+.qz-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* --th-- 条件匹配栏 --th-- */
+.qz-match-bar {
+  background: var(--th-card);
+  border-bottom: 1px solid #e8e0d4;
+  padding: 12px 0;
+  flex-shrink: 0;
+}
+
+.qz-match-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.qz-match-label {
+  font-size: 12px;
+  color: var(--th-ink-3);
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.qz-cond-select {
+  height: 30px;
+  background: var(--th-paper);
+  border: 1px solid #d8d0c0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--th-ink);
+  padding: 0 28px 0 12px;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.qz-w3.qz-org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%238a9994' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: all 0.15s;
+}
+.qz-cond-select:hover { border-color: var(--th-c-main-l); }
+.qz-cond-select:focus { border-color: var(--th-c-amber); box-shadow: 0 0 0 2px rgba(232, 168, 56, 0.15); }
+.qz-cond-select option { font-size: 14px; }
+
+.qz-match-btn {
+  height: 30px;
+  background: var(--th-c-main);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.qz-match-btn:hover { background: var(--th-c-main-l); }
+
+.qz-match-result {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+}
+.qz-match-result .pass { color: var(--th-c-mint); font-weight: 700; }
+.qz-match-result .hard { color: var(--th-c-coral-d); font-weight: 700; }
+.qz-match-result .nomatch { color: var(--th-ink-3); font-weight: 600; }
+.qz-match-result .sep { color: var(--th-ink-3); }
+.qz-match-result .hint {
+  color: var(--th-ink-3);
+  font-size: 12px;
+  margin-left: auto;
+}
+
+/* --th-- 标签栏 --th-- */
+.qz-tab-bar {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  background: var(--th-card);
+  border-bottom: 1px solid #e8e0d4;
+  height: 40px;
+  flex-shrink: 0;
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.qz-tab {
+  font-size: 14px;
+  color: var(--th-ink-2);
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.qz-tab:hover { background: var(--th-hover); color: var(--th-c-main); }
+.qz-tab.active {
+  background: var(--th-c-main);
+  color: #fff;
+  font-weight: 600;
+}
+.qz-tab .qz-count {
+  font-size: 11px;
+  background: rgba(0, 0, 0, 0.08);
+  padding: 1px 5px;
+  border-radius: 8px;
+}
+.qz-tab.active .qz-count { background: rgba(255, 255, 255, 0.2); }
+
+.qz-tab-spacer { flex: 1; }
+
+.qz-sort-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.qz-sort-btn {
+  font-size: 12px;
+  color: var(--th-ink-2);
+  background: none;
+  border: 1px solid #d8d0c0;
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s;
+}
+.qz-sort-btn:hover { border-color: var(--th-c-main-l); color: var(--th-c-main); }
+.qz-sort-btn.active { border-color: var(--th-c-main); color: var(--th-c-main); }
+
+.qz-sort-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--th-card);
+  border: 1px solid #e2dccd;
+  border-radius: 10px;
+  box-shadow: var(--th-sh-md);
+  padding: 6px;
+  min-width: 140px;
+  z-index: 50;
+  display: none;
+}
+.qz-sort-dropdown.show { display: block; }
+.qz-sort-option {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--th-ink-2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.qz-sort-option:hover { background: var(--th-hover); color: var(--th-ink); }
+.qz-sort-option.active {
+  background: rgba(13, 95, 110, 0.08);
+  color: var(--th-c-main);
+  font-weight: 600;
+}
+.qz-sort-option.active::after {
+  content: "✓";
+  font-size: 12px;
+}
+
+/* --th-- 岗位列表 --th-- */
+.qz-job-feed {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 0 6px;
+}
+
+.qz-job-card {
+  background: var(--th-card);
+  border: 1px solid #e2dccd;
+  border-radius: var(--th-r);
+  padding: 0;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all var(--th-t-base);
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+}
+.qz-job-card:hover {
+  border-color: transparent;
+  box-shadow: var(--th-sh-md);
+  transform: translateY(-2px);
+}
+
+.qz-job-card.s-live:hover {
+  box-shadow: 0 8px 28px rgba(0, 183, 100, 0.12), var(--th-sh-md);
+}
+.qz-job-card.s-soon:hover {
+  box-shadow: 0 8px 28px rgba(245, 166, 35, 0.14), var(--th-sh-md);
+}
+.qz-job-card.s-ended { opacity: 0.72; }
+.qz-job-card.s-ended:hover { opacity: 0.88; }
+
+.qz-job-card.matched {
+  background: linear-gradient(135deg, rgba(0, 183, 100, 0.04) 0%, var(--th-card) 50%);
+}
+.qz-job-card.gap {
+  background: linear-gradient(135deg, rgba(245, 166, 35, 0.05) 0%, var(--th-card) 50%);
+}
+
+/* 左列：状态条+类型标签 */
+.qz-card-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  width: 72px;
+  position: relative;
+}
+.qz-card-left::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+}
+.qz-job-card.s-live .qz-card-left::before { background: linear-gradient(180deg, var(--th-c-mint), var(--th-c-mint-l)); }
+.qz-job-card.s-soon .qz-card-left::before { background: linear-gradient(180deg, var(--th-c-amber), var(--th-c-amber-l)); }
+.qz-job-card.s-ended .qz-card-left::before { background: var(--th-ink-4); }
+
+.qz-card-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  position: relative;
+  flex-shrink: 0;
+}
+.qz-card-dot.live { background: var(--th-c-mint); }
+.qz-card-dot.live::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 183, 100, 0.25);
+  animation: ring 2s ease infinite;
+}
+@keyframes ring {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+.qz-card-dot.soon { background: var(--th-c-amber); }
+.qz-card-dot.ended { background: var(--th-ink-4); }
+
+.qz-card-type-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-align: center;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.qz-card-type-badge.state { background: rgba(124, 92, 214, 0.1); color: var(--th-c-violet); }
+.qz-card-type-badge.gov { background: rgba(58, 155, 138, 0.1); color: var(--th-c-main); }
+.qz-card-type-badge.contract { background: rgba(245, 166, 35, 0.1); color: var(--th-c-amber); }
+.qz-card-type-badge.grass { background: rgba(255, 107, 74, 0.08); color: var(--th-c-coral); }
+
+.qz-card-deadline-short {
+  font-size: 10px;
+  color: var(--th-ink-3);
+  font-weight: 600;
+  text-align: center;
+}
+
+/* 中列：主体信息 */
+.qz-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 0;
+  border-left: 1px solid #f0ead8;
+  padding-left: 16px;
+}
+
+.qz-card-row1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.qz-card-row1-left {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+.qz-card-position {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--th-ink);
+  line-height: 1.3;
+}
+.qz-card-company {
+  font-size: 13px;
+  color: var(--th-ink-2);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.qz-card-company::before {
+  content: "·";
+  margin-right: 8px;
+  color: var(--th-ink-4);
+}
+
+.qz-card-row2 {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  font-size: 12px;
+  color: var(--th-ink-3);
+  flex-wrap: wrap;
+}
+.qz-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 12px 0 0;
+  margin-right: 12px;
+  border-right: 1px solid #e5dfd0;
+}
+.qz-card-meta:last-child { border-right: none; margin-right: 0; padding-right: 0; }
+.qz-card-salary {
+  color: var(--th-c-coral-d);
+  font-weight: 800;
+  font-size: 15px;
+  padding: 0 12px 0 0;
+  margin-right: 12px;
+  border-right: 1px solid #e5dfd0;
+}
+.qz-card-source {
+  color: var(--th-c-main);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  transition: color var(--th-t-fast);
+}
+.qz-card-source:hover { color: var(--th-c-coral); }
+
+.qz-card-row3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+.qz-card-row3-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.qz-card-salary-big {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--th-c-coral-d);
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+.qz-card-salary-big .unit {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--th-ink-3);
+  margin-left: 2px;
+}
+
+.qz-card-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.qz-card-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.qz-card-tag.green { background: rgba(0, 183, 100, 0.08); color: var(--th-c-mint); }
+.qz-card-tag.amber { background: rgba(245, 166, 35, 0.1); color: var(--th-c-amber); }
+.qz-card-tag.coral { background: rgba(255, 107, 74, 0.08); color: var(--th-c-coral); }
+.qz-card-tag.qz-violet { background: rgba(124, 92, 214, 0.08); color: var(--th-c-violet); }
+
+.qz-card-deadline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.qz-card-deadline.qz-urgent { color: var(--th-c-coral); }
+.qz-card-deadline.normal { color: var(--th-ink-3); }
+.qz-card-deadline.soon { color: var(--th-c-amber); }
+.qz-card-deadline.ended { color: var(--th-ink-4); }
+
+.qz-card-gap-hint {
+  font-size: 11px;
+  color: var(--th-ink-3);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.qz-card-gap-hint .qz-label {
+  color: var(--th-c-coral);
+  font-weight: 700;
+}
+
+/* 右列：培训补贴信息 */
+.qz-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 180px;
+  padding: 12px 14px;
+  border-left: 1px solid #f0ead8;
+  background: linear-gradient(180deg, rgba(247, 244, 238, 0.5) 0%, var(--th-card) 100%);
+}
+
+.qz-card-training {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  justify-content: center;
+}
+.qz-ct-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--th-c-main);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+.qz-ct-icon {
+  font-size: 13px;
+  opacity: 1;
+}
+.qz-ct-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--th-ink);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 2px;
+}
+.qz-ct-subsidy {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  margin-top: 4px;
+}
+.qz-ct-subsidy-amount {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--th-c-mint);
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+.qz-ct-subsidy-unit {
+  font-size: 11px;
+  color: var(--th-ink-3);
+  font-weight: 600;
+}
+.qz-ct-link {
+  font-size: 11px;
+  color: var(--th-c-main);
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: color var(--th-t-fast);
+  opacity: 0.85;
+}
+.qz-ct-link:hover {
+  color: var(--th-c-mint);
+  opacity: 1;
+}
+.qz-ct-none {
+  font-size: 12px;
+  color: var(--th-ink-4);
+  font-weight: 500;
+}
+
+.qz-card-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.qz-card-badge.live { background: rgba(0, 183, 100, 0.12); color: var(--th-c-mint); }
+.qz-card-badge.soon { background: rgba(245, 166, 35, 0.14); color: var(--th-c-amber); }
+.qz-card-badge.ended { background: rgba(168, 179, 188, 0.14); color: var(--th-ink-3); }
+
+.qz-card-match {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.qz-card-match.high {
+  background: linear-gradient(135deg, var(--th-c-mint), #00d070);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 183, 100, 0.25);
+}
+.qz-card-match.mid {
+  background: rgba(245, 166, 35, 0.14);
+  color: var(--th-c-amber);
+}
+.qz-card-match.gap {
+  background: rgba(255, 107, 74, 0.12);
+  color: var(--th-c-coral);
+}
+
+.qz-card-fomo {
+  font-size: 11px;
+  color: var(--th-c-coral);
+  font-weight: 700;
+  font-style: italic;
+}
+
+.qz-card-detail-btn {
+  font-size: 11px;
+  color: var(--th-c-main);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all var(--th-t-base);
+}
+.qz-job-card:hover .qz-card-detail-btn {
+  opacity: 1;
+  transform: translateX(0);
+}
+.qz-card-detail-btn svg { transition: transform var(--th-t-fast); }
+.qz-job-card:hover .qz-card-detail-btn svg { transform: translateX(2px); }
+
+/* --th-- 趋势条 --th-- */
+.qz-trend-strip {
+  height: 36px;
+  background: linear-gradient(135deg, #0a4a52 0%, #0d5f6e 50%, #073e47 100%);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.qz-trend-strip-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+.qz-trend-strip:hover { background: var(--th-c-main); }
+.qz-trend-strip-label {
+  font-size: 12px;
+  color: var(--th-c-amber);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.qz-trend-strip-items {
+  display: flex;
+  gap: 20px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.qz-trend-strip-item .up { color: #e76f51; font-weight: 600; }
+.qz-trend-strip-item .down { color: #6fcf97; font-weight: 600; }
+.qz-trend-strip-expand {
+  margin-left: auto;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ==================== 详情面板 ==================== */
+.qz-detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 51, 41, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: none;
+  justify-content: flex-end;
+}
+.qz-detail-overlay.show { display: flex; }
+
+.qz-detail-panel {
+  width: 440px;
+  max-width: 90vw;
+  background: var(--th-paper);
+  height: 100%;
+  overflow-y: auto;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.3s ease;
+}
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.qz-detail-header {
+  background: linear-gradient(135deg, #0a4a52 0%, #0d5f6e 50%, #073e47 100%);
+  color: #fff;
+  padding: 20px 24px 16px;
+  position: relative;
+}
+.qz-detail-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  width: 28px; height: 28px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.qz-detail-close:hover { background: rgba(255, 255, 255, 0.2); }
+.qz-detail-company {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.qz-detail-position {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 12px;
+}
+.qz-detail-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.qz-detail-body { padding: 20px 24px; }
+
+.qz-detail-section {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e0d8cc;
+}
+.qz-detail-section:last-child { border-bottom: none; padding-bottom: 0; }
+
+.qz-detail-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--th-c-main);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qz-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.qz-detail-cell {
+  background: var(--th-card);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.qz-detail-cell-label {
+  font-size: 11px;
+  color: var(--th-ink-3);
+  margin-bottom: 2px;
+}
+.qz-detail-cell-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--th-ink);
+}
+
+.qz-match-box {
+  background: var(--th-card);
+  border-radius: var(--th-r);
+  padding: 14px;
+  border-left: 3px solid var(--th-c-mint);
+}
+.qz-match-box.gap { border-left-color: var(--th-c-amber); }
+.qz-match-box.nomatch { border-left-color: var(--th-c-coral); }
+
+.qz-match-box-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.qz-match-box-title.pass { color: var(--th-c-mint); }
+.qz-match-box-title.hard { color: var(--th-c-coral-d); }
+.qz-match-box-desc {
+  font-size: 14px;
+  color: var(--th-ink-2);
+  line-height: 1.6;
+}
+
+.qz-gap-suggestion {
+  background: linear-gradient(135deg, rgba(232, 168, 56, 0.08), rgba(58, 155, 138, 0.08));
+  border-radius: var(--th-r);
+  padding: 14px;
+  border-left: 3px solid var(--th-c-amber);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.qz-gap-suggestion strong { color: var(--th-c-coral-d); }
+
+.qz-source-link-box {
+  background: var(--th-card);
+  border-radius: var(--th-r);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.qz-source-link-box a {
+  color: var(--th-c-main-l);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+.qz-source-link-box a:hover { text-decoration: underline; }
+
+.qz-related-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.qz-related-item {
+  background: var(--th-card);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.qz-related-item:hover { background: var(--th-hover); }
+.qz-related-item .r-title { font-weight: 600; color: var(--th-ink); }
+.qz-related-item .r-meta { font-size: 12px; color: var(--th-ink-3); }
+
+/* ==================== 趋势弹窗 ==================== */
+.qz-trend-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 51, 41, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.qz-trend-overlay.show { display: flex; }
+
+.qz-trend-modal {
+  width: 640px;
+  max-width: 90vw;
+  max-height: 80vh;
+  background: var(--th-paper);
+  border-radius: var(--th-r-l);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--th-sh-lg);
+  animation: popIn 0.25s ease;
+}
+@keyframes popIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.qz-trend-modal-header {
+  background: linear-gradient(135deg, #0a4a52 0%, #0d5f6e 50%, #073e47 100%);
+  color: #fff;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.qz-trend-modal-header h3 { font-size: 17px; font-weight: 800; }
+.qz-trend-modal-close {
+  width: 28px; height: 28px;
+  border: none; background: rgba(255,255,255,0.1);
+  color: #fff; border-radius: 50%;
+  cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+.qz-trend-modal-body { padding: 20px; overflow-y: auto; }
+
+.qz-trend-bar-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.qz-trend-bar-label {
+  width: 90px;
+  font-size: 12px;
+  color: var(--th-ink-2);
+  text-align: right;
+  flex-shrink: 0;
+}
+.qz-trend-bar-track {
+  flex: 1;
+  height: 24px;
+  background: var(--th-card);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+.qz-trend-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  transition: width 0.6s ease;
+}
+.qz-trend-bar-fill.up { background: linear-gradient(90deg, var(--th-c-coral), #f4a261); }
+.qz-trend-bar-fill.down { background: linear-gradient(90deg, var(--th-c-mint), var(--th-c-main-l)); }
+
+.qz-trend-card {
+  background: var(--th-card);
+  border-radius: var(--th-r);
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.qz-trend-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--th-c-main-d);
+  margin-bottom: 4px;
+}
+.qz-trend-card-desc {
+  font-size: 12px;
+  color: var(--th-ink-2);
+  line-height: 1.6;
+}
+.qz-trend-card-howto {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--th-ink-2);
+  background: var(--th-soft);
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+.qz-trend-card-howto strong { color: var(--th-c-coral-d); }
+
+/* ==================== 空状态 ==================== */
+.qz-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--th-ink-3);
+}
+.qz-empty-state .qz-icon { font-size: 36px; margin-bottom: 12px; }
+.qz-empty-state p { font-size: 14px; }
+
+/* --th-- 侧边栏培训补贴入口 --th-- */
+.qz-sidebar-tip {
+  margin-top: auto;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(0, 183, 100, 0.06) 0%, rgba(13, 95, 110, 0.04) 100%);
+  border-top: 1px solid #e8e0d4;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.qz-sidebar-tip:hover {
+  background: linear-gradient(135deg, rgba(0, 183, 100, 0.1) 0%, rgba(13, 95, 110, 0.06) 100%);
+}
+
+/* --th-- 培训补贴页面 --th-- */
+.qz-training-feed {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 0 20px;
+}
+.qz-training-header {
+  margin-bottom: 16px;
+}
+.qz-training-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.qz-training-icon {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--th-c-mint), #00d070);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 4px 12px rgba(0, 183, 100, 0.2);
+  flex-shrink: 0;
+}
+.qz-training-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.qz-training-tag {
+  font-size: 12px;
+  padding: 5px 14px;
+  background: var(--th-card);
+  border: 1px solid #d8d0c0;
+  border-radius: 16px;
+  color: var(--th-ink-2);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 500;
+}
+.qz-training-tag:hover {
+  border-color: var(--th-c-main-l);
+  color: var(--th-c-main);
+}
+.qz-training-tag.active {
+  background: var(--th-c-main);
+  border-color: var(--th-c-main);
+  color: #fff;
+  font-weight: 600;
+}
+
+.qz-training-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qz-training-card {
+  background: var(--th-card);
+  border: 1px solid #e2dccd;
+  border-radius: var(--th-r);
+  padding: 16px 18px 16px 22px;
+  cursor: pointer;
+  transition: all var(--th-t-base);
+  position: relative;
+  overflow: hidden;
+}
+.qz-training-card:hover {
+  border-color: transparent;
+  box-shadow: var(--th-sh-md);
+  transform: translateY(-2px);
+}
+.qz-training-card::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--th-c-mint), var(--th-c-main-l));
+}
+
+.qz-tc-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.qz-tc-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--th-ink);
+  line-height: 1.4;
+  flex: 1;
+}
+.qz-tc-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: rgba(0, 183, 100, 0.12);
+  color: var(--th-c-mint);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.qz-tc-badge.new {
+  background: linear-gradient(135deg, var(--th-c-coral), var(--th-c-amber));
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(255, 107, 74, 0.25);
+}
+
+.qz-tc-meta {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  font-size: 12px;
+  color: var(--th-ink-3);
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.qz-tc-meta-item {
+  padding: 0 12px 0 0;
+  margin-right: 12px;
+  border-right: 1px solid #e5dfd0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.qz-tc-meta-item:last-child { border-right: none; }
+
+.qz-tc-desc {
+  font-size: 13px;
+  color: var(--th-ink-2);
+  line-height: 1.6;
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.qz-tc-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px dashed #e8e0d4;
+}
+.qz-tc-subsidy {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--th-c-mint);
+}
+.qz-tc-subsidy .amount {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--th-c-mint);
+}
+.qz-tc-detail-link {
+  font-size: 12px;
+  color: var(--th-c-main);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all var(--th-t-base);
+}
+.qz-training-card:hover .qz-tc-detail-link {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ==================== 响应式 ==================== */
+@media (max-width: 768px) {
+  .qz-container { padding: 0 14px; }
+  .qz-sidebar { display: none; }
+  .qz-search-box { display: none; }
+  .qz-source-badge { display: none; }
+  .qz-top-nav-item { padding: 6px 8px; font-size: 12px; }
+  .qz-match-row { gap: 4px; }
+  .qz-cond-select { font-size: 12px; padding: 0 24px 0 8px; height: 28px; }
+  .qz-detail-panel { width: 100%; }
+  .qz-main-content { width: 100%; }
+
+  /* 移动端统一左右边距（由 container 提供） */
+  .qz-match-bar { padding: 10px 0; }
+  .qz-tab-bar { padding: 0; }
+  .qz-job-feed { padding: 8px 0 4px; }
+
+  /* 移动端卡片：紧凑三栏布局 */
+  .qz-job-card {
+    margin-bottom: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .qz-card-left {
+    width: 56px;
+    gap: 4px;
+  }
+  .qz-card-type-badge { font-size: 10px; padding: 2px 6px; }
+  .qz-card-deadline-short { font-size: 9px; }
+
+  .qz-card-body {
+    padding: 10px 0 10px 12px;
+    gap: 4px;
+  }
+  .qz-card-position { font-size: 14px; }
+  .qz-card-company { font-size: 12px; }
+
+  .qz-card-row2 { font-size: 11px; }
+  .qz-card-meta { padding: 0 8px 0 0; margin-right: 8px; }
+  .qz-card-meta:last-child { display: none; } /* 移动端隐藏来源链接 */
+
+  .qz-card-row3 { gap: 6px; }
+  .qz-card-tag { font-size: 10px; padding: 1px 6px; }
+  .qz-card-deadline { display: none; } /* 左侧已有截止时间，中间行隐藏 */
+  .qz-card-row3-right { display: none; } /* 移动端状态徽章移到其他位置 */
+  .qz-card-salary-big { font-size: 16px; letter-spacing: -0.3px; }
+  .qz-card-salary-big .unit { font-size: 10px; }
+
+  .qz-card-right {
+    width: 130px;
+    padding: 10px 10px 10px 10px;
+  }
+  .qz-card-training { gap: 4px; }
+  .qz-ct-label { font-size: 10px; }
+  .qz-ct-icon { font-size: 11px; }
+  .qz-ct-name { font-size: 11px; }
+  .qz-ct-subsidy-amount { font-size: 16px; letter-spacing: -0.3px; }
+  .qz-ct-subsidy-unit { font-size: 10px; }
+  .qz-ct-link { font-size: 10px; }
+  .qz-ct-none { font-size: 11px; }
+  .qz-card-fomo { font-size: 10px; }
+}
+
+@media (max-width: 480px) {
+  .qz-container { padding: 0 12px; }
+  .qz-brand-name { font-size: 15px; }
+  .qz-brand-badge { display: none; }
+  .qz-top-nav-item { font-size: 11px; padding: 6px 6px; }
+
+  .qz-match-bar { padding: 10px 0; }
+  .qz-match-label { display: none; }
+  .qz-match-btn { padding: 0 12px; font-size: 12px; }
+
+  .qz-tab-bar { padding: 0; }
+  .qz-tab { font-size: 12px; padding: 8px 10px; }
+  .qz-sort-btn { font-size: 11px; }
+
+  .qz-job-feed { padding: 8px 0 4px; }
+
+  .qz-card-left { width: 48px; }
+  .qz-card-type-badge { font-size: 9px; padding: 2px 5px; }
+
+  .qz-card-position { font-size: 13px; }
+  .qz-card-company { font-size: 11px; }
+  .qz-card-salary-big { font-size: 14px; }
+  .qz-card-salary-big .unit { font-size: 9px; }
+
+  .qz-card-row2 { font-size: 10px; flex-wrap: wrap; gap: 2px; }
+  .qz-card-meta { border-right: none; padding: 0; margin-right: 8px; }
+
+  .qz-card-right { width: 110px; padding: 8px 8px 8px 8px; }
+  .qz-ct-label { font-size: 9px; }
+  .qz-ct-name { font-size: 10px; }
+  .qz-ct-subsidy-amount { font-size: 14px; }
+  .qz-ct-subsidy-unit { font-size: 9px; }
+  .qz-ct-link { font-size: 9px; }
+  .qz-card-badge { font-size: 9px; padding: 2px 6px; }
+  .qz-card-match { font-size: 9px; }
+}

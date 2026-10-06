@@ -1,0 +1,465 @@
+/* ============================================================================
+   极光 Aurora —— 文章页专属样式
+   构建插件 vite-theme-scope 自动加 .th-aurora.th-view-post 作用域 → 仅文章视图命中，
+   列表页永远拿不到，跨视图零泄漏（规范 §0.4 / §5.1 第 4 条）。
+   ========================================================================== */
+
+.au-post {
+  scroll-margin-top: 64px;
+}
+
+/* ── 面包屑 ───────────────────────────────────────────────────────── */
+.au-crumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding-top: 22px;
+  font-size: 12.5px;
+  color: var(--th-ink-3);
+}
+
+.au-crumb-link {
+  color: var(--th-ink-2);
+  transition: color .2s ease;
+}
+
+.au-crumb-link:hover {
+  color: var(--th-accent);
+}
+
+.au-crumb-sep {
+  color: #C7C7CC;
+}
+
+.au-crumb-mid {
+  color: var(--th-ink-2);
+}
+
+.au-crumb-now {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ── 文章头 ───────────────────────────────────────────────────────── */
+.au-post-head {
+  margin-bottom: 34px;
+  padding: 26px 0 30px;
+  border-bottom: 1px solid var(--th-line);
+}
+
+.au-post-cat {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: 980px;
+  background: var(--th-accent-soft);
+  color: var(--th-accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.au-post-title {
+  margin-top: 16px;
+  font-family: var(--th-font-d);
+  font-size: clamp(28px, 3.6vw, 42px);
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -.032em;
+}
+
+.au-post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-top: 18px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--th-ink-3);
+}
+
+.au-post-meta-i {
+  min-width: 0;
+}
+
+/* ── 两栏：正文 + 侧栏 ────────────────────────────────────────────── */
+.au-post-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 268px;
+  gap: 40px;
+  align-items: start;
+}
+
+.au-post-main {
+  min-width: 0;
+}
+
+.au-side {
+  position: sticky;
+  top: 76px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.au-side-box {
+  padding: 22px;
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-r-lg);
+  background: var(--th-card);
+  box-shadow: var(--th-shadow);
+}
+
+.au-side-t {
+  margin-bottom: 14px;
+  font-family: var(--th-font-d);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+
+.au-toc {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  list-style: none;
+}
+
+.au-toc-li {
+  min-width: 0;
+}
+
+/* 目录跳转用 button + scrollIntoView，绝不写 hash 锚点（规范 §3.2） */
+.au-toc-btn {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--th-ink-2);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: left;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease;
+}
+
+.au-toc-btn:hover {
+  background: var(--th-paper);
+  color: var(--th-ink);
+}
+
+.au-toc-btn.sub {
+  padding-left: 22px;
+  font-size: 12.5px;
+  color: var(--th-ink-3);
+}
+
+.au-side-list {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+.au-side-li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 9px 0;
+  border-top: 1px solid var(--th-line);
+}
+
+.au-side-li:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.au-side-a {
+  display: -webkit-box;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--th-ink-2);
+}
+
+a.au-side-a:hover {
+  color: var(--th-accent);
+}
+
+.au-side-d {
+  flex: none;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--th-ink-3);
+}
+
+/* ── 正文排版（宿主注入的 Markdown HTML，重置后需重建节奏） ───────── */
+.au-article {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 16.5px;
+  line-height: 1.78;
+  color: var(--th-ink);
+}
+
+.au-article > * + * {
+  margin-top: 18px;
+}
+
+.au-article h1,
+.au-article h2,
+.au-article h3,
+.au-article h4 {
+  margin-top: 38px;
+  font-family: var(--th-font-d);
+  font-weight: 600;
+  line-height: 1.32;
+  letter-spacing: -.022em;
+}
+
+.au-article h1 {
+  font-size: 28px;
+}
+
+.au-article h2 {
+  font-size: 24px;
+}
+
+.au-article h3 {
+  font-size: 20px;
+}
+
+.au-article h4 {
+  font-size: 17px;
+}
+
+.au-article ul,
+.au-article ol {
+  padding-left: 22px;
+}
+
+.au-article li {
+  margin: 6px 0;
+}
+
+.au-article li::marker {
+  color: var(--th-ink-3);
+}
+
+.au-article a {
+  color: var(--th-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.au-article strong {
+  font-weight: 600;
+}
+
+.au-article blockquote {
+  padding: 14px 20px;
+  border-left: 3px solid var(--th-accent);
+  border-radius: 0 var(--th-r-md) var(--th-r-md) 0;
+  background: var(--th-accent-soft);
+  color: var(--th-ink-2);
+}
+
+.au-article code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #F0F0F5;
+  color: #3A3A44;
+  font-family: var(--th-font-mono);
+  font-size: .9em;
+}
+
+.au-article pre {
+  overflow: auto;
+  padding: 18px 20px;
+  border-radius: var(--th-r-md);
+  background: #16161A;
+  color: #DCDCE2;
+  font-size: 13px;
+  line-height: 1.72;
+}
+
+.au-article pre code {
+  padding: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+}
+
+.au-article img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-r-md);
+}
+
+.au-article hr {
+  margin: 34px 0;
+  border: 0;
+  border-top: 1px solid var(--th-line);
+}
+
+.au-article table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14.5px;
+}
+
+.au-article th,
+.au-article td {
+  padding: 10px 12px;
+  border: 1px solid var(--th-line);
+  text-align: left;
+}
+
+.au-article th {
+  background: var(--th-paper);
+  font-weight: 600;
+}
+
+/* ── 正文底部操作 / 上下篇 / 插件槽 ─────────────────────────────── */
+.au-post-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 34px;
+  padding-top: 24px;
+  border-top: 1px solid var(--th-line);
+}
+
+.au-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: 980px;
+  background: var(--th-accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .22s ease, border-color .22s ease, transform .22s ease;
+}
+
+.au-btn:hover {
+  background: #0077ED;
+  transform: translateY(-1px);
+}
+
+.au-btn-ghost {
+  border-color: var(--th-line);
+  background: var(--th-card);
+  color: var(--th-ink-2);
+}
+
+.au-btn-ghost:hover {
+  border-color: var(--th-ink-3);
+  background: var(--th-card);
+  color: var(--th-ink);
+}
+
+.au-pn {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.au-pn-item {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  padding: 20px 22px;
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-r-md);
+  background: var(--th-card);
+  transition: border-color .25s ease, transform .3s cubic-bezier(.22, .8, .24, 1);
+}
+
+.au-pn-item:hover {
+  border-color: var(--th-ink-3);
+  transform: translateY(-2px);
+}
+
+.au-pn-item-r {
+  text-align: right;
+}
+
+.au-pn-dir {
+  font-size: 12px;
+  color: var(--th-ink-3);
+}
+
+.au-pn-t {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-family: var(--th-font-d);
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -.02em;
+}
+
+.au-plugins {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 34px;
+}
+
+.au-plugins:empty {
+  margin-top: 0;
+}
+
+/* ── 文章页断点 ───────────────────────────────────────────────────── */
+@media (max-width: 1080px) {
+  .au-post-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+
+  .au-side {
+    position: static;
+  }
+}
+
+@media (max-width: 760px) {
+  .au-post-head {
+    margin-bottom: 26px;
+    padding: 20px 0 24px;
+  }
+
+  .au-article {
+    font-size: 16px;
+  }
+
+  .au-pn {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .au-pn-item-r {
+    text-align: left;
+  }
+}

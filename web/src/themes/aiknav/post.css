@@ -1,0 +1,187 @@
+/* ============================================================
+   AikNav — 文章页专属样式
+   构建插件自动加 .th-aiknav.th-view-post 作用域
+   仅文章视图生效，列表页零泄漏
+   ============================================================ */
+
+/* ── Post Reset ────────────────────────────────────────────── */
+.anp-root, .anp-root *, .anp-root *::before, .anp-root *::after {
+  margin: 0; padding: 0; box-sizing: border-box;
+}
+
+/* ── Post Top Header ───────────────────────────────────────── */
+.anp-top {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--th-card, #fff);
+  border-bottom: 1px solid var(--th-line, rgba(0,0,0,.06));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .04);
+}
+.anp-top-in {
+  max-width: 800px; margin: 0 auto; padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px; min-width: 0;
+}
+.anp-logo { display: flex; align-items: center; gap: 6px; font-size: 17px; font-weight: 800; }
+.anp-logo-icon { color: var(--th-blue, #2563eb); }
+.anp-logo-text { color: var(--th-ink, #0f172a); text-decoration: none; }
+.anp-logo-text:hover { color: var(--th-blue, #2563eb); }
+.anp-nav { display: flex; gap: 8px; align-items: center; }
+.anp-nav-btn {
+  padding: 6px 12px; border-radius: 8px; font-size: 13px;
+  color: var(--th-ink-3, #64748b); font-weight: 500;
+  transition: .15s; text-decoration: none;
+}
+.anp-nav-btn:hover { color: var(--th-ink, #0f172a); background: var(--th-paper, #f8fafc); }
+
+/* ── Loading / Error ───────────────────────────────────────── */
+.anp-loading, .anp-error {
+  text-align: center; padding: 80px 24px;
+  font-size: 14px; color: var(--th-ink-3, #64748b);
+}
+
+/* ── Article ───────────────────────────────────────────────── */
+.anp-layout {
+  max-width: 1120px; margin: 0 auto; padding: 0 20px;
+  display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px;
+  align-items: start;
+}
+.anp-aside { position: sticky; top: 76px; }
+.anp-article {
+  min-width: 0; padding: 32px 0 60px;
+}
+@media (max-width: 860px) {
+  .anp-layout { grid-template-columns: 1fr; }
+  .anp-aside { position: static; margin-top: 20px; }
+  .anp-article { padding: 24px 0 40px; }
+}
+.anp-article-head { margin-bottom: 32px; }
+.anp-article-h1 {
+  font-size: 28px; font-weight: 800; color: var(--th-ink, #0f172a);
+  line-height: 1.35; letter-spacing: -.02em; margin-bottom: 12px;
+}
+.anp-article-meta {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.anp-tag {
+  padding: 2px 10px; border-radius: 6px;
+  font-size: 12px; font-weight: 500;
+}
+.anp-tag-blue { background: rgba(37,99,235,.08); color: #2563eb; }
+.anp-meta-date { font-size: 13px; color: var(--th-ink-3, #64748b); }
+
+/* ── Post Body ─────────────────────────────────────────────── */
+.anp-body {
+  font-size: 15px; line-height: 1.8; color: var(--th-ink-2, #334155);
+}
+.anp-body h1, .anp-body h2, .anp-body h3, .anp-body h4 {
+  color: var(--th-ink, #0f172a); margin-top: 1.8em; margin-bottom: .6em;
+  font-weight: 700; line-height: 1.35;
+}
+.anp-body h1 { font-size: 24px; }
+.anp-body h2 { font-size: 20px; }
+.anp-body h3 { font-size: 17px; }
+.anp-body h4 { font-size: 15px; }
+.anp-body p { margin-bottom: 1em; }
+.anp-body a { color: var(--th-blue, #2563eb); text-decoration: underline; text-underline-offset: 2px; }
+.anp-body a:hover { color: var(--th-blue-l, #3b82f6); }
+.anp-body ul, .anp-body ol { margin-bottom: 1em; padding-left: 1.5em; }
+.anp-body li { margin-bottom: .4em; }
+.anp-body blockquote {
+  margin: 1em 0; padding: 12px 20px;
+  border-left: 3px solid var(--th-blue, #2563eb);
+  background: var(--th-blue-bg, rgba(37,99,235,.04));
+  border-radius: 0 8px 8px 0;
+  color: var(--th-ink-2, #334155); font-style: italic;
+}
+.anp-body pre {
+  margin: 1em 0; padding: 16px 20px;
+  background: #1e293b; color: #e2e8f0;
+  border-radius: 10px; overflow-x: auto;
+  font-size: 13px; line-height: 1.6;
+}
+.anp-body code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Menlo', monospace;
+  font-size: .9em;
+}
+.anp-body p code, .anp-body li code {
+  background: var(--th-paper, #f8fafc); border: 1px solid var(--th-line, rgba(0,0,0,.06));
+  padding: 1px 5px; border-radius: 4px; font-size: 13px;
+}
+.anp-body img {
+  max-width: 100%; border-radius: 10px;
+  margin: 1em 0; box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
+}
+.anp-body table {
+  width: 100%; margin: 1em 0; border-collapse: collapse;
+  font-size: 14px;
+}
+.anp-body th, .anp-body td {
+  padding: 8px 12px; border: 1px solid var(--th-line, rgba(0,0,0,.06));
+  text-align: left;
+}
+.anp-body th {
+  background: var(--th-paper, #f8fafc); font-weight: 600;
+  color: var(--th-ink, #0f172a);
+}
+.anp-body hr {
+  margin: 2em 0; border: none; border-top: 1px solid var(--th-line, rgba(0,0,0,.06));
+}
+
+/* ── Share Link ────────────────────────────────────────────── */
+.anp-share {
+  margin-top: 32px; padding: 16px 20px;
+  background: var(--th-paper, #f8fafc);
+  border: 1px solid var(--th-line, rgba(0,0,0,.06));
+  border-radius: 10px; text-align: center;
+}
+.anp-share a { font-size: 13px; color: var(--th-blue, #2563eb); }
+
+/* ── Related Posts ─────────────────────────────────────────── */
+.anp-related { margin-top: 40px; }
+.anp-section {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+}
+.anp-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  background: var(--th-blue, #2563eb);
+}
+.anp-section-h2 { font-size: 18px; font-weight: 700; color: var(--th-ink, #0f172a); }
+.anp-line { flex: 1; height: 1px; background: var(--th-line, rgba(0,0,0,.06)); }
+.anp-related-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+.anp-related-card {
+  padding: 14px 16px; background: var(--th-card, #fff);
+  border: 1px solid var(--th-line, rgba(0,0,0,.06));
+  border-radius: 10px; text-decoration: none; color: inherit;
+  transition: .2s; min-width: 0;
+}
+.anp-related-card:hover {
+  border-color: rgba(0, 0, 0, .1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .05);
+  transform: translateY(-1px); color: inherit;
+}
+.anp-related-h3 {
+  font-size: 13px; font-weight: 600; color: var(--th-ink, #0f172a);
+  line-height: 1.4; margin-bottom: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.anp-related-date { font-size: 11px; color: var(--th-ink-3, #64748b); }
+
+/* ── Post Footer ───────────────────────────────────────────── */
+.anp-footer {
+  padding: 24px 0; border-top: 1px solid var(--th-line, rgba(0,0,0,.06));
+  text-align: center; font-size: 11px; color: var(--th-ink-4, #94a3b8);
+  max-width: 800px; margin: 0 auto;
+}
+
+/* ── Post Responsive ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .anp-article { padding: 20px 16px 40px; }
+  .anp-article-h1 { font-size: 22px; }
+  .anp-related-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .anp-related-grid { grid-template-columns: 1fr; }
+  .anp-top-in { padding: 0 16px; }
+}

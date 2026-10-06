@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{.SiteName}} — 目录即站点，文件即文章</title>
+<meta name="description" content="{{.Description}}">
+<link rel="canonical" href="{{.Canonical}}">
+<meta property="og:title" content="{{.SiteName}} — 目录即站点，文件即文章">
+<meta property="og:description" content="{{.Description}}">
+<meta property="og:url" content="{{.Canonical}}">
+<meta property="og:type" content="website">
+<link rel="alternate" type="application/rss+xml" title="{{.SiteName}}" href="{{.RSS}}">
+<script type="application/ld+json">{{.JSONLD}}</script>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --jade: #2dd4a8; --jade-light: #6ee7b7; --jade-dark: #0f9d7a;
+  --jade-glow: rgba(45,212,168,0.12); --jade-subtle: rgba(45,212,168,0.05);
+  --ink: #0a0f1a; --ink-1: #111827; --ink-2: #1a2236; --ink-3: #243049;
+  --text: #e2e8f0; --text-2: #94a3b8; --text-3: #64748b;
+  --white: #fff; --border: rgba(255,255,255,0.06);
+  --radius: 16px; --radius-sm: 10px;
+  --font: 'Inter', -apple-system, 'Noto Sans SC', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+html { scroll-behavior: smooth; }
+body { font-family: var(--font); background: var(--ink); color: var(--text); line-height: 1.7; overflow-x: hidden; }
+a { color: var(--jade); text-decoration: none; }
+::selection { background: rgba(45,212,168,0.25); color: var(--white); }
+.container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+
+/* ===== BG ===== */
+.bg-fx { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.bg-fx::before {
+  content: ''; position: absolute; top: -30%; left: -10%; width: 60%; height: 60%;
+  background: radial-gradient(circle, rgba(45,212,168,0.05) 0%, transparent 60%);
+}
+.bg-fx::after {
+  content: ''; position: absolute; bottom: -20%; right: -10%; width: 50%; height: 50%;
+  background: radial-gradient(circle, rgba(45,212,168,0.03) 0%, transparent 60%);
+}
+
+/* ===== Nav ===== */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(10,15,26,0.82); backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+}
+nav .container { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+.logo { font-size: 18px; font-weight: 700; color: var(--white); display: flex; align-items: center; gap: 8px; }
+.logo b { color: var(--jade); }
+.nav-links { display: flex; gap: 28px; align-items: center; }
+.nav-links a { color: var(--text-3); font-size: 14px; font-weight: 500; }
+.nav-links a:hover { color: var(--white); }
+.nav-cta {
+  padding: 8px 20px; border-radius: 100px; font-size: 13px; font-weight: 600;
+  background: linear-gradient(135deg, var(--jade), var(--jade-dark)); color: var(--ink);
+}
+
+/* ===== HERO ===== */
+.hero {
+  position: relative; z-index: 1;
+  min-height: 100vh; display: flex; align-items: center;
+  padding: 100px 0 60px;
+}
+.hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 500;
+  background: var(--jade-glow); border: 1px solid rgba(45,212,168,0.2); color: var(--jade);
+}
+.hero h1 {
+  font-size: 52px; font-weight: 800; line-height: 1.15; letter-spacing: -.03em;
+  margin: 24px 0; color: var(--white);
+}
+.hero h1 em {
+  font-style: normal; position: relative;
+  background: linear-gradient(135deg, var(--jade), var(--jade-light));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-sub { font-size: 18px; color: var(--text-2); line-height: 1.7; margin-bottom: 32px; }
+.hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px; border-radius: 100px; font-size: 15px; font-weight: 600;
+  border: none; cursor: pointer; transition: all .25s;
+}
+.btn-p { background: linear-gradient(135deg, var(--jade), var(--jade-dark)); color: var(--ink); box-shadow: 0 4px 20px rgba(45,212,168,0.3); }
+.btn-p:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(45,212,168,0.4); }
+.btn-g { background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,0.12); }
+.btn-g:hover { border-color: var(--jade); color: var(--jade); }
+.hero-metrics { display: flex; gap: 32px; margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--border); }
+.metric strong { display: block; font-size: 24px; font-weight: 700; color: var(--white); }
+.metric span { font-size: 12px; color: var(--text-3); }
+
+/* ===== Hero Visual: Directory Demo ===== */
+.hero-visual { position: relative; }
+.dir-demo {
+  background: var(--ink-2); border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.3);
+}
+.dir-demo-bar {
+  display: flex; align-items: center; gap: 8px; padding: 12px 16px;
+  background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border);
+}
+.dir-dot { width: 10px; height: 10px; border-radius: 50%; }
+.dir-dot.r { background: #ff5f57; } .dir-dot.y { background: #febc2e; } .dir-dot.g { background: #28c840; }
+.dir-demo-title { font-size: 12px; color: var(--text-3); margin-left: 8px; }
+.dir-demo-body { padding: 20px; }
+
+.dir-tree { font-size: 13px; font-family: var(--font-mono); line-height: 2; }
+.dir-folder { color: var(--text-2); }
+.dir-folder b { color: var(--jade); font-weight: 600; }
+.dir-file { color: var(--text-3); padding-left: 20px; display: flex; align-items: center; gap: 8px; }
+.dir-file .icon { font-size: 14px; }
+.dir-file.new {
+  color: var(--jade); position: relative;
+}
+.dir-file.new::after {
+  content: '✨ 自动发布'; position: absolute; right: 0;
+  font-size: 10px; font-family: var(--font); color: var(--jade);
+  background: var(--jade-glow); padding: 2px 8px; border-radius: 100px;
+  border: 1px solid rgba(45,212,168,0.2);
+  animation: pulse 2s ease-in-out infinite;
+}
+.dir-arrow { color: var(--text-3); font-size: 11px; padding-left: 20px; }
+
+.dir-blog-preview {
+  margin-top: 16px; padding: 16px;
+  background: rgba(45,212,168,0.04); border: 1px solid rgba(45,212,168,0.1);
+  border-radius: var(--radius-sm);
+}
+.dir-blog-preview .label { font-size: 10px; color: var(--jade); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+.dir-blog-preview .title { font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 4px; }
+.dir-blog-preview .meta { font-size: 11px; color: var(--text-3); }
+
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+
+/* ===== Drag Feature Section ===== */
+.drag-section { position: relative; z-index: 1; padding: 120px 0; }
+.drag-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+.drag-visual {
+  position: relative; padding: 40px;
+  background: linear-gradient(135deg, rgba(45,212,168,0.04), rgba(45,212,168,0.01));
+  border: 1px solid rgba(45,212,168,0.1); border-radius: 24px;
+}
+.drop-zone {
+  border: 2px dashed rgba(45,212,168,0.3); border-radius: 16px;
+  padding: 48px; text-align: center; transition: all .3s;
+  background: rgba(45,212,168,0.02);
+}
+.drop-zone:hover { border-color: var(--jade); background: rgba(45,212,168,0.05); }
+.drop-icon { font-size: 48px; margin-bottom: 16px; opacity: .6; }
+.drop-text { font-size: 15px; color: var(--text-2); }
+.drop-text strong { color: var(--jade); }
+
+.drop-result {
+  margin-top: 20px; display: flex; align-items: center; gap: 12px;
+  padding: 14px 18px; background: var(--ink-2); border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  animation: slideUp .5s ease both;
+}
+.drop-result .check {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--jade), var(--jade-dark));
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink); font-size: 14px; flex-shrink: 0;
+}
+.drop-result .info { font-size: 13px; color: var(--text-2); }
+.drop-result .info strong { color: var(--white); }
+.drop-result .url { font-size: 11px; color: var(--jade); margin-top: 2px; }
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+.section-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 500;
+  background: var(--jade-glow); border: 1px solid rgba(45,212,168,0.2); color: var(--jade);
+  margin-bottom: 20px;
+}
+.section-title { font-size: 36px; font-weight: 800; color: var(--white); line-height: 1.2; letter-spacing: -.02em; margin-bottom: 16px; }
+.section-desc { font-size: 16px; color: var(--text-2); line-height: 1.7; margin-bottom: 32px; }
+
+.feature-list { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+.feature-list li { display: flex; align-items: flex-start; gap: 14px; font-size: 15px; }
+.feature-list .icon {
+  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+  background: var(--jade-glow); border: 1px solid rgba(45,212,168,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: var(--jade); margin-top: 2px;
+}
+
+/* ===== IM Section ===== */
+.im-section { position: relative; z-index: 1; padding: 120px 0; background: rgba(45,212,168,0.015); }
+.im-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+
+.im-phone {
+  width: 300px; margin: 0 auto;
+  background: var(--ink-2); border-radius: 28px;
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 14px; box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+}
+.im-phone-notch {
+  width: 70px; height: 20px; background: var(--ink); border-radius: 0 0 10px 10px;
+  margin: 0 auto 14px;
+}
+.im-chat { display: flex; flex-direction: column; gap: 8px; }
+.bubble {
+  max-width: 82%; padding: 10px 14px; border-radius: 14px;
+  font-size: 12.5px; line-height: 1.5; animation: bIn .4s ease both;
+}
+.bubble-u {
+  background: rgba(45,212,168,0.1); border: 1px solid rgba(45,212,168,0.15);
+  color: var(--text); margin-left: auto; border-bottom-right-radius: 4px;
+}
+.bubble-b {
+  background: var(--ink-1); border: 1px solid var(--border);
+  color: var(--text); border-bottom-left-radius: 4px;
+}
+.bubble .tag { display: inline-block; background: var(--jade-glow); color: var(--jade); padding: 1px 6px; border-radius: 4px; font-size: 10px; margin: 3px 2px 0 0; }
+.bubble .actions { display: flex; gap: 5px; margin-top: 6px; }
+.bubble .act {
+  padding: 5px 12px; border-radius: 6px; font-size: 10px; font-weight: 600; border: none; cursor: pointer;
+}
+.act-go { background: linear-gradient(135deg, var(--jade), var(--jade-dark)); color: var(--ink); }
+.act-no { background: rgba(255,255,255,0.05); color: var(--text-3); border: 1px solid var(--border); }
+@keyframes bIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.bubble:nth-child(1) { animation-delay: .3s; }
+.bubble:nth-child(2) { animation-delay: 1s; }
+.bubble:nth-child(3) { animation-delay: 1.8s; }
+
+/* ===== Features Grid ===== */
+.features-section { position: relative; z-index: 1; padding: 120px 0; }
+.feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 48px; }
+.feat-card {
+  padding: 28px; background: var(--ink-2); border: 1px solid var(--border);
+  border-radius: var(--radius); transition: all .3s;
+}
+.feat-card:hover { border-color: rgba(45,212,168,0.15); transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.2); }
+.feat-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--jade-glow); border: 1px solid rgba(45,212,168,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; margin-bottom: 16px;
+}
+.feat-card h3 { font-size: 16px; font-weight: 600; color: var(--white); margin-bottom: 8px; }
+.feat-card p { font-size: 13px; color: var(--text-2); line-height: 1.6; }
+
+/* ===== Deploy ===== */
+.deploy-section { position: relative; z-index: 1; padding: 120px 0; background: rgba(45,212,168,0.015); }
+.deploy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+.code-box {
+  background: var(--ink-1); border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden;
+}
+.code-box-bar {
+  padding: 10px 16px; background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text-3);
+  font-family: var(--font-mono);
+}
+.code-box pre { padding: 20px; font-family: var(--font-mono); font-size: 13px; line-height: 1.8; overflow-x: auto; }
+.code-box .cmd { color: var(--jade); }
+.code-box .flag { color: #fbbf24; }
+.code-box .str { color: #a78bfa; }
+.code-box .dim { color: var(--text-3); }
+
+.deploy-steps { list-style: none; counter-reset: step; }
+.deploy-steps li {
+  counter-increment: step; display: flex; gap: 16px; align-items: flex-start;
+  padding: 16px 0; border-bottom: 1px solid var(--border);
+}
+.deploy-steps li:last-child { border-bottom: none; }
+.deploy-steps li::before {
+  content: counter(step); display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  background: var(--jade-glow); border: 1px solid rgba(45,212,168,0.2);
+  color: var(--jade); font-size: 14px; font-weight: 700;
+}
+.deploy-step h4 { font-size: 15px; font-weight: 600; color: var(--white); margin-bottom: 4px; }
+.deploy-step p { font-size: 13px; color: var(--text-2); }
+
+/* ===== Compare ===== */
+.compare-section { position: relative; z-index: 1; padding: 120px 0; }
+.cmp-table { width: 100%; border-collapse: collapse; margin-top: 40px; font-size: 13px; }
+.cmp-table th, .cmp-table td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+.cmp-table th { color: var(--text-3); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+.cmp-table td:first-child { font-weight: 600; color: var(--white); font-size: 13px; }
+.cmp-table .hl { color: var(--jade); font-weight: 600; }
+.cmp-table tbody tr:hover { background: rgba(45,212,168,0.02); }
+
+/* ===== CTA ===== */
+.cta-section { position: relative; z-index: 1; padding: 120px 0; text-align: center; }
+.cta-section::before {
+  content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(45,212,168,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+.cta-section h2 { font-size: 42px; font-weight: 800; color: var(--white); letter-spacing: -.02em; margin-bottom: 12px; position: relative; }
+.cta-section p { font-size: 17px; color: var(--text-2); margin-bottom: 36px; position: relative; }
+
+/* ===== Footer ===== */
+footer {
+  position: relative; z-index: 1;
+  padding: 40px 0; border-top: 1px solid var(--border);
+  text-align: center; font-size: 12px; color: var(--text-3);
+}
+.footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 12px; }
+.footer-links a { color: var(--text-3); font-size: 12px; }
+.footer-links a:hover { color: var(--jade); }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .hero-grid, .drag-grid, .im-grid, .deploy-grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 32px; }
+  .feat-grid { grid-template-columns: 1fr; }
+  .im-phone { width: 260px; }
+  .section-title { font-size: 26px; }
+  .cmp-table { font-size: 11px; }
+  .cmp-table th, .cmp-table td { padding: 10px 8px; }
+  .nav-links a:not(.nav-cta) { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="bg-fx"></div>
+
+<!-- Nav -->
+<nav>
+  <div class="container">
+    <div class="logo"><b>●</b> AiKlog <span style="font-size:12px;color:var(--text-3);font-weight:400;margin-left:4px;">爱库录</span></div>
+    <div class="nav-links">
+      <a href="#drag">拖拽发布</a>
+      <a href="#im">IM 发布</a>
+      <a href="#features">功能</a>
+      <a href="#deploy">部署</a>
+      <a href="/blog">博客</a>
+      <a href="{{.RSS}}">RSS</a>
+      <a href="/INSTALL" class="nav-cta">免费开始</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ==================== HERO ==================== -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+
+      <div>
+        <div class="hero-tag">🚀 自部署 AI 知识库博客</div>
+        <h1>目录即站点<br>文件即<em>文章</em></h1>
+        <p class="hero-sub">
+          拖个 Markdown 文件进目录，就是一篇博客。<br>
+          发条 IM 消息，AI 自动整理发布。<br>
+          单二进制，SQLite，数据在自己手里。
+        </p>
+        <div class="hero-btns">
+          <a href="/INSTALL" class="btn btn-p">⚡ 免费开始</a>
+          <a href="/blog" class="btn btn-g">📖 看看样板房</a>
+        </div>
+        <div class="hero-metrics">
+          <div class="metric"><strong>~13MB</strong><span>单二进制</span></div>
+          <div class="metric"><strong>0</strong><span>外部依赖</span></div>
+          <div class="metric"><strong>4</strong><span>IM 平台</span></div>
+          <div class="metric"><strong>11</strong><span>内置插件</span></div>
+        </div>
+      </div>
+
+      <!-- Directory Demo -->
+      <div class="hero-visual">
+        <div class="dir-demo">
+          <div class="dir-demo-bar">
+            <div class="dir-dot r"></div><div class="dir-dot y"></div><div class="dir-dot g"></div>
+            <span class="dir-demo-title">📂 博客目录 — 文件管理器</span>
+          </div>
+          <div class="dir-demo-body">
+            <div class="dir-tree">
+              <div class="dir-folder">📁 <b>博客</b>/</div>
+              <div class="dir-file"><span class="icon">📄</span> 欢迎来到爱库录.md</div>
+              <div class="dir-file"><span class="icon">📄</span> Docker 多阶段构建.md</div>
+              <div class="dir-file"><span class="icon">📄</span> 语义搜索原理.md</div>
+              <div class="dir-file new" style="animation: slideUp .6s ease both;">
+                <span class="icon">📄</span> Go 单二进制部署.md
+              </div>
+              <div class="dir-folder" style="margin-top:4px;">📁 技术笔记/</div>
+              <div class="dir-file"><span class="icon">📄</span> SQLite WAL 模式.md</div>
+              <div class="dir-file"><span class="icon">📄</span> 双链笔记的力量.md</div>
+            </div>
+
+            <div class="dir-blog-preview" style="animation: slideUp .8s ease both;">
+              <div class="label">✅ 已自动发布到博客</div>
+              <div class="title">Go 单二进制部署实战</div>
+              <div class="meta">🏷️ Go, DevOps · 📊 860 字 · 🤖 AI 已生成摘要</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ==================== DRAG FEATURE ==================== -->
+<section class="drag-section" id="drag">
+  <div class="container">
+    <div class="drag-grid">
+
+      <div>
+        <div class="section-label">📂 拖拽即发</div>
+        <h2 class="section-title">文件放进目录<br>就是发布了</h2>
+        <p class="section-desc">
+          不需要打开后台，不需要登录管理面板。<br>
+          把 Markdown 文件拖进「博客」目录——<br>
+          瞬间出现在你的公开站上。移除文件，文章即刻下线。
+        </p>
+        <ul class="feature-list">
+          <li><span class="icon">✦</span> 拖拽上传文件到目录 → 自动发布</li>
+          <li><span class="icon">✦</span> 移除文件 → 文章自动下线</li>
+          <li><span class="icon">✦</span> AI 自动生成摘要、标签、分类</li>
+          <li><span class="icon">✦</span> AI 自动配图（生成 / 网搜）</li>
+          <li><span class="icon">✦</span> 草稿模式可选（确认后再发）</li>
+          <li><span class="icon">✦</span> 内容永远是你的——文件在你的服务器上</li>
+        </ul>
+      </div>
+
+      <div class="drag-visual">
+        <div class="drop-zone">
+          <div class="drop-icon">📂</div>
+          <div class="drop-text">把 <strong>.md 文件</strong>拖到这里</div>
+        </div>
+        <div class="drop-result">
+          <div class="check">✓</div>
+          <div class="info">
+            <strong>Go 单二进制部署实战.md</strong> 已发布
+            <div class="url">→ aiklog.cn/go-single-binary-deploy</div>
+          </div>
+        </div>
+        <div style="margin-top:16px; text-align:center; font-size:12px; color:var(--text-3);">
+          移除文件 → 文章自动下线 · 内容永远是你的
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ==================== IM SECTION ==================== -->
+<section class="im-section" id="im">
+  <div class="container">
+    <div class="im-grid">
+
+      <!-- Phone Chat -->
+      <div class="im-phone">
+        <div class="im-phone-notch"></div>
+        <div class="im-chat">
+          <div class="bubble bubble-u">🎤 [语音 0:15] 今天学了 goroutine...</div>
+          <div class="bubble bubble-b">
+            📝 已生成文章<br>
+            <strong style="color:#fff;font-size:13px;">Go goroutine 学习笔记</strong><br>
+            <span style="font-size:11px;color:var(--text-3);">
+              🏷️ <span class="tag">Go</span><span class="tag">并发</span>
+              📊 920 字 · 🖼 AI 已配图
+            </span>
+            <div class="actions">
+              <button class="act act-go">✅ 发布</button>
+              <button class="act act-no">👁 预览</button>
+            </div>
+          </div>
+          <div class="bubble bubble-u" style="font-size:11px;padding:7px 10px;">✅ 发布</div>
+          <div class="bubble bubble-b">
+            ✅ 已发布！<br>
+            <span style="font-size:11px;color:var(--jade);">→ aiklog.cn/go-goroutine</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">💬 聊天即创作</div>
+        <h2 class="section-title">发条消息<br>就是一篇文章</h2>
+        <p class="section-desc">
+          Telegram / 微信公众号 / 飞书 / 钉钉——<br>
+          语音、图片、文件、对话，什么形式都行。<br>
+          AI 自动整理、配图、打标签，一键发布。
+        </p>
+        <ul class="feature-list">
+          <li><span class="icon">🎤</span> 语音消息 → ASR 转文字 → AI 整理成文</li>
+          <li><span class="icon">📸</span> 图片/截图 → OCR 识图 → 自动配图发布</li>
+          <li><span class="icon">📄</span> 发送 Markdown 文件 → 直接解析发布</li>
+          <li><span class="icon">💬</span> 对话内容 → AI 生成完整文章</li>
+          <li><span class="icon">🖼</span> AI 生成配图 / 网搜配图</li>
+          <li><span class="icon">⚙️</span> 草稿模式 / 直发模式后台可切换</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FEATURES ==================== -->
+<section class="features-section" id="features">
+  <div class="container" style="text-align:center;">
+    <div class="section-label">✨ 核心能力</div>
+    <h2 class="section-title">不只是博客</h2>
+    <p class="section-desc" style="margin:0 auto 0;">AI 知识引擎 + 博客发布 + IM 驱动，三位一体。</p>
+
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-icon">🧠</div>
+        <h3>语义搜索</h3>
+        <p>FTS5 + 向量 + RRF 融合。不是关键词匹配，是真正理解你的内容。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🤖</div>
+        <h3>AI 摘要</h3>
+        <p>文章入库自动解读。AI 在引擎层，不是外挂插件。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🔗</div>
+        <h3>双链互文</h3>
+        <p>[[wiki]] 双向链接，文章之间自由跳转，构建知识网络。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🎨</div>
+        <h3>5 套主题</h3>
+        <p>爱库录、极简阅读、技术文档、暖纸、求智——一键切换。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🔌</div>
+        <h3>插件系统</h3>
+        <p>4 挂载点、11 内置插件。评论、SEO、统计、AI 问答。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🔍</div>
+        <h3>SEO 友好</h3>
+        <p>服务端渲染 + RSS + Sitemap + JSON-LD 结构化数据。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== DEPLOY ==================== -->
+<section class="deploy-section" id="deploy">
+  <div class="container">
+    <div class="deploy-grid">
+
+      <div>
+        <div class="section-label">📦 极简部署</div>
+        <h2 class="section-title">一条命令<br>博客就跑起来了</h2>
+        <p class="section-desc">没有 PHP，没有 MySQL，没有 Redis。一个二进制文件，一个 SQLite 数据库。</p>
+        <ol class="deploy-steps">
+          <li>
+            <div class="deploy-step">
+              <h4>下载二进制</h4>
+              <p>Linux / Windows，约 13MB</p>
+            </div>
+          </li>
+          <li>
+            <div class="deploy-step">
+              <h4>设置密码，启动</h4>
+              <p>一条命令，指定端口和数据库路径</p>
+            </div>
+          </li>
+          <li>
+            <div class="deploy-step">
+              <h4>Nginx 反代 + HTTPS</h4>
+              <p>certbot 签证书，生产就绪</p>
+            </div>
+          </li>
+          <li>
+            <div class="deploy-step">
+              <h4>开始写作</h4>
+              <p>拖文件、发消息、用编辑器——随你</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="code-box">
+        <div class="code-box-bar">$ terminal</div>
+        <pre>
+<span class="dim"># 下载（Linux amd64）</span>
+<span class="cmd">curl</span> -LO https://aiklog.cn/dist/aiklog-linux-amd64
+<span class="cmd">chmod</span> +x aiklog-linux-amd64
+
+<span class="dim"># 启动</span>
+<span class="cmd">AIKMAP_ADMIN_PASSWORD</span>=<span class="str">'your-password'</span> \
+  ./aiklog-linux-amd64 \
+  <span class="flag">-addr</span> 127.0.0.1:8780 \
+  <span class="flag">-db</span> ./data/aiklog.db
+
+<span class="dim"># 访问</span>
+<span class="dim"># → 博客: https://yourdomain.com/blog</span>
+<span class="dim"># → 控制台: https://yourdomain.com/#/desk</span>
+<span class="dim"># → 健康: GET /api/v1/health</span></pre>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ==================== COMPARE ==================== -->
+<section class="compare-section">
+  <div class="container" style="text-align:center;">
+    <div class="section-label">📊 竞品对比</div>
+    <h2 class="section-title">不是更好的 WordPress</h2>
+    <p class="section-desc" style="margin:0 auto;">是一个全新的品类。</p>
+
+    <table class="cmp-table">
+      <thead>
+        <tr><th>能力</th><th>WordPress</th><th>Ghost</th><th>Hugo</th><th>Khoj</th><th class="hl">AiKlog</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>部署</td><td>PHP+MySQL</td><td>Node+MySQL</td><td>单二进制</td><td>Python+DB</td><td class="hl">单二进制+SQLite</td></tr>
+        <tr><td>拖拽即发</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td class="hl">✅ 拖文件进目录</td></tr>
+        <tr><td>IM 发布</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td class="hl">✅ TG/微信/飞书/钉钉</td></tr>
+        <tr><td>AI 语义搜索</td><td>插件(弱)</td><td>❌</td><td>❌</td><td>✅</td><td class="hl">✅ FTS5+向量+RRF</td></tr>
+        <tr><td>AI 摘要/配图</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td class="hl">✅ 自动</td></tr>
+        <tr><td>语音/OCR</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td class="hl">✅</td></tr>
+        <tr><td>博客系统</td><td>✅ 极强</td><td>✅ 强</td><td>✅ 静态</td><td>❌</td><td class="hl">✅ 主题+插件+RSS</td></tr>
+        <tr><td>知识库</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td><td class="hl">✅ 双链+向量</td></tr>
+        <tr><td>外部依赖</td><td>PHP/MySQL</td><td>Node/MySQL</td><td>无</td><td>Python</td><td class="hl">零</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ==================== CTA ==================== -->
+<section class="cta-section">
+  <div class="container">
+    <h2>拖个文件，就是一篇博客</h2>
+    <p>单二进制 · SQLite · 零依赖 · 数据在自己手里</p>
+    <div style="display:flex; gap:12px; justify-content:center; position:relative;">
+      <a href="/INSTALL" class="btn btn-p">⚡ 免费开始</a>
+      <a href="/blog" class="btn btn-g">📖 样板房</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-links">
+      <a href="/blog">博客</a>
+      <a href="{{.RSS}}">RSS</a>
+      <a href="/INSTALL">安装指南</a>
+      <a href="/api/v1/blog/sitemap.xml">Sitemap</a>
+    </div>
+    <p>© 2026 AiKlog · 爱库录 · 目录即站点，文件即文章</p>
+  </div>
+</footer>
+
+</body>
+</html>

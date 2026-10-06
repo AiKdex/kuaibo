@@ -1,0 +1,77 @@
+/* ============================================================
+   Chenxi — 文章页专属样式
+   构建插件自动加 .th-chenxi.th-view-post 作用域
+   ============================================================ */
+
+/* ── Post Reset ────────────────────────────────────────────── */
+.cxp-root,.cxp-root *,.cxp-root *::before,.cxp-root *::after{margin:0;padding:0;box-sizing:border-box}
+
+/* ── Post Top Bar ──────────────────────────────────────────── */
+.cxp-top{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.78);backdrop-filter:blur(20px) saturate(1.4);border-bottom:1px solid rgba(244,114,182,.12)}
+.cxp-top-in{max-width:800px;margin:0 auto;padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:64px;min-width:0}
+.cxp-logo{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800}
+.cxp-logo-dot{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#f472b6,#818cf8);display:flex;align-items:center;justify-content:center;font-size:15px}
+.cxp-logo-text{color:#1e1b4b;text-decoration:none}.cxp-logo-text:hover{color:#ec4899}
+.cxp-nav{display:flex;gap:8px;align-items:center}
+.cxp-nav-a{padding:8px 16px;border-radius:10px;font-size:14px;font-weight:500;color:#64748b;text-decoration:none;transition:all .2s}
+.cxp-nav-a:hover{color:#1e1b4b;background:#fdf2f8}
+.cxp-status{text-align:center;padding:80px 28px;font-size:14px;color:#94a3b8}
+.cxp-content{padding-bottom:80px}
+.cxp-wrapper{min-width:0}
+
+/* ── Post Header ───────────────────────────────────────────── */
+.cxp-head{padding:48px 0 32px}
+.cxp-head-tags{margin-bottom:14px}
+.cxp-chip{display:inline-block;padding:4px 14px;border-radius:100px;font-size:12px;font-weight:500;background:rgba(244,114,182,.08);color:#ec4899;border:1px solid rgba(244,114,182,.15)}
+.cxp-h1{font-size:36px;font-weight:800;color:#1e1b4b;line-height:1.25;letter-spacing:-.02em;margin-bottom:16px}
+.cxp-meta{display:flex;align-items:center;gap:20px;font-size:13px;color:#94a3b8;flex-wrap:wrap}
+.cxp-meta-item{display:flex;align-items:center;gap:6px}
+
+/* ── Summary ───────────────────────────────────────────────── */
+.cxp-summary{margin:24px 0 32px;padding:20px 24px;background:#fdf2f8;border:1px solid rgba(244,114,182,.12);border-radius:20px}
+.cxp-summary-label{font-size:12px;font-weight:600;color:#ec4899;margin-bottom:8px}
+.cxp-summary p{font-size:14px;color:#64748b;line-height:1.7;margin:0}
+
+/* ── Post Body ─────────────────────────────────────────────── */
+.cxp-body{font-size:16px;line-height:1.85;color:#334155}
+.cxp-body h2{font-size:24px;font-weight:700;color:#1e1b4b;margin:40px 0 16px;padding-bottom:10px;border-bottom:1px solid rgba(244,114,182,.1);letter-spacing:-.01em}
+.cxp-body h3{font-size:20px;font-weight:600;color:#1e1b4b;margin:32px 0 12px}
+.cxp-body h4{font-size:17px;font-weight:600;color:#1e1b4b;margin:24px 0 10px}
+.cxp-body p{margin-bottom:16px}
+.cxp-body strong{color:#1e1b4b;font-weight:600}
+.cxp-body a{color:#ec4899;border-bottom:1px solid rgba(244,114,182,.3)}
+.cxp-body a:hover{border-bottom-color:#ec4899}
+.cxp-body blockquote{margin:24px 0;padding:16px 20px;background:rgba(244,114,182,.04);border-left:3px solid #f472b6;border-radius:0 14px 14px 0;color:#64748b;font-style:italic}
+.cxp-body code{font-family:'JetBrains Mono','Fira Code',monospace;font-size:14px;background:#fdf2f8;padding:2px 7px;border-radius:6px;color:#ec4899}
+.cxp-body pre{margin:24px 0;padding:20px;background:#1e1b4b;border-radius:14px;overflow-x:auto}
+.cxp-body pre code{background:none;padding:0;font-size:14px;line-height:1.7;color:#e2e8f0}
+.cxp-body ul,.cxp-body ol{margin:16px 0;padding-left:24px}
+.cxp-body li{margin-bottom:6px}
+.cxp-body img{max-width:100%;border-radius:14px;margin:24px 0;box-shadow:0 4px 16px rgba(244,114,182,.1)}
+.cxp-body table{width:100%;margin:24px 0;border-collapse:collapse;font-size:14px}
+.cxp-body th,.cxp-body td{padding:10px 14px;border-bottom:1px solid rgba(244,114,182,.1);text-align:left}
+.cxp-body th{color:#64748b;font-weight:600;background:#fff7ed}
+.cxp-body hr{margin:36px 0;border:none;border-top:1px solid rgba(244,114,182,.1)}
+
+/* ── Share / Tags / Related ────────────────────────────────── */
+.cxp-share{margin:32px 0;padding:16px 20px;text-align:center;background:#fdf2f8;border:1px solid rgba(244,114,182,.12);border-radius:14px}
+.cxp-share a{font-size:13px;color:#ec4899}
+.cxp-tags{display:flex;gap:8px;flex-wrap:wrap;margin:36px 0;padding:20px 0;border-top:1px solid rgba(244,114,182,.1);border-bottom:1px solid rgba(244,114,182,.1)}
+.cxp-related{margin:40px 0}
+.cxp-related-title{font-size:18px;font-weight:600;color:#1e1b4b;margin-bottom:16px}
+.cxp-related-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.cxp-related-card{padding:20px;background:#fff;border:1px solid rgba(244,114,182,.1);border-radius:14px;transition:all .3s;cursor:pointer;text-decoration:none;color:inherit;min-width:0;box-shadow:0 1px 3px rgba(244,114,182,.06)}
+.cxp-related-card:hover{border-color:rgba(244,114,182,.25);box-shadow:0 8px 32px rgba(244,114,182,.12);transform:translateY(-2px);color:inherit}
+.cxp-related-card h4{font-size:14px;font-weight:600;color:#1e1b4b;line-height:1.4;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cxp-related-card p{font-size:12px;color:#94a3b8}
+.cxp-footer{padding:40px 0;border-top:1px solid rgba(244,114,182,.1);text-align:center;font-size:12px;color:#94a3b8}
+
+/* ── Post Responsive ───────────────────────────────────────── */
+@media(max-width:768px){.cxp-head{padding:32px 0 24px}.cxp-h1{font-size:26px}.cxp-body{font-size:15px}.cxp-related-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.cxp-related-grid{grid-template-columns:1fr}.cxp-top-in{padding:0 16px}}
+
+/* ── 文章页两栏（正文 + 侧栏 SideWidget）── */
+.cx-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;max-width:1100px;margin:0 auto;align-items:start;padding:0 28px 80px}
+.cx-article{min-width:0}
+.cx-aside{position:sticky;top:20px}
+@media (max-width:860px){.cx-layout{grid-template-columns:1fr;padding:0 16px}.cx-aside{position:static;margin-top:20px}}
