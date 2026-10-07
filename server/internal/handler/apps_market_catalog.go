@@ -271,8 +271,8 @@ func (a *API) marketView(idx *marketIndex) map[string]any {
 		"site_url":       officialMarketSiteURL, // 独立应用中心页的「打开官网」目标
 		"shell":          shell,
 		"edition":        a.licenseEdition(),
-		// 远程索引验签是否启用：缺省/true=验签；false=已显式信任来源、跳过验签（自托管/社区索引）。
-		"index_verify": a.cfg.GetString("plugin_market.index_verify") != "false",
+		// 远程索引验签开关：缺省=false（信任官方/社区未签名目录，开箱即用）；true=强制验签（自托管签名目录时开启）。
+		"index_verify": a.cfg.GetString("plugin_market.index_verify") == "true",
 	}
 }
 
@@ -699,10 +699,10 @@ func (a *API) fetchMarketIndex(r *http.Request) (*marketIndex, error) {
 	if err := json.Unmarshal(body, &idx); err != nil {
 		return nil, fmt.Errorf("市场索引格式非法")
 	}
-	// 索引签名验签：默认强制（plugin_market.index_verify 缺省或 true）。
-	// 仅当运营者显式设 plugin_market.index_verify=false（信任该来源）时跳过——
-	// 用于自托管/社区索引等无官方签名的场景。逐包 sha256 完整性校验不依赖此项，仍生效。
-	if a.cfg.GetString("plugin_market.index_verify") != "false" {
+	// 索引签名验签：缺省=false（信任官方/社区未签名目录，开箱即用）。
+	// 仅当运营者显式设 plugin_market.index_verify=true（强制验签）时执行——
+	// 用于自托管签名目录等需要严格校验的场景。逐包 sha256 完整性校验不依赖此项，仍生效。
+	if a.cfg.GetString("plugin_market.index_verify") == "true" {
 		if err := idx.verifySignature(); err != nil {
 			return nil, fmt.Errorf("市场索引验签失败：%w", err)
 		}
