@@ -90,7 +90,10 @@ if [[ "$SOURCE" == "git" ]]; then
   echo "==> [2/6] 克隆源码: $GIT_URL"
   REPO_DIR="/tmp/aiklog-src"
   rm -rf "$REPO_DIR"
-  git clone --depth 1 "$GIT_URL" "$REPO_DIR"
+  # 强制 HTTP/1.1：GitHub 匿名 clone 在部分网络下走 HTTP/2 会被中间设备掐断，
+  # 报 "curl 16 Error in the HTTP2 framing layer / expected flush after ref listing"。
+  # 局部 -c 覆盖，不污染用户全局 git 配置。
+  git -c http.version=HTTP/1.1 -c http.postBuffer=524288000 clone --depth 1 "$GIT_URL" "$REPO_DIR"
 else
   [[ -f "$REPO_DIR/server/go.mod" ]] || { echo "错误：未找到源码（$REPO_DIR）。请用 --source git 或在仓库目录内运行。"; exit 1; }
   echo "==> [2/6] 使用本地源码: $REPO_DIR"
