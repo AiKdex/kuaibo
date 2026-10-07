@@ -93,7 +93,30 @@ if [[ "$SOURCE" == "git" ]]; then
   # 强制 HTTP/1.1：GitHub 匿名 clone 在部分网络下走 HTTP/2 会被中间设备掐断，
   # 报 "curl 16 Error in the HTTP2 framing layer / expected flush after ref listing"。
   # 局部 -c 覆盖，不污染用户全局 git 配置。
-  git -c http.version=HTTP/1.1 -c http.postBuffer=524288000 clone --depth 1 "$GIT_URL" "$REPO_DIR"
+  # 若 clone 仍失败（如境内直连 GitHub 被 reset/超时），自动回退到经 ghproxy 下载源码包，
+  # 完全绕开 git over HTTPS，单次 GET 抗掐断，成功率更高。
+  if git -c http.version=HTTP/1.1 -c http.postBuffer=524288000 clone --depth 1 "$GIT_URL" "$REPO_DIR" 2>/dev/null; then
+    echo "    源码克隆完成"
+  else
+    echo "    ⚠️  git clone 失败，尝试经 ghproxy 下载源码包（绕开 GitHub 直连限制）"
+    if [[ "$GIT_URL" == *"github.com"* ]]; then
+      TB_URL="https://ghproxy.com/${GIT_URL%.git}/archive/refs/heads/main.tar.gz"
+    else
+      TB_URL="${GIT_URL%.git}/archive/refs/heads/main.tar.gz"
+    fi
+    TGZ="/tmp/kuaibo-src-$$.tar.gz"
+    if curl -fsSL --retry 3 --retry-delay 2 -o "$TGZ" "$TB_URL"; then
+      mkdir -p "$REPO_DIR"
+      tar xzf "$TGZ" -C "$REPO_DIR" --strip-components=1
+      rm -f "$TGZ"
+      echo "    源码包解压完成（经 ghproxy 代理）"
+    else
+      echo "错误：源码获取失败（git 与 ghproxy 代理均不可达）。"
+      echo "        请在有 GitHub 访问能力的网络下，手动下载源码包并解压到 $REPO_DIR 后重跑本脚本；"
+      echo "        或换网络（如手机热点）后重试原命令。"
+      exit 1
+    fi
+  fi
 else
   [[ -f "$REPO_DIR/server/go.mod" ]] || { echo "错误：未找到源码（$REPO_DIR）。请用 --source git 或在仓库目录内运行。"; exit 1; }
   echo "==> [2/6] 使用本地源码: $REPO_DIR"
