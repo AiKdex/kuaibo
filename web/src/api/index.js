@@ -1,6 +1,8 @@
 // AiKlog（爱库录）API 客户端：对接后端 /api/v1 文件 API
 // 阶段 1 覆盖：文件列表/树/上传/下载/目录/移动/删除/预览内容
 
+import { applySiteName } from '@/site'
+
 const BASE = '/api/v1'
 
 // ---- 会话（安全加固：登录鉴权） ----
@@ -582,7 +584,11 @@ export function publicPosts() {
 
 // 博客站点设置（公开读：title/description/logo/footer/seo_default，RSS/OG/公开页同源）
 export function publicSite() {
-  return requestJSON('/public/site')
+  return requestJSON('/public/site').then((d) => {
+    // 同步写入全局站点名（供路由守卫/SEO 拼接标签标题，避免写死「爱库录」）
+    if (d && d.site && d.site.title) applySiteName(d.site.title)
+    return d
+  })
 }
 
 // 公开标签聚合（标签云与标签内页数据源）：{ items: [{ name, count }] }

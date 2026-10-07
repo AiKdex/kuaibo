@@ -7,7 +7,7 @@
     <header class="pub-bar">
       <a class="pub-brand" href="#/blog?view=public" :title="$t('爱库录公开博客')">
         <span class="pub-logo">{{  $t('录')  }}</span>
-        <span class="pub-name">{{  $t('爱库录')  }}</span>
+        <span class="pub-name">{{  site.title || $t('爱库录')  }}</span>
         <span class="pub-sub">AiKlog</span>
       </a>
       <LangSwitch mode="inline" />
