@@ -30,6 +30,15 @@
       <span v-if="err" class="ac-err">{{  err  }}</span>
     </div>
 
+    <!-- 远程索引签名验签：默认强制；自托管/社区索引可显式信任跳过（逐包 sha256 仍校验） -->
+    <div class="ac-verify">
+      <label class="ac-switch">
+        <input type="checkbox" v-model="skipVerify" @change="setIndexVerify(skipVerify)" :disabled="verifyBusy" />
+        <span>{{  t('信任此目录源（跳过签名验签）')  }}</span>
+      </label>
+      <span class="ac-dim">{{  t('仅当索引来源可信时开启；关闭后每个安装包仍会校验 sha256 完整性')  }}</span>
+    </div>
+
     <!-- 许可证：付费应用安装门禁（community 免费 / pro 解锁 tier=paid） -->
     <div class="ac-license">
       <span class="ac-lic-badge" :class="{ pro: edition === 'pro' }">{{  edition === 'pro' ? 'PRO' : 'COMMUNITY'  }}</span>
@@ -235,6 +244,26 @@ const licenseKey = ref('')
 const licBusy = ref(false)
 const licMsg = ref('')
 
+// 远程索引签名验签开关：skipVerify=true 表示已信任来源、跳过验签（plugin_market.index_verify=false）。
+const skipVerify = ref(false)
+const verifyBusy = ref(false)
+async function setIndexVerify(v) {
+  verifyBusy.value = true
+  try {
+    await api.requestJSON('/admin/settings', {
+      method: 'PUT',
+      body: JSON.stringify({ key: 'plugin_market.index_verify', value: v ? 'false' : 'true' }),
+    })
+    await load()
+    toast.success(v ? t('已信任此目录源，跳过索引签名验签') : t('已恢复索引签名验签'))
+  } catch (e) {
+    skipVerify.value = !v
+    toast.error(t('设置失败：') + (e?.message || e))
+  } finally {
+    verifyBusy.value = false
+  }
+}
+
 async function load() {
   busy.value = true
   err.value = ''
@@ -247,6 +276,7 @@ async function load() {
     if (m.site_url) siteUrl.value = m.site_url
     shell.value = m.shell || 'aiklog'
     edition.value = m.edition || 'community'
+    skipVerify.value = m.index_verify === false
   } catch (e) {
     err.value = e?.message || String(e)
     plugins.value = []
@@ -339,6 +369,14 @@ onMounted(async () => {
 }
 .ac-chip code { background: transparent; padding: 0; font-size: 11.5px; }
 .ac-err { color: var(--danger); font-size: 12px; }
+
+.ac-verify {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 9px 12px; margin-bottom: 16px;
+  background: var(--surface-2); border: 1px dashed var(--border); border-radius: 8px;
+}
+.ac-switch { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; font-size: 13px; color: var(--text); }
+.ac-switch input { width: 15px; height: 15px; accent-color: var(--primary); cursor: pointer; }
 
 .ac-license {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
