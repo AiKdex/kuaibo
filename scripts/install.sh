@@ -271,7 +271,23 @@ setup_nginx() {
       NG_CONF=/etc/nginx/conf.d/aiklog.conf
       NG_EN="$NG_CONF"
     fi
-    $SUDO tee "$NG_CONF" > /dev/null <<EOF
+    # 先备份既有配置（便于回滚）
+    if [[ -f "$NG_CONF" ]]; then
+      $SUDO cp -f "$NG_CONF" "${NG_CONF}.bak_$(date +%Y%m%d%H%M%S)"
+    fi
+
+    # 已部署 SSL（certbot 在文件里写了 443 监听 / ssl_certificate）则保留现有配置，
+    # 不整体覆盖——否则重跑升级会把 HTTPS 配置抹掉，站点退回 HTTP / 证书不匹配。
+    if [[ -f "$NG_CONF" ]] && $SUDO grep -qE 'listen[[:space:]]+[^;]*443|ssl_certificate' "$NG_CONF"; then
+      CUR_HOST="$($SUDO grep -oE 'server_name[[:space:]]+[^;]+;' "$NG_CONF" | head -1 | sed -E 's/server_name[[:space:]]+//; s/;//' | tr -d ' ')"
+      echo "    检测到已部署 SSL（443 / ssl_certificate），保留现有 nginx 配置，跳过重写（不破坏 HTTPS）。"
+      if [[ -n "$CUR_HOST" && "$CUR_HOST" != "$ENTRY_HOST" && "$CUR_HOST" != "_" ]]; then
+        echo "    ⚠️ 当前 nginx 绑定的域名是 $CUR_HOST，与本次 $ENTRY_HOST 不一致。"
+        echo "       升级未改动它；如需将 HTTPS 切到 $ENTRY_HOST，请升级后执行："
+        echo "       sudo certbot --nginx -d $ENTRY_HOST"
+      fi
+    else
+      $SUDO tee "$NG_CONF" > /dev/null <<EOF
 server {
     listen 80;
     server_name $ENTRY_HOST;
@@ -292,6 +308,7 @@ server {
     }
 }
 EOF
+    fi
     [[ "$NG_CONF" != "$NG_EN" ]] && $SUDO ln -sf "$NG_CONF" "$NG_EN"
     $SUDO nginx -t && $SUDO systemctl reload nginx
   else
