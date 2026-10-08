@@ -20,9 +20,14 @@
         type="button"
         class="thsw-item"
         :class="{ on: t.id === activeId }"
+        :style="{ '--accent': swatch(t.id).accent, '--accent-soft': swatch(t.id).soft }"
         @click="pick(t.id)"
       >
-        <span class="thsw-item-t">{{  t.title  }}</span>
+        <span class="thsw-item-top">
+          <span class="thsw-dot" aria-hidden="true"></span>
+          <span class="thsw-item-t">{{  t.title  }}</span>
+          <span class="thsw-check" aria-hidden="true">✓</span>
+        </span>
         <em class="thsw-item-d">{{  t.desc  }}</em>
       </button>
       <div v-if="overridden" class="thsw-foot">
@@ -65,6 +70,15 @@ const activeId = computed(() => activeThemeId.value)
 const overridden = computed(() => !!readOverride() && open.value)
 const isAdmin = computed(() => isAuthed())
 const current = computed(() => themes.value.find(t => t.id === activeId.value) || null)
+
+// 为每个主题派生一个稳定的强调色（manifest 未暴露代表色，用 id 哈希避免依赖缺失字段）
+const PALETTE = ['#0d7a6a', '#2563eb', '#7c3aed', '#db2777', '#ea580c', '#0891b2', '#65a30d', '#9333ea']
+function swatch(id) {
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
+  const accent = PALETTE[h % PALETTE.length]
+  return { accent, soft: accent + '14' } // soft = 8% 透明同色底
+}
 
 // 点击切换（click-to-toggle）：关闭改由「点击外部 / ESC」触发，
 // 不再用 mouseleave——否则鼠标从按钮移到下拉菜单会先离开容器盒子（菜单是 absolute，不占容器高度）
@@ -157,15 +171,15 @@ async function saveAsSite() {
   top: calc(100% + 4px);
   right: 0;
   z-index: 9999;
-  min-width: 236px;
+  min-width: 248px;
   max-height: 64vh;
   overflow: auto;
-  padding: 6px;
-  border-radius: 14px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  background: #fff;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
   color: #1f2937;
-  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 16px 44px rgba(15, 23, 42, 0.18);
   animation: thsw-pop 0.14s ease;
   /* 中文在非整数像素/合成层下易发虚：整数渲染 + 灰度平滑 */
   -webkit-font-smoothing: antialiased;
@@ -199,46 +213,66 @@ async function saveAsSite() {
 
 .thsw-item {
   position: relative;
-  display: flex;
-  flex-direction: column;
+  display: block;
   width: 100%;
-  padding: 8px 10px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
+  margin-bottom: 7px;
+  padding: 10px 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 11px;
+  background: #fff;
   text-align: left;
   cursor: pointer;
   color: inherit;
   font-size: 13px;
   line-height: 1.35;
-  transition: background 0.12s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, background 0.15s ease;
+}
+
+.thsw-item:last-of-type {
+  margin-bottom: 0;
 }
 
 .thsw-item:hover {
-  background: #f1f5f9;
+  border-color: var(--accent);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.1);
+  transform: translateY(-1px);
+}
+
+.thsw-item-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.thsw-dot {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.thsw-check {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity 0.15s ease;
 }
 
 .thsw-item.on {
-  background: rgba(13, 122, 106, 0.1);
-  color: #0b6e5f;
-  box-shadow: inset 3px 0 0 #0d7a6a;
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 
 .thsw-item.on .thsw-item-t {
-  color: #0b6e5f;
+  color: #0f172a;
 }
 
-.thsw-item.on .thsw-item-d {
-  color: rgba(13, 122, 106, 0.72);
-}
-
-.thsw-item.on::after {
-  content: '✓';
-  position: absolute;
-  top: 9px;
-  right: 10px;
-  font-size: 12px;
-  color: #0d7a6a;
+.thsw-item.on .thsw-check {
+  opacity: 1;
 }
 
 .thsw-item-t {
@@ -252,7 +286,8 @@ async function saveAsSite() {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-  margin-top: 3px;
+  margin-top: 6px;
+  padding-left: 17px;
   font-size: 12px;
   font-weight: 400;
   font-style: normal;
