@@ -1,9 +1,10 @@
 <template>
-  <div v-if="allowVisitorSwitch" class="thsw" :class="[`thsw--${mode}`]" @mouseleave="open = false">
+  <div v-if="allowVisitorSwitch" ref="root" class="thsw" :class="[`thsw--${mode}`]">
     <button
       type="button"
       class="thsw-btn"
       :title="$t('切换主题（当前：{title}）', { title: current ? current.title : $t('默认') })"
+      :aria-expanded="open"
       @click="open = !open"
     >
       <span class="thsw-ico" aria-hidden="true">◑</span>
@@ -12,6 +13,7 @@
     </button>
 
     <div v-if="open" class="thsw-menu">
+      <div class="thsw-menu-head">{{  $t('选择主题')  }}</div>
       <button
         v-for="t in themes"
         :key="t.id"
@@ -46,7 +48,7 @@
  * 选择结果写入 localStorage（aiklog.theme.override），优先级高于站点设置 blog.theme；
  * 站长登录时可一键「设为站点主题」（PUT /admin/settings）变成全站默认。
  */
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { listThemes, setActiveTheme, activeThemeId, readOverride, allowVisitorSwitch } from '@/themes'
 import { isAuthed, requestJSON } from '@/api'
 import { t } from '@/i18n'
@@ -55,6 +57,7 @@ const props = defineProps({
   mode: { type: String, default: 'inline' }, // inline | dock
 })
 
+const root = ref(null)
 const open = ref(false)
 const saving = ref(false)
 const themes = computed(() => listThemes())
@@ -62,6 +65,26 @@ const activeId = computed(() => activeThemeId.value)
 const overridden = computed(() => !!readOverride() && open.value)
 const isAdmin = computed(() => isAuthed())
 const current = computed(() => themes.value.find(t => t.id === activeId.value) || null)
+
+// 点击切换（click-to-toggle）：关闭改由「点击外部 / ESC」触发，
+// 不再用 mouseleave——否则鼠标从按钮移到下拉菜单会先离开容器盒子（菜单是 absolute，不占容器高度）
+// 导致菜单瞬间闭合、选不到主题。
+function onDocClick(e) {
+  if (open.value && root.value && !root.value.contains(e.target)) {
+    open.value = false
+  }
+}
+function onKey(e) {
+  if (e.key === 'Escape') open.value = false
+}
+onMounted(() => {
+  document.addEventListener('click', onDocClick)
+  document.addEventListener('keydown', onKey)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocClick)
+  document.removeEventListener('keydown', onKey)
+})
 
 function pick(id) {
   setActiveTheme(id)
@@ -131,54 +154,96 @@ async function saveAsSite() {
 
 .thsw-menu {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 4px);
   right: 0;
   z-index: 9999;
-  min-width: 208px;
-  max-height: 60vh;
+  min-width: 236px;
+  max-height: 64vh;
   overflow: auto;
-  padding: 4px;
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
   background: #fff;
   color: #1f2937;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.16);
+  animation: thsw-pop 0.14s ease;
+}
+
+/* 透明桥接：连接按钮与菜单，消除间隙造成的「鼠标移出即闭合」死区 */
+.thsw-menu::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 0;
+  height: 8px;
+}
+
+@keyframes thsw-pop {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.thsw-menu-head {
+  padding: 4px 10px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+  text-transform: uppercase;
 }
 
 .thsw-item {
-  display: block;
+  position: relative;
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  padding: 7px 9px;
+  padding: 8px 10px;
   border: 0;
-  border-radius: 7px;
+  border-radius: 9px;
   background: transparent;
   text-align: left;
   cursor: pointer;
   color: inherit;
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.35;
+  transition: background 0.12s ease, transform 0.12s ease;
 }
 
 .thsw-item:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: #f1f5f9;
+}
+
+.thsw-item:active {
+  transform: scale(0.99);
 }
 
 .thsw-item.on {
   background: rgba(13, 122, 106, 0.1);
   color: #0d7a6a;
-  font-weight: 600;
+}
+
+.thsw-item.on::after {
+  content: '✓';
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  font-size: 12px;
+  color: #0d7a6a;
 }
 
 .thsw-item-t {
   display: block;
+  font-weight: 600;
 }
 
 .thsw-item-d {
   display: block;
   margin-top: 2px;
   font-size: 11px;
+  font-weight: 400;
   font-style: normal;
-  opacity: 0.6;
+  color: #64748b;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
