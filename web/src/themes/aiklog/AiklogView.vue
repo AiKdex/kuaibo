@@ -241,6 +241,9 @@ function postHref(p) {
 }
 
 function postCover(p) {
+  // 优先文章封面字段（编辑器设置/上传的封面图）；回退从摘要首图提取
+  const c = p.file?.cover
+  if (typeof c === 'string' && c.trim()) return c.trim()
   const s = p.preview || ''
   const m = /!\[[^\]]*\]\((https?:\/\/[^)\s]+|\/[^)\s]+)\)/.exec(s)
   return m ? m[1] : ''
