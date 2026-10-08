@@ -167,6 +167,9 @@ async function saveAsSite() {
   color: #1f2937;
   box-shadow: 0 12px 36px rgba(15, 23, 42, 0.16);
   animation: thsw-pop 0.14s ease;
+  /* 中文在非整数像素/合成层下易发虚：整数渲染 + 灰度平滑 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* 透明桥接：连接按钮与菜单，消除间隙造成的「鼠标移出即闭合」死区 */
@@ -208,15 +211,11 @@ async function saveAsSite() {
   color: inherit;
   font-size: 13px;
   line-height: 1.35;
-  transition: background 0.12s ease, transform 0.12s ease;
+  transition: background 0.12s ease;
 }
 
 .thsw-item:hover {
   background: #f1f5f9;
-}
-
-.thsw-item:active {
-  transform: scale(0.99);
 }
 
 .thsw-item.on {
@@ -244,9 +243,8 @@ async function saveAsSite() {
 
 .thsw-item-t {
   display: block;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.01em;
   color: #0f172a;
 }
 
@@ -255,7 +253,7 @@ async function saveAsSite() {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   margin-top: 3px;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 400;
   font-style: normal;
   line-height: 1.45;
