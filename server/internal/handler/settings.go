@@ -86,7 +86,7 @@ var settableKeys = map[string]struct {
 		},
 	},
 	"ai.tts.format": {
-		desc: "语音合成默认音频格式（mp3|wav|pcm16；留空=mp3）",
+		desc:  "语音合成默认音频格式（mp3|wav|pcm16；留空=mp3）",
 		valid: func(v string) (string, bool) {
 			switch strings.TrimSpace(v) {
 			case "", "mp3", "wav", "pcm16":
@@ -96,7 +96,7 @@ var settableKeys = map[string]struct {
 		},
 	},
 	"ai.tts.style": {
-		desc: "语音合成默认风格指令（如 温柔自然、播报感；留空=不加风格）",
+		desc:  "语音合成默认风格指令（如 温柔自然、播报感；留空=不加风格）",
 		valid: func(v string) (string, bool) {
 			v = strings.TrimSpace(v)
 			if len(v) > 200 {
@@ -460,10 +460,6 @@ var settableKeys = map[string]struct {
 			return v, true
 		},
 	},
-	"plugin_market.index_verify": {
-		desc:  "应用中心远程索引签名验签开关（true=强制验签，默认；false=跳过验签，仅用于自托管/社区索引等信任来源；逐包 sha256 完整性校验不受影响）",
-		valid: validBool,
-	},
 	// ---- 多用户（Option B：AiKlog 自带同构多用户，注册策略由站长后台配置） ----
 	"site.registration_open": {
 		desc:  "开放注册开关（true/false）：关闭后新用户无法自助注册（私有博客/邀请制）；开启后用户可自助注册",
@@ -558,14 +554,14 @@ var settableKeys = map[string]struct {
 			return v, true
 		},
 	},
-	"store.pay.wechat_appid":          {desc: "微信支付 AppID", valid: strLenLE(64)},
-	"store.pay.wechat_mch_id":         {desc: "微信支付 商户号 MCH_ID", valid: strLenLE(64)},
-	"store.pay.wechat_apikey":         {desc: "微信支付 API 密钥（v2 Key）", valid: strLenLE(64)},
-	"store.pay.alipay_appid":          {desc: "支付宝 应用 AppID", valid: strLenLE(64)},
-	"store.pay.alipay_private_key":    {desc: "支付宝 应用私钥（PKCS1/PKCS8 PEM）", valid: strLenLE(4096)},
-	"store.pay.alipay_public_key":     {desc: "支付宝 支付宝公钥（PKIX PEM，验签用）", valid: strLenLE(4096)},
-	"store.pay.stripe_secret":         {desc: "Stripe 密钥（sk_...）", valid: strLenLE(256)},
-	"store.pay.stripe_publishable":    {desc: "Stripe 可发布密钥（pk_...）", valid: strLenLE(256)},
+	"store.pay.wechat_appid":   {desc: "微信支付 AppID", valid: strLenLE(64)},
+	"store.pay.wechat_mch_id": {desc: "微信支付 商户号 MCH_ID", valid: strLenLE(64)},
+	"store.pay.wechat_apikey": {desc: "微信支付 API 密钥（v2 Key）", valid: strLenLE(64)},
+	"store.pay.alipay_appid":  {desc: "支付宝 应用 AppID", valid: strLenLE(64)},
+	"store.pay.alipay_private_key": {desc: "支付宝 应用私钥（PKCS1/PKCS8 PEM）", valid: strLenLE(4096)},
+	"store.pay.alipay_public_key": {desc: "支付宝 支付宝公钥（PKIX PEM，验签用）", valid: strLenLE(4096)},
+	"store.pay.stripe_secret":       {desc: "Stripe 密钥（sk_...）", valid: strLenLE(256)},
+	"store.pay.stripe_publishable":  {desc: "Stripe 可发布密钥（pk_...）", valid: strLenLE(256)},
 	"store.pay.stripe_webhook_secret": {desc: "Stripe Webhook 签名密钥（whsec_...）", valid: strLenLE(256)},
 }
 

@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="On4a1SRZqpqS1N11B6S6xQ">
+<head data-page-node-id="M8HTA9kCG9d2sgnGPk71BN">
+<meta charset="UTF-8" data-page-node-id="cjQuTiXEDvqBcLM6TJTN3w">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="BuilrkXFeRX1Va9hdW1OhR">
+<title>EmForum v2 · Emlog 论坛/BBS 风格主题（版块页签式布局）</title>
+<!--
+  ═══════════════════════════════════════════════════════════
+  EmForum v2 — Emlog 论坛/BBS 风格主题 UI（现代页签式布局）
+  布局逻辑：版块横向页签一行切换，下方直接是该版块的帖子列表
+  对应 emlog 模板结构（content/templates/emforum/）：
+    header.php   → 顶部通栏 + 品牌 + 版块页签条
+    log_list.php → 当前版块帖子列表（按 sort 过滤，
+                   页签 = 分类，点击即带 sort_id 跳转的列表页）
+    module.php   → 版块信息条 / 帖子行 / 分页
+    side.php     → 右侧边栏（用户卡 / 在线 / 热帖 / 标签）
+    footer.php   → 页脚
+    echo_log.php → 帖子详情页（点击列表中任意帖子标题即可预览）
+  ═══════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --navy:#1a2332;          /* 深海军蓝：头部/主色 */
+    --navy-2:#243447;
+    --teal:#2d8b8b;          /* 水鸭青：链接/强调 */
+    --teal-light:#eaf4f4;
+    --gold:#c9a227;          /* 鎏金：激活/精华点缀 */
+    --gold-soft:rgba(201,162,39,.12);
+    --cream:#f1faee;
+    --bg:#f4f6f8;
+    --card:#ffffff;
+    --text:#243447;
+    --muted:#7a8699;
+    --line:#e4e9ef;
+    --hot:#e05d44;
+    --serif:"Noto Serif SC","Songti SC",Georgia,serif;
+    --sans:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.7}
+  a{color:var(--teal);text-decoration:none}
+  a:hover{color:var(--gold)}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+  /* ===== 顶部 ===== */
+  .topbar{background:var(--navy);color:#cfd8e3;font-size:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+  .topbar .wrap{display:flex;justify-content:space-between}
+  .topbar a{color:#cfd8e3;margin-left:16px}
+  .topbar a:hover{color:var(--gold)}
+
+  .masthead{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 60%,#2a4158 100%);color:#fff;padding:26px 0 0}
+  .mast-row{display:flex;align-items:center;justify-content:space-between;padding-bottom:22px}
+  .brand{display:flex;align-items:baseline;gap:14px}
+  .brand .logo{font-family:var(--serif);font-size:28px;letter-spacing:3px;color:#fff}
+  .brand .logo em{font-style:normal;color:var(--gold)}
+  .brand .slogan{font-size:12px;color:#8fa3b8;letter-spacing:2px}
+  .search{display:flex;width:320px}
+  .search input{flex:1;border:0;outline:0;padding:10px 16px;font-size:13px;background:rgba(255,255,255,.12);color:#fff}
+  .search input::placeholder{color:#8fa3b8}
+  .search button{border:0;background:var(--gold);color:var(--navy);padding:0 22px;font-size:13px;letter-spacing:2px;cursor:pointer;font-weight:600}
+  .userbox{display:flex;align-items:center;gap:12px;font-size:13px}
+  .userbox .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#8a6d1c);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;border:2px solid rgba(255,255,255,.35)}
+  .userbox .uname{color:#fff}
+  .userbox .lvl{font-size:11px;color:var(--gold);border:1px solid rgba(201,162,39,.5);padding:1px 8px;margin-left:8px}
+
+  /* ===== 版块页签条（核心布局）===== */
+  .boardbar{background:rgba(0,0,0,.22);backdrop-filter:blur(6px)}
+  .boardbar .wrap{display:flex;align-items:center;gap:4px;overflow-x:auto;scrollbar-width:none}
+  .boardbar .wrap::-webkit-scrollbar{display:none}
+  .btab{
+    display:flex;align-items:center;gap:8px;flex-shrink:0;
+    color:#cfd8e3;font-size:14px;letter-spacing:1px;
+    padding:14px 20px;border-bottom:3px solid transparent;
+    transition:.25s;white-space:nowrap;
+  }
+  .btab .ico{font-size:16px;opacity:.75}
+  .btab .cnt{font-size:11px;color:#8fa3b8;background:rgba(255,255,255,.08);padding:1px 8px;border-radius:10px}
+  .btab:hover{color:#fff;background:rgba(255,255,255,.06)}
+  .btab.on{color:#fff;font-weight:700;border-bottom-color:var(--gold);background:rgba(255,255,255,.08)}
+  .btab.on .cnt{background:var(--gold);color:var(--navy);font-weight:700}
+
+  /* ===== 当前版块信息条 ===== */
+  .board-info-bar{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    background:var(--card);border:1px solid var(--line);border-top:3px solid var(--gold);
+    margin-top:20px;padding:16px 22px;
+  }
+  .board-info-bar .name{font-family:var(--serif);font-size:19px;font-weight:700;letter-spacing:1px}
+  .board-info-bar .desc{font-size:13px;color:var(--muted);margin-top:1px}
+  .board-info-bar .mods{font-size:12px;color:var(--muted)}
+  .board-info-bar .mods a{color:var(--muted)}
+  .board-info-bar .mods a:hover{color:var(--gold)}
+  .board-actions{display:flex;gap:10px;align-items:center;flex-shrink:0}
+  .newbtn{
+    display:inline-flex;align-items:center;gap:8px;
+    background:linear-gradient(120deg,#8a6d1c,var(--gold));color:#fff;
+    font-size:13px;letter-spacing:2px;padding:9px 24px;font-weight:600;border:0;cursor:pointer;
+  }
+  .newbtn:hover{filter:brightness(1.08)}
+  .sortsel{font-size:12px;color:var(--muted);border:1px solid var(--line);background:#fff;padding:8px 12px;cursor:pointer}
+
+  /* ===== 布局 ===== */
+  .layout{display:grid;grid-template-columns:1fr 320px;gap:20px;margin:20px 0 40px}
+
+  /* ===== 帖子列表 ===== */
+  .list-panel{background:var(--card);border:1px solid var(--line)}
+  .list-head{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-bottom:1px solid var(--line)}
+  .list-head .tabs{display:flex;gap:2px}
+  .list-head .tabs a{font-size:13px;color:var(--muted);padding:5px 16px;letter-spacing:1px}
+  .list-head .tabs a.on{color:var(--navy);font-weight:700;background:var(--cream);border:1px solid var(--line)}
+  .list-head .feed{font-size:12px;color:var(--muted)}
+
+  .thread{
+    display:grid;grid-template-columns:46px 1fr auto;gap:16px;
+    padding:18px 22px;border-bottom:1px solid var(--line);
+    transition:background .25s;align-items:start;
+  }
+  .thread:hover{background:#fafcfd}
+  .thread:last-of-type{border-bottom:0}
+  .thread .avatar{
+    width:44px;height:44px;border-radius:50%;color:#fff;font-size:15px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .avatar.c1{background:linear-gradient(135deg,var(--gold),#8a6d1c)}
+  .avatar.c2{background:linear-gradient(135deg,var(--teal),#1a2332)}
+  .avatar.c3{background:linear-gradient(135deg,#7d8471,#2d4a2b)}
+
+  .thread-main .row1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .thread-main h4{font-size:16px;font-weight:600}
+  .thread-main h4 a{color:var(--text)}
+  .thread-main h4 a:hover{color:var(--teal)}
+  .thread-main h4 a:visited{color:#5a6478}
+  .tagline{font-size:11px;padding:1px 8px;letter-spacing:1px;border:1px solid;flex-shrink:0}
+  .tagline.sticky{color:#fff;background:var(--hot);border-color:var(--hot)}
+  .tagline.digest{color:var(--gold);border-color:var(--gold);background:var(--gold-soft)}
+  .thread-main .row2{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);margin-top:5px;flex-wrap:wrap}
+  .thread-main .row2 .author{color:var(--teal);font-weight:600}
+  .thread-main .row2 .dot{color:#c3ccd8}
+  .thread-main .excerpt{font-size:13px;color:var(--muted);margin-top:6px;
+    display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+
+  .thread-side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:96px}
+  .stat-chip{display:flex;gap:14px;font-size:12px;color:var(--muted)}
+  .stat-chip b{color:var(--teal);font-weight:600}
+  .stat-chip .views b{color:var(--muted)}
+  .thread-side time{font-size:11px;color:#a5aebc}
+
+  /* ===== 分页 ===== */
+  .pager{display:flex;gap:6px;justify-content:center;padding:18px}
+  .pager a,.pager span{min-width:34px;text-align:center;padding:6px 10px;font-size:13px;border:1px solid var(--line);color:var(--muted)}
+  .pager .on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .pager a:hover{border-color:var(--gold);color:var(--gold)}
+
+  /* ===== 侧栏 ===== */
+  .side .panel{background:var(--card);border:1px solid var(--line);margin-bottom:20px}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:2px solid var(--teal)}
+  .panel-head h3{font-size:15px;letter-spacing:1px;position:relative;padding-left:14px;font-weight:700}
+  .panel-head h3::before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:4px;background:linear-gradient(180deg,var(--gold),#8a6d1c)}
+  .panel-head .more{font-size:12px;color:var(--muted)}
+
+  .me-card{padding:22px 20px;text-align:center}
+  .me-card .avatar{width:64px;height:64px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,var(--gold),#8a6d1c);color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .me-card .name{font-weight:700;font-size:15px}
+  .me-card .lvl{display:inline-block;font-size:11px;color:var(--gold);border:1px solid var(--gold);padding:1px 10px;margin-top:6px}
+  .me-card .nums{display:flex;justify-content:center;gap:26px;margin-top:14px;font-size:12px;color:var(--muted)}
+  .me-card .nums b{display:block;font-size:18px;color:var(--navy);font-family:var(--serif)}
+  .me-card .btns{display:flex;gap:10px;margin-top:16px}
+  .me-card .btns a{flex:1;padding:9px 0;font-size:13px;letter-spacing:2px;border:1px solid var(--line);color:var(--muted);transition:.25s}
+  .me-card .btns a.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .me-card .btns a:hover{border-color:var(--gold);color:var(--gold)}
+  .me-card .btns a.primary:hover{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+
+  .online{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)}
+  .online b{font-family:var(--serif);font-size:20px;color:var(--teal)}
+  .online .pulse{display:inline-flex;width:8px;height:8px;border-radius:50%;background:#3fae7a;margin-right:6px;box-shadow:0 0 0 0 rgba(63,174,122,.5);animation:pulse 2s infinite}
+  @keyframes pulse{70%{box-shadow:0 0 0 7px rgba(63,174,122,0)}100%{box-shadow:0 0 0 0 rgba(63,174,122,0)}}
+
+  .hot-list{list-style:none;padding:6px 0}
+  .hot-list li{display:flex;gap:12px;padding:11px 20px;border-bottom:1px dashed var(--line);align-items:baseline}
+  .hot-list li:last-child{border-bottom:0}
+  .hot-list .rank{font-family:var(--serif);font-style:italic;font-size:16px;color:#c3ccd8;min-width:22px;text-align:center;font-weight:700}
+  .hot-list li:nth-child(1) .rank{color:var(--hot)}
+  .hot-list li:nth-child(2) .rank{color:var(--gold)}
+  .hot-list li:nth-child(3) .rank{color:var(--teal)}
+  .hot-list .t{flex:1;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hot-list .t:hover{color:var(--teal)}
+  .hot-list .v{font-size:11px;color:var(--muted);min-width:52px;text-align:right}
+
+  .cloud{padding:18px 20px;display:flex;flex-wrap:wrap;gap:8px}
+  .cloud a{font-size:12px;color:var(--muted);border:1px solid var(--line);padding:3px 12px;transition:.25s}
+  .cloud a:hover{color:var(--gold);border-color:var(--gold)}
+  .cloud a.big{font-size:14px;color:var(--teal);border-color:var(--teal)}
+
+  footer{background:var(--navy);color:#8fa3b8;font-size:12px;padding:26px 0;text-align:center;letter-spacing:1px}
+  footer a{color:#cfd8e3}
+  footer a:hover{color:var(--gold)}
+
+  /* ===== 帖子详情页（echo_log.php）===== */
+  .crumb{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);margin-top:20px;padding:12px 22px;background:var(--card);border:1px solid var(--line)}
+  .crumb a{color:var(--muted)}
+  .crumb a:hover{color:var(--gold)}
+  .crumb .sep{color:#c3ccd8}
+  .crumb .cur{color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .post{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--gold)}
+  .post-head{display:flex;gap:16px;align-items:flex-start;padding:22px 26px 0}
+  .post-head .avatar{width:52px;height:52px;font-size:18px}
+  .post-head-info{flex:1;min-width:0}
+  .post-head-info .who{display:flex;align-items:center;gap:10px;font-size:14px}
+  .post-head-info .who .author{font-weight:700;color:var(--navy)}
+  .post-head-info .who .lvl{font-size:11px;color:var(--gold);border:1px solid var(--gold);padding:1px 8px}
+  .post-head-info .when{font-size:12px;color:var(--muted);margin-top:3px}
+  .floor-tag{font-size:11px;color:#fff;background:var(--teal);padding:2px 10px;flex-shrink:0;letter-spacing:1px}
+  .post-title{font-family:var(--serif);font-size:26px;line-height:1.45;letter-spacing:.5px;padding:18px 26px 0}
+  .post-sub{display:flex;gap:8px;align-items:center;padding:12px 26px 0;flex-wrap:wrap}
+  .post-sub time{font-size:12px;color:var(--muted);margin-left:4px}
+  .post-body{padding:20px 26px 8px;font-size:15px}
+  .post-body p{margin:0 0 16px;color:var(--text)}
+  .post-body h2{font-family:var(--serif);font-size:20px;margin:28px 0 14px;padding-left:14px;position:relative}
+  .post-body h2::before{content:"";position:absolute;left:0;top:5px;bottom:5px;width:4px;background:linear-gradient(180deg,var(--gold),#8a6d1c)}
+  .post-body blockquote{margin:0 0 16px;padding:14px 20px;background:var(--cream);border-left:3px solid var(--gold);color:#4a5568;font-size:14px}
+  .post-body pre{background:var(--navy);color:#dbe6f0;padding:16px 20px;overflow-x:auto;font-size:13px;line-height:1.8;margin:0 0 16px;border-radius:4px;font-family:Consolas,Menlo,monospace}
+  .post-body code{font-family:Consolas,Menlo,monospace}
+  .post-body p code{background:var(--teal-light);color:var(--teal);padding:1px 6px;border-radius:3px;font-size:13px}
+  .post-body ul{margin:0 0 16px 22px;color:var(--text)}
+  .post-body li{margin-bottom:6px}
+  .post-fig{margin:0 0 16px;border:1px solid var(--line);background:linear-gradient(145deg,#241b36,#151021);min-height:220px;display:flex;align-items:center;justify-content:center;position:relative}
+  .post-fig span{font-family:var(--serif);font-size:44px;color:rgba(212,175,55,.75);text-shadow:0 0 40px rgba(212,175,55,.3)}
+  .post-fig i{position:absolute;inset:12px;border:1px solid rgba(212,175,55,.3)}
+  .post-fig figcaption{position:absolute;bottom:10px;left:0;right:0;text-align:center;font-size:11px;color:#8fa3b8}
+  .post-actions{display:flex;gap:12px;justify-content:center;padding:16px 26px 24px;border-top:1px dashed var(--line);margin-top:10px}
+  .actbtn{display:inline-flex;align-items:center;gap:8px;font-size:13px;letter-spacing:1px;color:var(--muted);border:1px solid var(--line);background:var(--card);padding:8px 24px;transition:.25s;cursor:pointer}
+  .actbtn:hover{border-color:var(--gold);color:var(--gold)}
+  .actbtn.like-on{border-color:var(--gold);color:var(--gold);background:var(--gold-soft)}
+
+  .replies{background:var(--card);border:1px solid var(--line);margin-top:20px}
+  .replies-head{padding:14px 26px;border-bottom:2px solid var(--navy);font-size:15px;font-weight:700;letter-spacing:1px}
+  .replies-head b{color:var(--teal)}
+  .floor{display:grid;grid-template-columns:46px 1fr auto;gap:16px;padding:20px 26px;border-bottom:1px solid var(--line)}
+  .floor:last-of-type{border-bottom:0}
+  .floor .avatar{width:42px;height:42px;font-size:14px}
+  .floor-main{min-width:0}
+  .floor-who{display:flex;align-items:center;gap:8px;font-size:13px;flex-wrap:wrap}
+  .floor-who .author{font-weight:700;color:var(--navy)}
+  .floor-who .lvl{font-size:11px;color:var(--gold);border:1px solid var(--gold);padding:0 8px}
+  .floor-who .lz{font-size:10px;color:#fff;background:var(--hot);padding:1px 6px;letter-spacing:1px}
+  .floor-when{font-size:11px;color:var(--muted)}
+  .floor-body{font-size:14px;margin-top:8px}
+  .floor-body p{margin:0 0 8px}
+  .floor-quote{background:var(--cream);border-left:3px solid var(--teal);padding:10px 16px;font-size:13px;color:var(--muted);margin-bottom:10px}
+  .floor-quote a{font-weight:600}
+  .floor-no{font-family:var(--serif);font-style:italic;font-size:15px;color:#c3ccd8;font-weight:700}
+
+  .reply-box{background:var(--card);border:1px solid var(--line);margin-top:20px;padding:20px 26px 24px}
+  .reply-box h3{font-size:15px;letter-spacing:1px;padding-left:14px;position:relative;margin-bottom:14px}
+  .reply-box h3::before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:4px;background:linear-gradient(180deg,var(--gold),#8a6d1c)}
+  .reply-box textarea{width:100%;min-height:110px;resize:vertical;border:1px solid var(--line);outline:0;padding:14px 16px;font-size:14px;font-family:var(--sans);color:var(--text);background:#fbfcfe}
+  .reply-box textarea:focus{border-color:var(--teal)}
+  .reply-foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+  .reply-foot .tip{font-size:12px;color:var(--muted)}
+  .backbtn{display:inline-flex;align-items:center;gap:8px;font-size:13px;letter-spacing:2px;color:var(--muted);border:1px solid var(--line);background:var(--card);padding:9px 22px;cursor:pointer;transition:.25s}
+  .backbtn:hover{border-color:var(--navy);color:var(--navy)}
+
+  .author-card{padding:22px 20px;text-align:center}
+  .author-card .avatar{width:72px;height:72px;font-size:24px;margin:0 auto 12px}
+  .author-card .name{font-weight:700;font-size:16px}
+  .author-card .lvl{display:inline-block;font-size:11px;color:var(--gold);border:1px solid var(--gold);padding:1px 10px;margin-top:6px}
+  .author-card .nums{display:flex;justify-content:center;gap:26px;margin-top:14px;font-size:12px;color:var(--muted)}
+  .author-card .nums b{display:block;font-size:18px;color:var(--navy);font-family:var(--serif)}
+  .author-card .btns{display:flex;gap:10px;margin-top:16px}
+  .author-card .btns a{flex:1;padding:9px 0;font-size:13px;letter-spacing:2px;border:1px solid var(--line);color:var(--muted);transition:.25s}
+  .author-card .btns a.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .author-card .btns a:hover{border-color:var(--gold);color:var(--gold)}
+  .author-card .btns a.primary:hover{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+
+  @media(max-width:960px){
+    .layout{grid-template-columns:1fr}
+    .search{width:180px}
+    .thread{grid-template-columns:44px 1fr}
+    .thread-side{grid-column:2;flex-direction:row;align-items:center;justify-content:flex-start}
+    .board-info-bar{flex-wrap:wrap}
+    .brand .slogan{display:none}
+    .userbox{display:none}
+    .floor{grid-template-columns:42px 1fr}
+    .floor-no{grid-column:2;text-align:left}
+    .post-title{font-size:21px}
+  }
+</style>
+</head>
+<body data-page-node-id="64iN1NqF2VzoU1ioEvF7dK">
+
+<!-- header.php -->
+<div class="topbar" data-page-node-id="AGRcUDHh6FUwtECTEuwQSR">
+  <div class="wrap" data-page-node-id="JJdbSPCmUfqwZTZQVCHh9o">
+    <span data-page-node-id="QpioaoXjrlFjfuwC4XImxF">欢迎来到拾光社区 —— 关于审美、设计与生活方式的讨论</span>
+    <span data-page-node-id="4SqU4SLMp7z2PtfsgQON5m"><a href="#" data-page-node-id="VhL0xFewoGhUpw4lDMo3Cs">消息 <b style="color:var(--gold)" data-page-node-id="doaSWYIAhXMvctJ70Hb9zE">3</b></a><a href="#" data-page-node-id="ZBoeIE2CNCQmITzhJ6ufru">收藏夹</a><a href="#" data-page-node-id="fm3ucmoT2PeJ0gF7WMs0J4">管理</a></span>
+  </div>
+</div>
+
+<div class="masthead" data-page-node-id="Qf0cdR9Qti6hafmBuqiAey">
+  <div class="wrap mast-row" data-page-node-id="mTjbBlaN03nesmrTI611aE">
+    <div class="brand" data-page-node-id="3d7uufQ0CEvau9QWuFh3Eh">
+      <a class="logo" href="#" data-page-node-id="5umi28g125MYWyG02Zact3">拾光<em data-page-node-id="QLRDjgonwBBiF2AvKcZNEg">·</em>社区</a>
+      <span class="slogan" data-page-node-id="KRF94C0AqsKPHP9q4ryAN6">SHIGUANG FORUM · EST. 2017</span>
+    </div>
+    <form class="search" onsubmit="return false" data-page-node-id="vWQsnRaJyenmztdQrDlBu1">
+      <input type="text" placeholder="搜索帖子 / 用户 / 版块…" data-page-node-id="QJim8CFaeWsvUWBCvxPua8">
+      <button data-page-node-id="Z3a0PWooqaaW3LohoUMk55">搜索</button>
+    </form>
+    <div class="userbox" data-page-node-id="BuSqBiIzcoykN0u1EM1H7Y">
+      <div class="avatar" data-page-node-id="VNkoaemMEWAGTkWgjTswIU">墨</div>
+      <div data-page-node-id="aDS002FdEGddkgs2PYUxE9">
+        <div class="uname" data-page-node-id="GP8mGy85adPAT9OGv8JOVu">沈墨 <span class="lvl" data-page-node-id="yusghireQmKQFY954AmSKx">Lv.9 镇站元老</span></div>
+        <div style="font-size:11px;color:#8fa3b8" data-page-node-id="Ke6khLnORDF6UqDBGF5uNq">积分 12,480 · 金币 2,306</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 版块页签条：点击切换，下方列表随之过滤（log_list.php 按 sort_id 输出） -->
+  <nav class="boardbar" data-page-node-id="AS1D0Qu0p2q92I7nbEjfh1">
+    <div class="wrap" data-page-node-id="vI9cuYtR1Et2zLurXIc35S">
+      <a class="btab" href="#" data-page-node-id="CMogHHzS22vIdH42QgXAsy"><span class="ico" data-page-node-id="Ke1RgtXr1RlTKw8OiiKw8E">◎</span>全部版块<span class="cnt" data-page-node-id="xzkUpzYpy0FE4JlElAK2FG">128</span></a>
+      <a class="btab on" href="#" data-page-node-id="ObCVlSxoIyfl70H0a4jFaf"><span class="ico" data-page-node-id="HQLnXfmRl0EaOHM9dAnjYH">✦</span>设计交流<span class="cnt" data-page-node-id="S0PIc3ht99czjFwDcYjp5Z">42</span></a>
+      <a class="btab" href="#" data-page-node-id="sUcAxxX7SCNB6B0G37pPCt"><span class="ico" data-page-node-id="rD5cpSiLeuOMCoGc9LuPjq">❋</span>生活方式<span class="cnt" data-page-node-id="8PTUzOv56TGcwYSU2SAMXN">31</span></a>
+      <a class="btab" href="#" data-page-node-id="LXG2z71qsfS2WWp8ADWcEd"><span class="ico" data-page-node-id="AHB4B9pOOdh0KCshyoNHc7">✎</span>资源分享<span class="cnt" data-page-node-id="eMmiN4ts3AzflBvjXSlLJm">28</span></a>
+      <a class="btab" href="#" data-page-node-id="OI6GCzd517ph9Q1VKFEJzU"><span class="ico" data-page-node-id="go6Thx49AR4GhqyZsk7ABF">◈</span>站务公告<span class="cnt" data-page-node-id="DMi2GMhmCTQ0GtEr72DAIt">6</span></a>
+      <a class="btab" href="#" data-page-node-id="geZtj3AT7B6PUS7iwIDOVT"><span class="ico" data-page-node-id="HLz8gvE0f5Fr8sMajGOlpH">★</span>精华区<span class="cnt" data-page-node-id="4EFUxVo02IU1f7wTuJLN2U">57</span></a>
+    </div>
+  </nav>
+</div>
+
+<div class="wrap" id="listView" data-page-node-id="7AcITiGZkFIOktCobrv9dj">
+
+  <!-- 当前版块信息条：module.php 公共片段 -->
+  <div class="board-info-bar" data-page-node-id="hy2HdoWQWOHOP7p69NOGBN">
+    <div data-page-node-id="0fyHP4VCLqkLA3yHinE74E">
+      <div class="name" data-page-node-id="xr2QdKZJ5FaeJVl8qc1RLM">✦ 设计交流</div>
+      <div class="desc" data-page-node-id="3ItvFuA6HtqKUP3JlkgJok">视觉、排版、配色、品牌案例的深度讨论区 · 共 4,203 个主题</div>
+    </div>
+    <div class="board-actions" data-page-node-id="Il6KwdwZltXrFbAY16Vhar">
+      <span class="mods" data-page-node-id="VGyaBGNk4kOvwcw6dRcAfD">版主：<a href="#" data-page-node-id="tryrNi8hLhPBaEFucgN7So">沈墨</a>、<a href="#" data-page-node-id="R9ZUX6KNKgNvv4i8DeBX2f">阿蓝</a></span>
+      <select class="sortsel" data-page-node-id="GGXTOqQFRaBIJHQlfkoskK">
+        <option data-page-node-id="QItmIREctbCmxSFBewqrSv">按最新回复</option><option data-page-node-id="HkYBHcCpDKWczFg4JDPN4u">按发布时间</option><option data-page-node-id="xeW0HaFu0zOzfSJxUFZizG">按浏览量</option>
+      </select>
+      <button class="newbtn" data-page-node-id="Dtan062zGpFbnjHCCraV2j">✍ 发新帖</button>
+    </div>
+  </div>
+
+  <div class="layout" data-page-node-id="HfG4ECfRTjveTNBaTcRnwv">
+    <main data-page-node-id="yM0awTRQEceu0r5BRCAERv">
+      <!-- 当前版块帖子列表 -->
+      <section class="list-panel" data-page-node-id="zKBo0eHPTxcHOhfjEmeGaB">
+        <div class="list-head" data-page-node-id="ymnngJWiupjXWY1RC6YP9o">
+          <div class="tabs" data-page-node-id="A9vY4t62U8fPmqRKQCAcvD">
+            <a class="on" href="#" data-page-node-id="m838mg3jAG8Q0D5eC4XUN7">最新回复</a><a href="#" data-page-node-id="SjsfQsSf9I5R2LarYIH3tF">最新发布</a><a href="#" data-page-node-id="4dj8OrH7HwyuH03NT1NmEo">热门</a><a href="#" data-page-node-id="G5MdEP5seeWEO2NmxSHAxs">精华</a><a href="#" data-page-node-id="4D2p5fuDL88wygf3lMVIsX">待回复</a>
+          </div>
+          <span class="feed" data-page-node-id="zYwM5kfDCSFlbeLiYWrkzs">本版块共 4,203 主题 · 今日 42 帖</span>
+        </div>
+
+        <div class="thread" data-page-node-id="jWppvxuzzNSgU3ns4o2RaZ">
+          <div class="avatar c1" data-page-node-id="I5Y3yyYPMfRHhnwiTdivJc">沈</div>
+          <div class="thread-main" data-page-node-id="SQ7XNcxLrE5mRw2NwSPOsX">
+            <div class="row1" data-page-node-id="uIBtf98XLIWBDmQaoTEsNZ">
+              <span class="tagline sticky" data-page-node-id="FDYZ6sSAd0KzHeduY0IBJI">置顶</span>
+              <h4 data-page-node-id="ZHsdsrc0F0Ypkthun6jAp2"><a href="#" data-page-node-id="O0fFHBdBc7a4EBSe68FieJ">【公告】社区发帖规范与加精标准（2026 修订版）</a></h4>
+            </div>
+            <div class="row2" data-page-node-id="Mj8iMe4054n7ChQrsNfmNu"><span class="author" data-page-node-id="XE84Oq23IpAp2OX0oPVPyN">沈墨</span><span class="dot" data-page-node-id="HFY7Ee7xoTYkb3t5uAZpk8">·</span>发布于 2026-09-12<span class="dot" data-page-node-id="fEAH3pcFBxVR1ISmhC6Lzf">·</span>最后回复 8 分钟前</div>
+          </div>
+          <div class="thread-side" data-page-node-id="5ClyU1A69LlM0BTqWVkRRf">
+            <span class="stat-chip" data-page-node-id="kM97rXP5zVevTcSiftpHTf"><span class="replies" data-page-node-id="E4OJVatAxmR96LH7O2bkog">回 <b data-page-node-id="vdRml17vkqzGSpR1O0ErGZ">86</b></span><span class="views" data-page-node-id="bE4C4XD2f1y6u3WlbIQpa5">看 <b data-page-node-id="5L5o1h8yJuYr44AmwYShDW">12,407</b></span></span>
+            <time data-page-node-id="vV1J2AGHUNOR0KyFsa0KxX">8 分钟前</time>
+          </div>
+        </div>
+
+        <div class="thread" data-page-node-id="1jpJYoRujKNMyJTsXAo18m">
+          <div class="avatar c2" data-page-node-id="P6qJWDCsGF7BShmnb6WmoM">蓝</div>
+          <div class="thread-main" data-page-node-id="59ZAXxEmq9UgFsZb5yRf9x">
+            <div class="row1" data-page-node-id="vm23l6TWdocgMyHwsBNVs5">
+              <span class="tagline digest" data-page-node-id="DLVZdfx3phwib5ic6Gn5KD">精华</span>
+              <h4 data-page-node-id="EKXDpsT9EKu3zFGtT9xRqY"><a href="#" data-page-node-id="ZXvv1mNwsSXyM71YgNlIH7">留白的力量：为什么顶级品牌都懂得「少即是奢」</a></h4>
+            </div>
+            <div class="row2" data-page-node-id="p3mASckjTncm466TEtHais"><span class="author" data-page-node-id="JFltjUC7jAcvNEhxDJX0Fy">阿蓝</span><span class="dot" data-page-node-id="Su0tqZCiR0kQ4Av7eEbxfe">·</span>阅读约 14 分钟<span class="dot" data-page-node-id="fRVPrF3lWTN6TjG2tDdosH">·</span>附 5 个案例拆解图</div>
+            <div class="excerpt" data-page-node-id="m4RhuvgWVYPEiVpOHeE6Th">真正的奢华从不喧哗。从 Hermès 的橱窗到 Apple 的发布会幻灯片，留白是最高级的设计语言……</div>
+          </div>
+          <div class="thread-side" data-page-node-id="Ca2NQCuxKAQcSMNtoH9DVV">
+            <span class="stat-chip" data-page-node-id="AEZAmMfKVblicLi8NoUJKg"><span class="replies" data-page-node-id="I2Ftld49EGSwHxVtojLOKg">回 <b data-page-node-id="1rPjIzjrGHcvw83SN7i6Em">42</b></span><span class="views" data-page-node-id="jW6MyMzoVipFQ45moshask">看 <b data-page-node-id="fuBOOvqz4uzHlv7Bt0qEl9">3,882</b></span></span>
+            <time data-page-node-id="PlM2QVC9MCnlQpfuXiAVoU">25 分钟前</time>
+          </div>
+        </div>
+
+        <div class="thread" data-page-node-id="JthkhYWtw02gamiTT2WC6M">
+          <div class="avatar c3" data-page-node-id="8Qut0KAmWzI9miK5sS7laA">茶</div>
+          <div class="thread-main" data-page-node-id="efepesoLyVSYpWVj6yD1Dt">
+            <div class="row1" data-page-node-id="g4sJaAzSrMdqdMe5pl2Aki">
+              <h4 data-page-node-id="hTmQ31FRZsCkpuSMKNZ26J"><a href="#" data-page-node-id="fKMqd5aOLoFfsT26ga5jHP">求助：这套配色在暗色模式下对比度总是不达标</a></h4>
+            </div>
+            <div class="row2" data-page-node-id="R8UeHpSzAWJTutiq6nEkgO"><span class="author" data-page-node-id="BaqgMSosgnl6EM8QBb1PkV">茶白</span><span class="dot" data-page-node-id="C8z4T18EUIL1HdLleAEqKa">·</span>已尝试 WCAG 检测工具，求老哥指点<span class="dot" data-page-node-id="gXgBzMOt7AL9KRd7HZ9tu3">·</span>附截图</div>
+            <div class="excerpt" data-page-node-id="VXKGpqID97SDLqjzLilKuV">主色 #2d8b8b 放到 #1a2332 的背景上只有 3.1:1 的对比度，调亮之后色相又跑了……</div>
+          </div>
+          <div class="thread-side" data-page-node-id="5U3UIqD3Vpiw7NF83AlFw2">
+            <span class="stat-chip" data-page-node-id="1TwlZ5FZH8XGuJUxUsTgzF"><span class="replies" data-page-node-id="2wNmDU1KDNQ0dqtAHVb5HW">回 <b data-page-node-id="grhPr8HOL1j9auVyEiacvI">9</b></span><span class="views" data-page-node-id="237GADn0ip4S7ADAIYli30">看 <b data-page-node-id="YvRnagYIgfUNo0j9VzQQaZ">486</b></span></span>
+            <time data-page-node-id="IQa0za2LDM7ozFseB7u0RD">3 小时前</time>
+          </div>
+        </div>
+
+        <div class="thread" data-page-node-id="4TFRHRz0hNd9gO3vv2QLBF">
+          <div class="avatar c1" data-page-node-id="rP2KUFr0HMBWFYpEsQYSgY">蓝</div>
+          <div class="thread-main" data-page-node-id="UX7MK4B7zNkBwKbvUfnvvg">
+            <div class="row1" data-page-node-id="bwwUd3oACc4O0k4WnzKwjB">
+              <h4 data-page-node-id="upccLZ0ASE2Kk5jJNTHKo9"><a href="#" data-page-node-id="GWTbBneQtrRvRujAys6J2o">金与墨：一套高端配色方案的诞生记（附完整色卡下载）</a></h4>
+            </div>
+            <div class="row2" data-page-node-id="8li2hAivE10WfjbPz5gAXT"><span class="author" data-page-node-id="O4b72Lw00dCbHgT54Yn0rp">阿蓝</span><span class="dot" data-page-node-id="6oFTGCWiJeYXmjKfgkcXyr">·</span>从潘通色卡到屏幕色值的完整推演<span class="dot" data-page-node-id="l5V9XGFqDTaIpC1znzWUc2">·</span>附件 × 2</div>
+            <div class="excerpt" data-page-node-id="TT9FD9Tiaakj0s8WA1QXoU">深夜墨 #0d0b14 × 香槟金 #d4af37，如何在屏幕上还原印刷级的金色质感……</div>
+          </div>
+          <div class="thread-side" data-page-node-id="sbSbwRC6pxrbrVUZ1dEsu9">
+            <span class="stat-chip" data-page-node-id="RZNbpNRCbubnF7fnheCox8"><span class="replies" data-page-node-id="ifgy3yfwpcFuDad2XiCsVk">回 <b data-page-node-id="UFKk0QAK2juFWuiemqZEmH">31</b></span><span class="views" data-page-node-id="7WQDV3NXd4r7B3WP7yGfiJ">看 <b data-page-node-id="nBoymJOuEuzTsKdyShwEyg">5,120</b></span></span>
+            <time data-page-node-id="Gfv4AdZwVcJSuwaVBvszIj">5 小时前</time>
+          </div>
+        </div>
+
+        <div class="thread" data-page-node-id="gyE4Srl7DFZHTSrv9EqQtE">
+          <div class="avatar c2" data-page-node-id="UFXENAzUIGFbKBLaoN1cYh">白</div>
+          <div class="thread-main" data-page-node-id="CE8XwDuT4nimXxZQVHZall">
+            <div class="row1" data-page-node-id="RLe6RdvIxYne0JBgq6IXPW">
+              <h4 data-page-node-id="imXEjapZshKKgD0xIDNHpg"><a href="#" data-page-node-id="IBinOz3rjpqNJZmRW7BIvY">衬线体的复兴：为什么奢侈品牌在屏幕上重新拥抱古典字体</a></h4>
+            </div>
+            <div class="row2" data-page-node-id="FTHWp7P4rbpYlVLc031U1c"><span class="author" data-page-node-id="W22hcnZa9XTHvTBr2j5AHE">白桦</span><span class="dot" data-page-node-id="WD8gV4tAP1vLOiK7zI2R53">·</span>对比了 12 个品牌官网的字体选型</div>
+          </div>
+          <div class="thread-side" data-page-node-id="arABht5YV41ndQVr4pTufd">
+            <span class="stat-chip" data-page-node-id="vaDKkfTfgf6hzpFljLIhGD"><span class="replies" data-page-node-id="zNGxEpuZz088HHCScY1v8A">回 <b data-page-node-id="3ojWLy3Yi2ITp3kdne4RD9">17</b></span><span class="views" data-page-node-id="CJClLHDCeZkwX0xZjMZEfD">看 <b data-page-node-id="DJGcGBQn8g6O7XV7lqynfq">2,934</b></span></span>
+            <time data-page-node-id="im4snaUigBRHBt3M4Pdt1p">昨天 22:14</time>
+          </div>
+        </div>
+
+        <div class="thread" data-page-node-id="ek1mRYDU2uKI07qaJeT1H8">
+          <div class="avatar c3" data-page-node-id="ifVYw6pfjniC5hsOz0aMJU">苏</div>
+          <div class="thread-main" data-page-node-id="W1pXCpcm5OThL7u3QbUNn9">
+            <div class="row1" data-page-node-id="wGm5yXHDxIJomH4AAbURVW">
+              <h4 data-page-node-id="K4PcBj9FqNMcpibTGwHtXj"><a href="#" data-page-node-id="ukJ5JWyVa1wT41751smwfw">打卡帖：30 天手绘配色速写，每天一张（更新至 Day 21）</a></h4>
+            </div>
+            <div class="row2" data-page-node-id="mDsBJZk9lzktlkkT9OqeIx"><span class="author" data-page-node-id="xVqZ2G0eDek3gTvyIwMN7D">苏打</span><span class="dot" data-page-node-id="oQOXLaqLqYb4bvbjqjlytm">·</span>楼主持续更新中<span class="dot" data-page-node-id="BjRx54EE3fXfgXEVDE4EJN">·</span>欢迎跟帖晒图</div>
+          </div>
+          <div class="thread-side" data-page-node-id="tHYtuLgxugwD4jPQ5tOvsg">
+            <span class="stat-chip" data-page-node-id="O3hyj2SWjEK7bidfJBN7BX"><span class="replies" data-page-node-id="3KZClb6z17mUpMTdAoR6Qb">回 <b data-page-node-id="T1oSlsYXk1aRIeDJqRXDBV">58</b></span><span class="views" data-page-node-id="rAsGNmt0kAxFhnH14YNMqG">看 <b data-page-node-id="KY1DPGczH9myWLJ0AV16AK">4,207</b></span></span>
+            <time data-page-node-id="PCRQKPolSdxvxGoHMbTx7F">昨天 18:03</time>
+          </div>
+        </div>
+
+        <!-- module.php 分页片段 -->
+        <div class="pager" data-page-node-id="OA0yqy0DIOlKyC9ufaZ6BW">
+          <span class="on" data-page-node-id="Hqb9ocsE4lJk8B5Z5M9gKD">1</span><a href="#" data-page-node-id="ga2dts7tXExIwHPMo72pnu">2</a><a href="#" data-page-node-id="EPJSVLiqLTqfv0YsLUvzQq">3</a><a href="#" data-page-node-id="kHftDUM1RJHZ5eMbuBUU4l">4</a><a href="#" data-page-node-id="sX4wsjGwh0lY7h4zDcdFyE">…</a><a href="#" data-page-node-id="XeUZE9XYGIMhlpurR84OWN">42</a><a href="#" data-page-node-id="qsQrt1S8XgaZ4czbAoqhor">下一页 →</a>
+        </div>
+      </section>
+    </main>
+
+    <!-- side.php -->
+    <aside class="side" data-page-node-id="01aYRpy2iTeyyCgZ54wYw6">
+      <section class="panel" data-page-node-id="U5b8yJOIMYoqpvfnRFSD5x">
+        <div class="panel-head" data-page-node-id="5c4WqfTCUQfpMAxYslDYM0"><h3 data-page-node-id="EDxh0d5KuG5JEAIoSqcTud">我的社区</h3></div>
+        <div class="me-card" data-page-node-id="dKANCOMxbfKcgwBGnmuARc">
+          <div class="avatar" data-page-node-id="7SZAifFRxGN03jMDeEnHsL">墨</div>
+          <div class="name" data-page-node-id="KniylA3Qn9PMDW9m2cUrAR">沈墨</div>
+          <span class="lvl" data-page-node-id="z8z7pcGlOjB1MOAD3CLmIH">Lv.9 镇站元老</span>
+          <div class="nums" data-page-node-id="eiqeWpQ7cnBxgrNV1OwOAX">
+            <div data-page-node-id="FDhMfITaOnxj9AdpCDuJCb"><b data-page-node-id="Ji9dMZ5GmUvNjzAcDbzQn7">182</b>主题</div>
+            <div data-page-node-id="PR5EAZcZVo4FxtfK2xqKON"><b data-page-node-id="opMDwvXawPYq24TCAl9deO">3,406</b>回帖</div>
+            <div data-page-node-id="GD1PFyzuFXCbi1Xlb3NFlC"><b data-page-node-id="9aeO1HZYD1HwEMlFW1Q5yJ">12,480</b>积分</div>
+          </div>
+          <div class="btns" data-page-node-id="vYNyGnGjgeegfaKgHTpTg8"><a class="primary" href="#" data-page-node-id="BnrjGqC3KPT4gdq5lxgW63">✍ 发新帖</a><a href="#" data-page-node-id="819itUL6gGFt3Tu4UgZWFx">签 到</a></div>
+        </div>
+      </section>
+
+      <section class="panel" data-page-node-id="rmGTXmCwJ8qs2tXcgBJtUJ">
+        <div class="panel-head" data-page-node-id="70X4oyZXSuwRHsCbkJeY5e"><h3 data-page-node-id="72YlnkYSOQzDw2vtPZWtZA">实时在线</h3></div>
+        <div class="online" data-page-node-id="Qh0WtHLf9skqHNRUh59M09">
+          <span data-page-node-id="a3BADwKNBQ7Bbofiw1iSOF"><span class="pulse" data-page-node-id="H9mxq3gFGDTothj89N84kt"></span>当前在线</span>
+          <span data-page-node-id="XWzI2EmPot4fQjeMiq4e6f"><b data-page-node-id="bkOJaYJFK93J87cZjbmKOd">1,247</b> 人 · 会员 892 / 游客 355</span>
+        </div>
+      </section>
+
+      <section class="panel" data-page-node-id="WidYYBnqyjKRNyujKtbb0i">
+        <div class="panel-head" data-page-node-id="rexrOdVAxO5pT2Tn0pnMIX"><h3 data-page-node-id="hVx18Uv5rmSEH4faps2Y4k">全站热帖</h3><a class="more" href="#" data-page-node-id="5sLljysJJwJY2fPuFAxGIQ">更多</a></div>
+        <ul class="hot-list" data-page-node-id="YqVcsLNgeDEwTcptrRxHLl">
+          <li data-page-node-id="2OxjUpTDqRUK4FYRHBdIeg"><span class="rank" data-page-node-id="fMUvMpvLiwBBQtEj0CNHZZ">1</span><a class="t" href="#" data-page-node-id="ufCFaVZEgWfYq859E5Hwai">衬线体的复兴：数字时代的古典之美</a><span class="v" data-page-node-id="7RNxaLX2F2zepaFsDydDGX">15.2k 阅读</span></li>
+          <li data-page-node-id="HxBoBNVXBoflQsKEFANnOO"><span class="rank" data-page-node-id="SsHdvCgXYIQ1fGEuvRjuVJ">2</span><a class="t" href="#" data-page-node-id="iPkFDwHRx03IUfGZAuDafa">一年 100 本书记录帖</a><span class="v" data-page-node-id="nA9OA6u7lXT4J1biaAarR0">9.8k 阅读</span></li>
+          <li data-page-node-id="BbShz3MjXnc8xQRJV0EiCe"><span class="rank" data-page-node-id="6zh5DES4d5qGJtg6k1aV6J">3</span><a class="t" href="#" data-page-node-id="nD96dUKH33FeywDemSzHvM">用一部手机拍出杂志级静物</a><span class="v" data-page-node-id="f1Gi6RJqFDXhT07tzUOgIK">7.4k 阅读</span></li>
+          <li data-page-node-id="6yVezDsU3XtvnzeZ5tYckN"><span class="rank" data-page-node-id="JWSG4b72jW2BZw3ABD69Nb">4</span><a class="t" href="#" data-page-node-id="j1uCtaJ0IagYkM56B5T0sC">金与墨：高端配色方案的诞生记</a><span class="v" data-page-node-id="uoy4CQbBn3rSaptFy6d5jU">5.1k 阅读</span></li>
+          <li data-page-node-id="nIOAVyHuvgB25xQ5VaH6i5"><span class="rank" data-page-node-id="IGWYIz0Cf16rutfLHtynth">5</span><a class="t" href="#" data-page-node-id="hj9k5scmPCQ4TCH66W4r6w">慢旅行手记：京都町屋七晚</a><span class="v" data-page-node-id="EUOmcGSf9fSpvdy6wbFqtL">4.6k 阅读</span></li>
+        </ul>
+      </section>
+
+      <section class="panel" data-page-node-id="UcHpBPJ46x71q0kmnXufw3">
+        <div class="panel-head" data-page-node-id="HbRlLqQfMucpuGggrCkd12"><h3 data-page-node-id="jgw5xbGT0RjJojUaWYclF8">热门标签</h3></div>
+        <div class="cloud" data-page-node-id="r1Myq2xWKBLxYHXPGd5WAG">
+          <a class="big" href="#" data-page-node-id="QWRE07UCbmVqLytu1ffHFx">设计随笔</a><a href="#" data-page-node-id="YAdXuugZEaYEqpm68oCwSM">配色</a><a class="big" href="#" data-page-node-id="vh4P2wzDHMYCnmBDa9H2s3">字体排印</a>
+          <a href="#" data-page-node-id="oNzE4gHyFZMzxHcJjqgYiX">旅行</a><a href="#" data-page-node-id="ZsMLdEu1NivzVIcF6dLxcB">书单</a><a href="#" data-page-node-id="qVh3H45tOpARdCnZoRFJCI">摄影</a>
+          <a href="#" data-page-node-id="KegM1rwpyX77nJus1rGpDi">WordPress</a><a class="big" href="#" data-page-node-id="2AuxCbXPCXUlH15GvfawPZ">Emlog</a><a href="#" data-page-node-id="SbTDAcsuZ8OZrJ3NcDTpN3">极简</a>
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<!-- ══════════ 帖子详情页（echo_log.php）：点击列表中帖子标题预览 ══════════ -->
+<div class="wrap" id="detailView" style="display:none">
+
+  <!-- 面包屑 -->
+  <div class="crumb">
+    <a href="#" class="back-link">社区首页</a><span class="sep">›</span>
+    <a href="#" class="back-link">设计交流</a><span class="sep">›</span>
+    <span class="cur">留白的力量：为什么顶级品牌都懂得「少即是奢」</span>
+  </div>
+
+  <div class="layout">
+    <main>
+      <!-- 主楼 -->
+      <article class="post">
+        <div class="post-head">
+          <div class="avatar c2">蓝</div>
+          <div class="post-head-info">
+            <div class="who">
+              <span class="author">阿蓝</span>
+              <span class="lvl">Lv.7 版块专家</span>
+            </div>
+            <div class="when">发布于 2026-09-12 21:47 · IP 属地广东 · 3,882 次浏览</div>
+          </div>
+          <span class="floor-tag">楼主</span>
+        </div>
+        <h1 class="post-title">留白的力量：为什么顶级品牌都懂得「少即是奢」</h1>
+        <div class="post-sub">
+          <span class="tagline digest">精华</span>
+          <span class="tagline" style="color:var(--teal);border-color:var(--teal);background:var(--teal-light)">设计随笔</span>
+          <span class="tagline" style="color:var(--muted)">配色</span>
+          <time>阅读约 14 分钟</time>
+        </div>
+
+        <div class="post-body">
+          <p>真正的奢华从不喧哗。当你走进 Hermès 的橱窗，最先注意到的不是商品，而是商品周围那片<b>恰到好处的空</b>——这正是今天想聊的主角：留白。</p>
+          <blockquote>留白不是「什么都没有」，而是「刻意不放任何东西」。前者是空缺，后者是设计。</blockquote>
+
+          <h2>一、橱窗的呼吸感</h2>
+          <p>Hermès 每季橱窗只陈列 3-5 件单品，其余空间全部让给光影。对比快时尚品牌「塞满即卖点」的逻辑，这种克制反而抬高了单品的心理价格。</p>
+
+          <figure class="post-fig">
+            <i></i><span>白</span>
+            <figcaption>案例图 1 / 5 · Hermès 2026 秋冬橱窗留白分析</figcaption>
+          </figure>
+
+          <h2>二、幻灯片上的黄金比例</h2>
+          <p>Apple 发布会的 Keynote 常年维持一个朴素的规则：正文不超过 12 个字，其余全是产品特写与纯色底。具体拆下来有三条：</p>
+          <ul>
+            <li>信息密度让位于视觉焦点，一页只说一件事；</li>
+            <li>边距永远大于内容高度的 1/3，制造「被包裹」的安全感；</li>
+            <li>强调只用一个颜色，其余全部中性灰阶。</li>
+          </ul>
+
+          <h2>三、屏幕上的留白怎么量化</h2>
+          <p>落到执行层，我们用两个参数控制页面密度：栏宽上限 <code>72ch</code>，段间距取正文字号的 <code>0.75em</code>。再配合克制的对比度策略：</p>
+          <pre>/* 正文与背景对比度 ≥ 7:1，辅助文字 ≥ 4.5:1 */
+--text-main:  #243447;  /* on #f4f6f8 → 10.9:1 */
+--text-muted: #7a8699;  /* on #f4f6f8 →  4.6:1 */</pre>
+
+          <p>留白是一种把钱花在看不见的地方的奢侈——而观众恰恰感受得到。</p>
+        </div>
+
+        <div class="post-actions">
+          <button class="actbtn like-on" onclick="this.classList.toggle('like-on')">♥ 已赞 286</button>
+          <button class="actbtn">☆ 收藏</button>
+          <button class="actbtn">⤴ 分享</button>
+          <button class="actbtn">⚑ 举报</button>
+        </div>
+      </article>
+
+      <!-- 回帖楼层 -->
+      <section class="replies">
+        <div class="replies-head">全部回帖 · <b>42</b> 条（按时间正序）</div>
+
+        <div class="floor">
+          <div class="avatar c3">茶</div>
+          <div class="floor-main">
+            <div class="floor-who">
+              <span class="author">茶白</span><span class="lvl">Lv.4</span>
+              <span class="floor-when">2026-09-12 22:03</span>
+            </div>
+            <div class="floor-body">
+              <div class="floor-quote">引用 <a>楼主</a>：留白不是「什么都没有」，而是「刻意不放任何东西」。</div>
+              <p>这句总结太到位了。我们公司 PPT 就是反面教材，恨不得一页塞下整个年度报告……</p>
+            </div>
+          </div>
+          <span class="floor-no">沙发</span>
+        </div>
+
+        <div class="floor">
+          <div class="avatar c1">沈</div>
+          <div class="floor-main">
+            <div class="floor-who">
+              <span class="author">沈墨</span><span class="lz">楼主</span>
+              <span class="floor-when">2026-09-12 22:15</span>
+            </div>
+            <div class="floor-body">
+              <p>@茶白 补充一个数据：Adobe 2025 排版趋势报告里，「留白占比」与「品牌溢价感知」的相关系数到了 0.71，比配色鲜艳度的 0.32 高出一截。</p>
+            </div>
+          </div>
+          <span class="floor-no">板凳</span>
+        </div>
+
+        <div class="floor">
+          <div class="avatar c2">白</div>
+          <div class="floor-main">
+            <div class="floor-who">
+              <span class="author">白桦</span><span class="lvl">Lv.6</span>
+              <span class="floor-when">2026-09-13 09:41</span>
+            </div>
+            <div class="floor-body">
+              <p>案例图能不能出个高清版？想拿来给团队做内部分享，会注明出处。</p>
+            </div>
+          </div>
+          <span class="floor-no">3<sup>楼</sup></span>
+        </div>
+      </section>
+
+      <!-- 回复框 -->
+      <div class="reply-box">
+        <h3>发表回复</h3>
+        <textarea placeholder="友善回帖，理性讨论…支持 Markdown 语法"></textarea>
+        <div class="reply-foot">
+          <span class="tip">回帖可得 2 积分 · 每日上限 50 积分</span>
+          <button class="newbtn">回 帖</button>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin:26px 0 10px">
+        <button class="backbtn back-link">‹ 返回帖子列表</button>
+      </div>
+    </main>
+
+    <!-- 侧栏：楼主信息 + 热帖 + 标签 -->
+    <aside class="side">
+      <section class="panel">
+        <div class="panel-head"><h3>楼主</h3></div>
+        <div class="author-card">
+          <div class="avatar c2">蓝</div>
+          <div class="name">阿蓝</div>
+          <span class="lvl">Lv.7 版块专家</span>
+          <div class="nums">
+            <div><b>96</b>主题</div>
+            <div><b>1,204</b>回帖</div>
+            <div><b>8,932</b>积分</div>
+          </div>
+          <div class="btns"><a class="primary" href="#">+ 关注</a><a href="#">私信</a></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h3>本版热帖</h3></div>
+        <ul class="hot-list">
+          <li><span class="rank">1</span><a class="t detail-link" href="#">衬线体的复兴：数字时代的古典之美</a><span class="v">15.2k</span></li>
+          <li><span class="rank">2</span><a class="t detail-link" href="#">金与墨：一套高端配色方案的诞生记</a><span class="v">9.8k</span></li>
+          <li><span class="rank">3</span><a class="t detail-link" href="#">30 天手绘配色速写打卡</a><span class="v">7.4k</span></li>
+          <li><span class="rank">4</span><a class="t detail-link" href="#">求助：暗色模式对比度不达标</a><span class="v">5.1k</span></li>
+        </ul>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h3>热门标签</h3></div>
+        <div class="cloud">
+          <a class="big" href="#">设计随笔</a><a href="#">配色</a><a class="big" href="#">字体排印</a>
+          <a href="#">极简</a><a href="#">品牌</a><a href="#">Emlog</a>
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script>
+  /* 列表页 ↔ 详情页切换（演示用；emlog 实现为 echo_log.php 独立页） */
+  var listView = document.getElementById('listView');
+  var detailView = document.getElementById('detailView');
+  function showDetail(e) {
+    e.preventDefault();
+    listView.style.display = 'none';
+    detailView.style.display = '';
+    window.scrollTo({ top: 0 });
+  }
+  function showList(e) {
+    e.preventDefault();
+    detailView.style.display = 'none';
+    listView.style.display = '';
+    window.scrollTo({ top: 0 });
+  }
+  document.querySelectorAll('#listView .thread h4 a, #listView .hot-list .t')
+    .forEach(function (a) { a.addEventListener('click', showDetail); });
+  document.querySelectorAll('.back-link')
+    .forEach(function (a) { a.addEventListener('click', showList); });
+</script>
+
+<!-- footer.php -->
+<footer data-page-node-id="8ZDwEXLKoy0TWlRIU1F8nH">
+  <div class="wrap" data-page-node-id="Y9dmvusec89IPWiBT2LBbL">
+    © 2026 拾光社区 · Powered by <a href="#" data-page-node-id="y3sHJOQCkwYtLfO5bYJURB">Emlog</a> · Theme <a href="#" data-page-node-id="5bwdDCEhBHuFZ6yBYB4yrw">EmForum</a> · 京 ICP 备XXXXXXXX号
+  </div>
+</footer>
+
+</body>
+</html>

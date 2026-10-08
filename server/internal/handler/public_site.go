@@ -29,17 +29,17 @@ func (a *API) blogSiteDefaults() map[string]string {
 func (a *API) blogSiteGet(w http.ResponseWriter, r *http.Request) {
 	def := a.blogSiteDefaults()
 	out := map[string]string{
-		"title":                      def["title"],
-		"description":                def["description"],
-		"logo":                       def["logo"],
-		"footer":                     def["footer"],
-		"seo_default":                def["seo_default"],
-		"theme":                      def["theme"],
-		"custom_css":                 def["custom_css"],
-		"custom_js":                  def["custom_js"],
-		"base_url":                   def["base_url"],
-		"locale":                     def["locale"],
-		"ai_ask_open":                "true",
+		"title":                  def["title"],
+		"description":            def["description"],
+		"logo":                   def["logo"],
+		"footer":                 def["footer"],
+		"seo_default":            def["seo_default"],
+		"theme":                  def["theme"],
+		"custom_css":             def["custom_css"],
+		"custom_js":              def["custom_js"],
+		"base_url":               def["base_url"],
+		"locale":                 def["locale"],
+		"ai_ask_open":            "true",
 		"allow_visitor_theme_switch": "true",
 	}
 	if ss := a.requestSiteSettings(r); ss != nil {
@@ -68,22 +68,6 @@ func (a *API) blogSiteGet(w http.ResponseWriter, r *http.Request) {
 			for _, k := range []string{"logo", "footer", "seo_default", "custom_css", "custom_js", "base_url", "favicon", "icp"} {
 				if v, ok := ext[k].(string); ok && v != "" {
 					out[k] = v
-				}
-			}
-		}
-		// 修复：default 站点恒存在（EnsureDefaultSite），per-site 站点记录存在但字段留空时，
-		// 必须回退全局 blog.*，否则「站点设置 → 博客名称（站点标题）」改 blog.title 对访客页不生效
-		// （此前该回退分支是死代码，与 SSR blogSiteName 行为不一致）。
-		for field, key := range map[string]string{
-			"title": "blog.title", "description": "blog.description", "logo": "blog.logo",
-			"footer": "blog.footer", "seo_default": "blog.seo_default", "theme": "blog.theme",
-			"custom_css": "blog.custom_css", "custom_js": "blog.custom_js", "base_url": "blog.base_url", "locale": "blog.locale",
-		} {
-			if out[field] == def[field] {
-				if v, ok := a.cfg.Get(key); ok {
-					if s, _ := v.(string); s != "" {
-						out[field] = s
-					}
 				}
 			}
 		}

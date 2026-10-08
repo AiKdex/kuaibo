@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="{{.ThemeID}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{.Title}} · {{.SiteName}}</title>
+<meta name="description" content="{{.Description}}">
+<link rel="canonical" href="{{.Canonical}}">
+<style>{{.ThemeCSS}}</style>
+</head>
+<body>
+<!-- AIMARK_PAGE_OK -->
+<header class="t1-head"><a href="/blog">{{.SiteName}}</a> <span>免编译测试主题 v1</span></header>
+<main class="t1-main">
+{{if .IsList}}
+  <h1>全部文章（测试主题版式）</h1>
+  <ul class="t1-list">
+  {{range .Items}}<li><a href="/{{.Slug}}">{{.Title}}</a><p>{{.Preview}}</p></li>{{end}}
+  </ul>
+  {{if not .Items}}<p>暂无公开文章</p>{{end}}
+{{else}}
+  <article class="t1-post">
+    <h1>{{.Title}}</h1>
+    <div class="t1-meta">{{.Date}}</div>
+    <div class="t1-body">{{.BodyHTML}}</div>
+  </article>
+{{end}}
+</main>
+</body>
+</html>

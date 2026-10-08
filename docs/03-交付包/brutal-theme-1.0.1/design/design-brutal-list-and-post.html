@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="u6SlzPkuhVJIFwd6g4a5CI">
+<head data-page-node-id="t6wQ9iRGOFyWXdvzoBnvIw">
+<meta charset="UTF-8" data-page-node-id="TP5Cko7aNYw53p8KodsDKp">
+<meta name="viewport" content="width=device-width, initial-scale=1" data-page-node-id="wJpAYIk6AyVjRZbBAJC4Bg">
+<title>粗野志 BRUTALOG · 新粗野风博客主题</title>
+<style>
+/* ============================================================
+   粗野志 BRUTALOG — Neubrutalism 博客主题
+   列表页 + 文章内页，纯静态自包含，零外部依赖
+   ============================================================ */
+
+:root{
+  --ink:#101010;
+  --paper:#FFFBEF;
+  --yellow:#FFE04B;
+  --pink:#FF6E9C;
+  --mint:#4DE3A2;
+  --violet:#8B7BFF;
+  --sky:#57B8FF;
+  --orange:#FF8A3D;
+  --bw:3px;
+  --sh:6px 6px 0 var(--ink);
+  --sh-sm:4px 4px 0 var(--ink);
+  --sh-lg:9px 9px 0 var(--ink);
+  --fh:"Archivo Black","Arial Black","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  --fb:"Space Grotesk","Inter","PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+html{scroll-behavior:smooth}
+
+body{
+  font-family:var(--fb);
+  color:var(--ink);
+  background-color:var(--paper);
+  background-image:radial-gradient(rgba(16,16,16,.13) 1px,transparent 1px);
+  background-size:24px 24px;
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+
+/* ---------- 通用原子 ---------- */
+.box{border:var(--bw) solid var(--ink);background:#fff;box-shadow:var(--sh)}
+.tag{
+  display:inline-block;padding:3px 10px;border:2.5px solid var(--ink);
+  font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;
+  background:var(--yellow);box-shadow:2px 2px 0 var(--ink);
+}
+.tag.pink{background:var(--pink)}
+.tag.mint{background:var(--mint)}
+.tag.violet{background:var(--violet);color:#fff}
+.tag.sky{background:var(--sky)}
+.tag.orange{background:var(--orange)}
+.tag.ink{background:var(--ink);color:var(--yellow)}
+
+.btn{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:12px 22px;border:var(--bw) solid var(--ink);background:#fff;
+  font-weight:900;font-size:14px;letter-spacing:.02em;
+  box-shadow:var(--sh-sm);
+  transition:transform .12s ease,box-shadow .12s ease,background .12s ease;
+}
+.btn:hover{transform:translate(4px,4px);box-shadow:0 0 0 var(--ink)}
+.btn.yellow{background:var(--yellow)}
+.btn.ink{background:var(--ink);color:var(--paper)}
+.btn.ink:hover{background:var(--violet);color:var(--ink)}
+.btn.big{padding:16px 30px;font-size:16px;box-shadow:var(--sh)}
+
+.sec-title{display:flex;align-items:center;gap:14px;margin-bottom:26px;flex-wrap:wrap}
+.sec-title h2{
+  font-family:var(--fh);font-size:clamp(24px,3.4vw,38px);line-height:1.05;
+  letter-spacing:-.02em;text-transform:uppercase;
+}
+.sec-title .rule{flex:1;height:var(--bw);background:var(--ink);min-width:30px}
+.sec-title .note{font-size:12px;font-weight:800;opacity:.55;letter-spacing:.12em;text-transform:uppercase}
+
+/* ---------- 顶部导航 ---------- */
+.site-nav{
+  position:sticky;top:0;z-index:60;
+  background:var(--paper);
+  border-bottom:var(--bw) solid var(--ink);
+}
+.nav-inner{
+  max-width:1180px;margin:0 auto;padding:12px 22px;
+  display:flex;align-items:center;gap:20px;
+}
+.brand{display:flex;align-items:center;gap:11px;flex-shrink:0}
+.brand-mark{
+  width:40px;height:40px;border:var(--bw) solid var(--ink);background:var(--yellow);
+  display:grid;place-items:center;font-family:var(--fh);font-size:19px;
+  box-shadow:3px 3px 0 var(--ink);transform:rotate(-4deg);
+}
+.brand-name{font-family:var(--fh);font-size:19px;letter-spacing:-.02em;line-height:1}
+.brand-sub{font-size:10px;font-weight:800;letter-spacing:.22em;opacity:.5;text-transform:uppercase}
+
+.nav-links{display:flex;gap:4px;margin-left:8px}
+.nav-links a{
+  font-size:13.5px;font-weight:800;padding:7px 13px;border:2.5px solid transparent;
+  transition:.12s;
+}
+.nav-links a:hover{border-color:var(--ink);background:var(--mint);box-shadow:2px 2px 0 var(--ink)}
+.nav-links a.on{border-color:var(--ink);background:var(--ink);color:var(--yellow)}
+
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.nav-search{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;
+  border:2.5px solid var(--ink);background:#fff;width:190px;
+}
+.nav-search input{border:none;outline:none;background:none;font-size:13px;width:100%;font-family:var(--fb);font-weight:600}
+.nav-search input::placeholder{opacity:.42}
+.nav-search svg{flex-shrink:0}
+.nav-burger{display:none;width:42px;height:42px;border:2.5px solid var(--ink);background:var(--yellow);box-shadow:3px 3px 0 var(--ink);place-items:center}
+
+/* ---------- 跑马灯 ---------- */
+.marquee{
+  background:var(--ink);border-bottom:var(--bw) solid var(--ink);
+  overflow:hidden;padding:9px 0;
+}
+.marquee-track{display:flex;width:max-content;animation:slide 26s linear infinite}
+.marquee-track span{
+  font-family:var(--fh);font-size:14px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--yellow);padding:0 26px;white-space:nowrap;
+}
+.marquee-track span:nth-child(even){color:#fff}
+@keyframes slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ---------- Hero ---------- */
+.hero{padding:64px 0 58px;position:relative;overflow:hidden}
+.hero::after{
+  content:"";position:absolute;right:-70px;top:40px;width:230px;height:230px;
+  background:repeating-linear-gradient(45deg,var(--ink) 0 8px,transparent 8px 20px);
+  opacity:.09;transform:rotate(12deg);z-index:0;pointer-events:none;
+}
+.hero-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:44px;align-items:center;position:relative;z-index:1}
+.hero h1{
+  font-family:var(--fh);font-size:clamp(40px,7.2vw,86px);line-height:.94;
+  letter-spacing:-.035em;text-transform:uppercase;margin:18px 0 20px;
+}
+.hero h1 em{
+  font-style:normal;display:inline-block;padding:0 12px;
+  background:var(--pink);border:var(--bw) solid var(--ink);
+  box-shadow:5px 5px 0 var(--ink);transform:rotate(-2deg);
+}
+.hero h1 u{text-decoration:none;background:var(--yellow);padding:0 8px}
+.hero-lead{font-size:16.5px;max-width:540px;font-weight:600;opacity:.82;line-height:1.75}
+.hero-actions{display:flex;gap:14px;margin-top:30px;flex-wrap:wrap}
+.hero-stats{display:flex;gap:0;margin-top:38px;border:var(--bw) solid var(--ink);background:#fff;box-shadow:var(--sh);width:fit-content;flex-wrap:wrap}
+.hero-stats div{padding:14px 26px;border-right:var(--bw) solid var(--ink);text-align:center}
+.hero-stats div:last-child{border-right:none}
+.hero-stats b{display:block;font-family:var(--fh);font-size:24px;line-height:1.2}
+.hero-stats small{font-size:11px;font-weight:800;letter-spacing:.1em;opacity:.55;text-transform:uppercase}
+
+/* Hero 拼贴 */
+.collage{position:relative;height:400px}
+.collage-card{
+  position:absolute;border:var(--bw) solid var(--ink);box-shadow:var(--sh-lg);
+}
+.collage .c1{
+  inset:0 34px 60px 0;background:var(--violet);
+  background-image:radial-gradient(rgba(255,255,255,.55) 3px,transparent 3px);
+  background-size:22px 22px;
+  transform:rotate(-3deg);display:grid;place-items:center;
+}
+.collage .c1 span{
+  font-family:var(--fh);font-size:clamp(30px,4.6vw,52px);color:#fff;
+  -webkit-text-stroke:2.5px var(--ink);letter-spacing:-.02em;text-align:center;line-height:1;
+}
+.collage .c2{
+  right:0;bottom:0;width:180px;background:var(--yellow);padding:16px;
+  transform:rotate(4deg);
+}
+.collage .c2 b{font-family:var(--fh);font-size:15px;display:block;text-transform:uppercase}
+.collage .c2 p{font-size:12px;font-weight:700;opacity:.72;margin-top:5px;line-height:1.5}
+.collage .sticker{
+  position:absolute;top:-16px;right:26px;width:82px;height:82px;
+  background:var(--mint);border:var(--bw) solid var(--ink);border-radius:50%;
+  display:grid;place-items:center;text-align:center;
+  font-family:var(--fh);font-size:11px;line-height:1.15;letter-spacing:.04em;
+  transform:rotate(10deg);box-shadow:var(--sh-sm);z-index:3;
+}
+.collage .c3{
+  left:-14px;bottom:26px;background:#fff;padding:10px 14px;
+  font-weight:900;font-size:12px;transform:rotate(-6deg);z-index:3;
+}
+
+/* ---------- 头条文章 ---------- */
+.featured{padding:0 0 66px}
+.feat-card{
+  display:grid;grid-template-columns:1.05fr 1fr;border:var(--bw) solid var(--ink);
+  background:var(--ink);color:var(--paper);box-shadow:var(--sh-lg);overflow:hidden;
+}
+.feat-body{padding:38px 40px;display:flex;flex-direction:column;justify-content:center}
+.feat-body .tag{background:var(--yellow);color:var(--ink);box-shadow:2px 2px 0 #fff}
+.feat-title{
+  font-family:var(--fh);font-size:clamp(24px,3.4vw,40px);line-height:1.06;
+  letter-spacing:-.025em;margin:18px 0 16px;color:#fff;
+}
+.feat-title:hover{color:var(--yellow)}
+.feat-body p{font-size:15px;opacity:.72;line-height:1.75;font-weight:500}
+.feat-meta{display:flex;align-items:center;gap:12px;margin-top:26px;flex-wrap:wrap}
+.ava{
+  width:38px;height:38px;border:2.5px solid var(--ink);display:grid;place-items:center;
+  font-weight:900;font-size:14px;background:var(--mint);box-shadow:2px 2px 0 var(--ink);
+  color:var(--ink);flex-shrink:0;
+}
+.feat-meta .who{font-size:13px;font-weight:800;color:#fff}
+.feat-meta .when{font-size:12px;opacity:.55}
+.feat-visual{
+  border-left:var(--bw) solid var(--ink);position:relative;min-height:330px;
+  background-color:var(--pink);
+  background-image:
+    repeating-linear-gradient(45deg,rgba(16,16,16,.9) 0 12px,transparent 12px 26px),
+    radial-gradient(circle at 70% 30%,var(--yellow) 0 90px,transparent 90px);
+  display:grid;place-items:center;
+}
+.feat-visual b{
+  font-family:var(--fh);font-size:clamp(38px,6vw,74px);color:#fff;
+  -webkit-text-stroke:3px var(--ink);line-height:1;text-align:center;
+}
+.feat-visual .corner{
+  position:absolute;top:0;right:0;background:var(--ink);color:var(--yellow);
+  padding:7px 14px;font-weight:900;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+}
+
+/* ---------- 分类筛选条 ---------- */
+.filters{display:flex;gap:11px;flex-wrap:wrap;margin-bottom:30px}
+.chip{
+  padding:9px 18px;border:2.5px solid var(--ink);background:#fff;
+  font-weight:900;font-size:13px;box-shadow:3px 3px 0 var(--ink);
+  transition:.12s;
+}
+.chip:hover{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+.chip.on{background:var(--ink);color:var(--yellow)}
+.chip i{font-style:normal;opacity:.5;font-size:11px;margin-left:6px}
+
+/* ---------- 文章网格 ---------- */
+.posts{padding-bottom:72px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+.card{
+  border:var(--bw) solid var(--ink);background:#fff;box-shadow:var(--sh);
+  display:flex;flex-direction:column;overflow:hidden;
+  transition:transform .14s ease,box-shadow .14s ease;
+}
+.card:hover{transform:translate(-3px,-3px);box-shadow:11px 11px 0 var(--ink)}
+.card-cover{
+  height:158px;border-bottom:var(--bw) solid var(--ink);position:relative;
+  display:grid;place-items:center;overflow:hidden;
+}
+.card-cover .cv-idx{
+  font-family:var(--fh);font-size:46px;color:#fff;-webkit-text-stroke:2.5px var(--ink);
+  line-height:1;
+}
+.card-cover .cv-tag{position:absolute;top:0;left:0}
+.pat-dots{background-color:var(--violet);background-image:radial-gradient(rgba(255,255,255,.6) 3px,transparent 3px);background-size:20px 20px}
+.pat-stripe{background-color:var(--mint);background-image:repeating-linear-gradient(-45deg,rgba(16,16,16,.86) 0 10px,transparent 10px 24px)}
+.pat-grid{background-color:var(--sky);background-image:linear-gradient(rgba(255,255,255,.65) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.65) 2px,transparent 2px);background-size:26px 26px}
+.pat-arc{background-color:var(--orange);background-image:radial-gradient(circle at 50% 120%,rgba(255,255,255,.75) 0 46px,transparent 47px),radial-gradient(circle at 50% 120%,transparent 0 60px,rgba(255,255,255,.75) 61px 66px,transparent 67px)}
+.pat-cross{background-color:var(--pink);background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.6) 0 3px,transparent 3px 30px),repeating-linear-gradient(90deg,rgba(255,255,255,.6) 0 3px,transparent 3px 30px)}
+.pat-wave{background-color:var(--yellow);background-image:repeating-radial-gradient(circle at 0 0,transparent 0 18px,rgba(16,16,16,.75) 18px 21px,transparent 21px 40px)}
+.pat-dots .cv-idx{text-shadow:none}
+
+.card-body{padding:20px 20px 18px;display:flex;flex-direction:column;flex:1}
+.card-cat{display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap}
+.card-cat .date{font-size:11px;font-weight:800;letter-spacing:.08em;opacity:.45}
+.card h3{
+  font-family:var(--fh);font-size:19px;line-height:1.25;letter-spacing:-.015em;
+  margin-bottom:10px;
+}
+.card h3 a{background-image:linear-gradient(var(--yellow),var(--yellow));background-size:0 42%;background-repeat:no-repeat;background-position:0 88%;transition:background-size .22s ease}
+.card:hover h3 a{background-size:100% 42%}
+.card .excerpt{font-size:13.5px;opacity:.7;line-height:1.7;font-weight:500;flex:1}
+.card-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-top:18px;padding-top:14px;border-top:2.5px dashed rgba(16,16,16,.28);
+  font-size:12px;font-weight:800;
+}
+.card-foot .who{display:flex;align-items:center;gap:8px}
+.card-foot .ava{width:28px;height:28px;font-size:11px;box-shadow:none;border-width:2px}
+.card-foot .read{
+  border:2px solid var(--ink);padding:4px 9px;background:var(--paper);
+  transition:.12s;
+}
+.card:hover .card-foot .read{background:var(--ink);color:var(--yellow)}
+
+/* ---------- 分页 ---------- */
+.pager{display:flex;justify-content:center;gap:9px;margin-top:46px;flex-wrap:wrap}
+.pager a{
+  min-width:44px;height:44px;padding:0 14px;display:grid;place-items:center;
+  border:2.5px solid var(--ink);background:#fff;font-weight:900;font-size:14px;
+  box-shadow:3px 3px 0 var(--ink);transition:.12s;
+}
+.pager a:hover{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink);background:var(--mint)}
+.pager a.on{background:var(--ink);color:var(--yellow)}
+
+/* ---------- 邮件订阅条 ---------- */
+.subscribe{padding:0 0 76px}
+.sub-box{
+  border:var(--bw) solid var(--ink);background:var(--yellow);box-shadow:var(--sh-lg);
+  padding:44px 44px;display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:center;
+  position:relative;overflow:hidden;
+}
+.sub-box::after{
+  content:"";position:absolute;right:-40px;bottom:-60px;width:200px;height:200px;
+  border:var(--bw) solid var(--ink);border-radius:50%;opacity:.35;
+}
+.sub-box h2{font-family:var(--fh);font-size:clamp(22px,3vw,34px);line-height:1.08;letter-spacing:-.02em}
+.sub-box p{font-size:14px;font-weight:600;opacity:.75;margin-top:10px}
+.sub-form{display:flex;gap:11px;flex-wrap:wrap;position:relative;z-index:1}
+.sub-form input{
+  flex:1;min-width:200px;padding:13px 16px;border:var(--bw) solid var(--ink);
+  background:#fff;font-family:var(--fb);font-weight:700;font-size:14px;outline:none;
+  box-shadow:var(--sh-sm);
+}
+.sub-form input:focus{box-shadow:var(--sh-sm),0 0 0 3px var(--violet)}
+
+/* ---------- 页脚 ---------- */
+.site-foot{background:var(--ink);color:#fff;border-top:var(--bw) solid var(--ink);padding:52px 0 26px}
+.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:36px}
+.site-foot h4{
+  font-family:var(--fh);font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--yellow);margin-bottom:16px;
+}
+.site-foot p{font-size:13px;opacity:.6;line-height:1.8;max-width:290px}
+.site-foot li{list-style:none;margin-bottom:9px}
+.site-foot li a{font-size:13.5px;opacity:.75;font-weight:600;border-bottom:2px solid transparent;transition:.12s}
+.site-foot li a:hover{opacity:1;color:var(--yellow);border-color:var(--yellow)}
+.foot-mark{
+  width:52px;height:52px;border:var(--bw) solid var(--yellow);background:var(--violet);
+  display:grid;place-items:center;font-family:var(--fh);font-size:24px;color:var(--yellow);
+  box-shadow:4px 4px 0 rgba(255,224,75,.4);transform:rotate(-4deg);margin-bottom:16px;
+}
+.foot-bottom{
+  margin-top:44px;padding-top:20px;border-top:2px dashed rgba(255,255,255,.22);
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  font-size:12px;opacity:.55;font-weight:700;
+}
+.foot-dots{display:flex;gap:7px}
+.foot-dots i{width:11px;height:11px;border:2px solid var(--ink);display:block}
+.foot-dots i:nth-child(1){background:var(--yellow)}
+.foot-dots i:nth-child(2){background:var(--pink)}
+.foot-dots i:nth-child(3){background:var(--mint)}
+.foot-dots i:nth-child(4){background:var(--sky)}
+
+/* ============================================================
+   内页：文章详情
+   ============================================================ */
+.crumb{
+  display:flex;align-items:center;gap:10px;padding:26px 0 22px;
+  font-size:12.5px;font-weight:800;letter-spacing:.04em;flex-wrap:wrap;
+}
+.crumb a{border-bottom:2px solid var(--ink);padding-bottom:1px}
+.crumb a:hover{background:var(--yellow)}
+.crumb .sep{opacity:.4}
+.crumb .now{opacity:.55;max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.post-layout{display:grid;grid-template-columns:1fr 300px;gap:44px;padding-bottom:70px;align-items:start}
+
+.post-head{margin-bottom:30px}
+.post-head h1{
+  font-family:var(--fh);font-size:clamp(30px,5vw,56px);line-height:1.02;
+  letter-spacing:-.03em;margin:18px 0 22px;
+}
+.post-head .meta-row{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:16px 0;border-top:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink);
+}
+.post-head .meta-row .ava{width:44px;height:44px;font-size:16px}
+.post-head .m-name{font-weight:900;font-size:14px}
+.post-head .m-sub{font-size:12px;font-weight:700;opacity:.55;margin-top:2px}
+.post-head .m-stats{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.post-head .m-stats span{
+  border:2px solid var(--ink);padding:5px 11px;font-size:11.5px;font-weight:900;
+  background:var(--paper);
+}
+
+.post-cover{
+  height:270px;border:var(--bw) solid var(--ink);box-shadow:var(--sh);
+  margin-bottom:34px;position:relative;display:grid;place-items:center;overflow:hidden;
+  background-color:var(--violet);
+  background-image:
+    repeating-linear-gradient(45deg,rgba(255,255,255,.34) 0 14px,transparent 14px 30px),
+    radial-gradient(circle at 22% 78%,var(--yellow) 0 74px,transparent 74px),
+    radial-gradient(circle at 82% 22%,var(--pink) 0 58px,transparent 58px);
+}
+.post-cover b{
+  font-family:var(--fh);font-size:clamp(30px,5.4vw,62px);color:#fff;
+  -webkit-text-stroke:3px var(--ink);letter-spacing:-.02em;text-align:center;line-height:1;
+}
+.post-cover figcaption{
+  position:absolute;bottom:0;left:0;background:var(--ink);color:var(--yellow);
+  padding:7px 15px;font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;
+}
+
+/* 正文排版 */
+.article{font-size:16.5px;line-height:1.92;font-weight:500}
+.article > * + *{margin-top:22px}
+.article p{opacity:.9}
+.article strong{background:var(--yellow);padding:1px 5px;font-weight:900}
+.article em{font-style:italic;background:var(--mint);padding:1px 5px}
+.article h2{
+  font-family:var(--fh);font-size:clamp(21px,2.7vw,29px);line-height:1.18;
+  letter-spacing:-.02em;margin-top:48px;padding-left:16px;position:relative;
+}
+.article h2::before{
+  content:"";position:absolute;left:0;top:4px;bottom:4px;width:9px;
+  background:var(--ink);border:1px solid var(--ink);
+}
+.article h3{
+  font-family:var(--fh);font-size:18.5px;margin-top:34px;letter-spacing:-.01em;
+  display:inline-block;background:var(--pink);border:2.5px solid var(--ink);
+  padding:5px 12px;box-shadow:3px 3px 0 var(--ink);transform:rotate(-.6deg);
+}
+.article ul,.article ol{padding-left:6px;list-style:none}
+.article ul li,.article ol li{position:relative;padding-left:30px;margin-bottom:11px;opacity:.9}
+.article ul li::before{
+  content:"";position:absolute;left:0;top:11px;width:13px;height:13px;
+  background:var(--yellow);border:2.5px solid var(--ink);
+}
+.article ol{counter-reset:ol}
+.article ol li::before{
+  counter-increment:ol;content:counter(ol);position:absolute;left:0;top:2px;
+  width:21px;height:21px;display:grid;place-items:center;font-size:11px;font-weight:900;
+  background:var(--ink);color:var(--yellow);
+}
+.article blockquote{
+  border-left:9px solid var(--ink);background:var(--yellow);
+  padding:22px 26px;box-shadow:var(--sh);
+  font-size:17px;font-weight:700;line-height:1.75;
+}
+.article blockquote p{opacity:1}
+.article blockquote cite{display:block;margin-top:12px;font-size:12.5px;font-weight:900;opacity:.6;font-style:normal;letter-spacing:.06em}
+.article code{
+  font-family:"JetBrains Mono","SFMono-Regular",Consolas,monospace;font-size:.9em;
+  background:var(--ink);color:var(--mint);padding:2px 7px;border-radius:0;
+}
+.article pre{
+  background:var(--ink);color:#F4F4F4;border:var(--bw) solid var(--ink);
+  box-shadow:var(--sh);padding:22px 24px;overflow-x:auto;line-height:1.72;
+}
+.article pre code{background:none;color:#F4F4F4;padding:0;font-size:13.5px}
+.article pre .k{color:var(--pink)}
+.article pre .s{color:var(--yellow)}
+.article pre .c{color:#7C8AA0}
+.article figure{
+  border:var(--bw) solid var(--ink);background:#fff;box-shadow:var(--sh);overflow:hidden;
+}
+.article figure .ph{
+  height:210px;background-color:var(--sky);
+  background-image:
+    linear-gradient(rgba(255,255,255,.7) 2px,transparent 2px),
+    linear-gradient(90deg,rgba(255,255,255,.7) 2px,transparent 2px);
+  background-size:30px 30px;border-bottom:var(--bw) solid var(--ink);
+  display:grid;place-items:center;
+  font-family:var(--fh);font-size:34px;color:#fff;-webkit-text-stroke:2.5px var(--ink);
+}
+.article figure figcaption{
+  padding:12px 16px;font-size:12.5px;font-weight:800;opacity:.7;
+  display:flex;gap:10px;align-items:center;
+}
+.article figure figcaption b{background:var(--ink);color:var(--yellow);padding:2px 8px;font-size:10.5px;letter-spacing:.1em}
+.article hr{border:none;height:var(--bw);background:var(--ink);margin:40px 0}
+.article .keybox{
+  border:var(--bw) solid var(--ink);background:var(--mint);box-shadow:var(--sh);
+  padding:24px 26px;font-weight:700;
+}
+.article .keybox b{display:block;font-family:var(--fh);font-size:15px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em}
+
+/* 标签 + 分享 */
+.post-tax{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin-top:44px;padding-top:26px;border-top:2.5px solid var(--ink);
+}
+.post-tax .lbl{font-size:11.5px;font-weight:900;letter-spacing:.14em;opacity:.5;text-transform:uppercase}
+.share-row{display:flex;gap:9px;margin-top:22px;flex-wrap:wrap}
+.share-row button{
+  border:2.5px solid var(--ink);background:#fff;padding:9px 16px;font-weight:900;font-size:12.5px;
+  box-shadow:3px 3px 0 var(--ink);transition:.12s;
+}
+.share-row button:hover{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink);background:var(--sky)}
+.share-row button.liked{background:var(--pink)}
+.share-row button.liked:hover{background:var(--pink)}
+
+/* 作者卡 */
+.author-card{
+  border:var(--bw) solid var(--ink);background:var(--paper);box-shadow:var(--sh);
+  padding:26px;display:flex;gap:20px;margin-top:38px;align-items:flex-start;
+}
+.author-card .ava{width:70px;height:70px;font-size:26px;background:var(--orange);box-shadow:var(--sh-sm);flex-shrink:0}
+.author-card h4{font-family:var(--fh);font-size:17px}
+.author-card .role{font-size:11.5px;font-weight:900;letter-spacing:.1em;opacity:.5;text-transform:uppercase;margin-bottom:9px}
+.author-card p{font-size:13.5px;opacity:.78;line-height:1.75;font-weight:500}
+
+/* 上下篇 */
+.pn{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:34px}
+.pn a{
+  border:var(--bw) solid var(--ink);box-shadow:var(--sh);padding:20px;
+  background:#fff;transition:.14s;display:block;
+}
+.pn a:hover{transform:translate(-3px,-3px);box-shadow:9px 9px 0 var(--ink)}
+.pn a.next{background:var(--mint);text-align:right}
+.pn a.prev{background:var(--sky)}
+.pn .dir{font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;opacity:.55}
+.pn .ttl{font-family:var(--fh);font-size:15.5px;line-height:1.35;margin-top:7px}
+
+/* 评论区 */
+.comments{margin-top:64px}
+.cm-count{font-family:var(--fh);font-size:20px;display:flex;align-items:center;gap:11px}
+.cm-count i{
+  font-style:normal;background:var(--ink);color:var(--yellow);font-size:12px;
+  padding:3px 9px;border:2px solid var(--ink);
+}
+.cm-form{
+  border:var(--bw) solid var(--ink);background:#fff;box-shadow:var(--sh);
+  padding:22px;margin-top:22px;
+}
+.cm-form .row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.cm-form input,.cm-form textarea{
+  border:2.5px solid var(--ink);padding:11px 14px;font-family:var(--fb);font-weight:600;
+  font-size:13.5px;outline:none;background:var(--paper);width:100%;
+}
+.cm-form .row input{flex:1;min-width:150px;width:auto}
+.cm-form textarea{resize:vertical;min-height:106px;line-height:1.7}
+.cm-form input:focus,.cm-form textarea:focus{background:#fff;box-shadow:0 0 0 3px var(--yellow)}
+.cm-form .cm-actions{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap}
+.cm-form .hint{font-size:11.5px;font-weight:800;opacity:.5}
+
+.cm-list{margin-top:26px;display:flex;flex-direction:column;gap:18px}
+.cm-item{
+  border:2.5px solid var(--ink);background:#fff;box-shadow:var(--sh-sm);
+  padding:18px 20px;
+}
+.cm-item.reply{margin-left:46px;background:#FFF6D6}
+.cm-head{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.cm-head .ava{width:34px;height:34px;font-size:12px;box-shadow:none;border-width:2px}
+.cm-head b{font-size:13.5px}
+.cm-head .lz{background:var(--pink);border:2px solid var(--ink);font-size:10px;font-weight:900;padding:1px 6px;letter-spacing:.08em}
+.cm-head .floor{margin-left:auto;font-size:11px;font-weight:900;opacity:.42;letter-spacing:.08em}
+.cm-time{font-size:11.5px;font-weight:700;opacity:.45;margin:5px 0 10px}
+.cm-body{font-size:14px;line-height:1.8;opacity:.88;font-weight:500}
+.cm-body .quote{
+  border-left:6px solid var(--ink);background:var(--paper);padding:9px 14px;
+  font-size:12.5px;margin-bottom:11px;opacity:.72;font-weight:600;
+}
+.cm-foot{display:flex;gap:16px;margin-top:12px;font-size:12px;font-weight:900}
+.cm-foot button{border-bottom:2px solid transparent;padding-bottom:1px}
+.cm-foot button:hover{border-color:var(--ink);color:var(--violet)}
+
+/* 侧栏 */
+.side{display:flex;flex-direction:column;gap:24px;position:sticky;top:96px}
+.side-box{border:var(--bw) solid var(--ink);background:#fff;box-shadow:var(--sh);padding:20px}
+.side-box h3{
+  font-family:var(--fh);font-size:14px;letter-spacing:.06em;text-transform:uppercase;
+  padding-bottom:12px;margin-bottom:16px;border-bottom:2.5px solid var(--ink);
+  display:flex;align-items:center;gap:9px;
+}
+.side-box h3::before{content:"";width:12px;height:12px;background:var(--yellow);border:2.5px solid var(--ink)}
+.side-box.y h3::before{background:var(--yellow)}
+.side-box.p h3::before{background:var(--pink)}
+.side-box.m h3::before{background:var(--mint)}
+.side-box.v h3::before{background:var(--violet)}
+
+.toc{list-style:none;font-size:13px;font-weight:700}
+.toc li{margin-bottom:11px;padding-left:14px;position:relative}
+.toc li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;background:var(--ink)}
+.toc li a:hover{background:var(--yellow)}
+.toc li.sub{padding-left:28px;opacity:.62;font-size:12.5px}
+.toc li.sub::before{background:none;border-left:2px solid var(--ink);height:9px;width:0;left:16px;top:7px;border-radius:0}
+
+.hot{list-style:none;counter-reset:h}
+.hot li{
+  counter-increment:h;display:flex;gap:13px;align-items:flex-start;
+  padding-bottom:14px;margin-bottom:14px;border-bottom:2px dashed rgba(16,16,16,.22);
+}
+.hot li:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
+.hot li::before{
+  content:counter(h);font-family:var(--fh);font-size:14px;width:26px;height:26px;
+  display:grid;place-items:center;background:var(--paper);border:2.5px solid var(--ink);
+  flex-shrink:0;
+}
+.hot li:nth-child(1)::before{background:var(--yellow)}
+.hot li:nth-child(2)::before{background:var(--pink)}
+.hot li:nth-child(3)::before{background:var(--mint)}
+.hot a{font-size:13.5px;font-weight:700;line-height:1.5;display:block}
+.hot a:hover{background:var(--yellow)}
+.hot .views{font-size:11px;font-weight:800;opacity:.45;display:block;margin-top:3px}
+
+.cloud{display:flex;flex-wrap:wrap;gap:8px}
+.cloud a{
+  border:2.5px solid var(--ink);padding:5px 11px;font-size:12px;font-weight:900;
+  background:var(--paper);box-shadow:2px 2px 0 var(--ink);transition:.12s;
+}
+.cloud a:hover{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
+.cloud a:nth-child(3n+1){background:var(--yellow)}
+.cloud a:nth-child(3n+2){background:var(--sky)}
+.cloud a:nth-child(3n+3){background:var(--pink)}
+
+.side-cta{
+  border:var(--bw) solid var(--ink);background:var(--violet);color:#fff;
+  box-shadow:var(--sh);padding:24px;text-align:center;
+}
+.side-cta b{font-family:var(--fh);font-size:18px;display:block;line-height:1.25;color:#fff}
+.side-cta p{font-size:12.5px;font-weight:600;opacity:.85;margin:9px 0 16px;line-height:1.6}
+.side-cta .btn{background:var(--yellow);color:var(--ink);width:100%;justify-content:center}
+
+/* 相关文章 */
+.related{padding:0 0 76px}
+.rel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.rel-card{
+  border:var(--bw) solid var(--ink);background:#fff;box-shadow:var(--sh-sm);
+  padding:18px;transition:.14s;
+}
+.rel-card:hover{transform:translate(-3px,-3px);box-shadow:8px 8px 0 var(--ink)}
+.rel-card .tag{margin-bottom:12px}
+.rel-card h4{font-family:var(--fh);font-size:15px;line-height:1.32}
+.rel-card .r-date{font-size:11px;font-weight:800;opacity:.45;margin-top:10px;letter-spacing:.06em}
+
+/* 页面切换 */
+.page{display:none}
+.page.is-active{display:block;animation:fadeUp .34s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* 返回顶部 */
+.to-top{
+  position:fixed;right:26px;bottom:26px;z-index:70;
+  width:52px;height:52px;border:var(--bw) solid var(--ink);background:var(--yellow);
+  display:grid;place-items:center;box-shadow:var(--sh-sm);transition:.14s;
+}
+.to-top:hover{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+
+/* ---------- 响应式 ---------- */
+@media(max-width:1024px){
+  .hero-grid{grid-template-columns:1fr;gap:36px}
+  .collage{height:330px;max-width:460px}
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .post-layout{grid-template-columns:1fr}
+  .side{position:static;flex-direction:row;flex-wrap:wrap}
+  .side-box,.side-cta{flex:1 1 260px}
+}
+@media(max-width:760px){
+  .nav-links,.nav-search{display:none}
+  .nav-burger{display:grid}
+  .nav-links.open{
+    display:flex;flex-direction:column;gap:0;
+    position:absolute;left:0;right:0;top:100%;background:var(--paper);
+    border-bottom:var(--bw) solid var(--ink);padding:10px 22px 18px;
+  }
+  .nav-links.open a{padding:12px 0;border:none;border-bottom:2px dashed rgba(16,16,16,.2)}
+  .nav-links.open a:hover,.nav-links.open a.on{background:none;box-shadow:none;color:var(--violet)}
+  .feat-card{grid-template-columns:1fr}
+  .feat-visual{border-left:none;border-top:var(--bw) solid var(--ink);min-height:210px}
+  .grid{grid-template-columns:1fr}
+  .rel-grid{grid-template-columns:1fr}
+  .sub-box{grid-template-columns:1fr;padding:32px 24px}
+  .foot-grid{grid-template-columns:1fr 1fr;gap:28px}
+  .pn{grid-template-columns:1fr}
+  .cm-item.reply{margin-left:18px}
+  .hero h1{font-size:clamp(34px,10vw,52px)}
+  .article{font-size:15.5px}
+  .to-top{right:16px;bottom:16px}
+}
+@media(max-width:460px){
+  .foot-grid{grid-template-columns:1fr}
+  .hero-stats div{flex:1;padding:12px 14px}
+}
+</style>
+</head>
+<body data-page-node-id="dNx51MVrF3lV2EbIcIC4lW">
+
+<!-- ══════════ 顶部导航（列表页 / 内页共用） ══════════ -->
+<header class="site-nav" data-page-node-id="Q0UIY6DiNruXOzMHytpuLe">
+  <div class="nav-inner" data-page-node-id="K2DYztrANAOpylVCgFiccw">
+    <a href="#" class="brand" onclick="go('page-list');return false" data-page-node-id="vFD7O7M2XVAMY7UsFZg7TO">
+      <span class="brand-mark" data-page-node-id="IRs1O2zHblNBJrsQRtzIp6">粗</span>
+      <span data-page-node-id="7XBvb7AaDAAJe5fbU4N4nA">
+        <span class="brand-name" data-page-node-id="2088ejGzsnqSS83pkpCYp1">粗野志</span><br data-page-node-id="LB1tMPL60ih8x95t7pknch">
+        <span class="brand-sub" data-page-node-id="s0mFzODHV28ZDpv7oH0Z4o">Brutalog</span>
+      </span>
+    </a>
+    <nav class="nav-links" id="navLinks" data-page-node-id="mjjELObRjFYcP1eaXi7MsC">
+      <a href="#" class="on" onclick="go('page-list');return false" data-page-node-id="sbE7340YJKAF8vHBWRhigf">首页</a>
+      <a href="#list" onclick="go('page-list');return false" data-page-node-id="setVk0WOC5jcUwkpuBHBoR">前端</a>
+      <a href="#list" onclick="go('page-list');return false" data-page-node-id="AeHDOLQhppeRVvzX1MyONL">设计</a>
+      <a href="#list" onclick="go('page-list');return false" data-page-node-id="9rD3ylHcmCDDCgvdgB7fBZ">随笔</a>
+      <a href="#list" onclick="go('page-list');return false" data-page-node-id="gRBiVcZ5xgur0wshbl3MMT">资源</a>
+      <a href="#post" onclick="go('page-post');return false" data-page-node-id="n4eDMRTvhQkPddWkGDEcsh">关于</a>
+    </nav>
+    <div class="nav-right" data-page-node-id="B0NSLJZMMaQkWvOiF0bOdQ">
+      <label class="nav-search" data-page-node-id="N7jZJrs6ha8TljdAOBHS2q">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#101010" stroke-width="3" data-page-node-id="iHTzLlxHS4MBIW5CqOyhRy">
+          <circle cx="10.5" cy="10.5" r="7" data-page-node-id="6qGeimmKXwGSUYD7jDmo6J"/><path d="M16 16l5.5 5.5" data-page-node-id="u2Gb06RyBLlCesS3Q3RKKG"/>
+        </svg>
+        <input type="text" placeholder="搜索文章…" data-page-node-id="gAU4Bwtt5zhZzOoYkwc9wj">
+      </label>
+      <button class="btn yellow" onclick="go('page-post')" data-page-node-id="OC1R6HR09mTTHW40210O9R">订阅</button>
+      <button class="nav-burger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="菜单" data-page-node-id="2kGaE5HQ3JMymawU4YGcQA">
+        <svg width="19" height="19" viewBox="0 0 24 24" stroke="#101010" stroke-width="3.2" stroke-linecap="square" data-page-node-id="oJnnd21OnrV1nxssck4jPY">
+          <path d="M3 6h18M3 12h18M3 18h18" data-page-node-id="i27DZw5kzATxKhtAOh6pF6"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════
+     页面一：文章列表页
+     ══════════════════════════════════════════════════════════ -->
+<div class="page is-active" id="page-list" data-page-node-id="DeZLvrCY39olHPEANVu0Nb">
+
+  <!-- 跑马灯 -->
+  <div class="marquee" data-page-node-id="CKwjKXV93Ed7ECLsJAYAAa">
+    <div class="marquee-track" data-page-node-id="Nl30BHvkmL1QvR0qR1yFeA">
+      <span data-page-node-id="CrqHh5hknMQrHv74gIJRcF">新粗野主义</span><span data-page-node-id="pZaPd6YDOAv21pUnwdjyWF">硬边框</span><span data-page-node-id="wMCgwR3auF2jh0JoliCu7I">硬阴影</span><span data-page-node-id="uVebxepVLyeyh25kuANVlI">高饱和撞色</span><span data-page-node-id="Kuy38BfkFJhVGzaOJjcS2X">零圆角</span><span data-page-node-id="QZmbifwJtRmHDgoeafCGGT">大胆排版</span><span data-page-node-id="Eeua25gxudestsufDqtoEI">不用渐变</span><span data-page-node-id="sKK2NH2FmnvVFFfw7Zimgs">不装温柔</span>
+      <span data-page-node-id="X9oI9pUl7PA2QEqAfyJtLb">新粗野主义</span><span data-page-node-id="mbYQViAASYuwuijjc2VlrI">硬边框</span><span data-page-node-id="LrCj5Jk0iDB1jucGaisiwl">硬阴影</span><span data-page-node-id="dhwVDr8SmI2Q7c3glHdzGf">高饱和撞色</span><span data-page-node-id="k3iSVSxFvQmPUCXQPRQOVf">零圆角</span><span data-page-node-id="c663zyjM322wBeL8qBXdYq">大胆排版</span><span data-page-node-id="UGbDQyiTaLSkLHpzeiLmbl">不用渐变</span><span data-page-node-id="aTbkke2HSQwJHytHQ7E1az">不装温柔</span>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero" data-page-node-id="UcgJRYcwTiJuzl06q6nZOu">
+    <div class="wrap hero-grid" data-page-node-id="iz0P4EnoPY32tafT5GNMUM">
+      <div data-page-node-id="33ncpWPEoFDZFoCCeNdKQE">
+        <span class="tag" data-page-node-id="qkGp6IhadrQT1HLEgeQnzC">EST. 2026 · 独立博客</span>
+        <h1 data-page-node-id="K9wrthH1TUH3BsQdtj3NZM">把想法<br data-page-node-id="00EkANFvuO2HWKnbPbRnBq"><em data-page-node-id="plva4jVXig6M3VrrbLJgPK">砸</em>成<br data-page-node-id="fjmWg5O5IQEELsiCNpTlfP"><u data-page-node-id="DHlW0eeMGbYpZcE1qP4imO">看得见</u>的形状</h1>
+        <p class="hero-lead" data-page-node-id="T9YXBv3ndrBmyx1i7R7WFD">这里不修边幅，也不打算修。写前端工程、视觉设计，以及那些删了又写、写了又删的废话。每周两篇，不追热点，只追把一件事讲透。</p>
+        <div class="hero-actions" data-page-node-id="trgvzaB3eioYPq4rOZPLqu">
+          <button class="btn big yellow" onclick="go('page-post')" data-page-node-id="pvMYZZu7vSsbPDPDBsDDpd">
+            读精选长文
+            <svg width="17" height="17" viewBox="0 0 24 24" stroke="#101010" stroke-width="3.2" fill="none" stroke-linecap="square" data-page-node-id="g1OSD7x7V3M9AzYkt2uzcu"><path d="M5 12h13M12 5l7 7-7 7" data-page-node-id="hYylsA9WydAjsTmPKhdCRX"/></svg>
+          </button>
+          <button class="btn big" data-page-node-id="1vHu97ynVg8ZxXqYMTDjUD">全部归档</button>
+        </div>
+        <div class="hero-stats" data-page-node-id="4JJWul4ttkPzmJcmRm1G87">
+          <div data-page-node-id="8lNzlii5xCkhQwBLjEsj7l"><b data-page-node-id="JxUFOB8vFmCTRMDL1NMNdc">248</b><small data-page-node-id="YlCY6mwrHEKiVZW0rir9o8">篇文章</small></div>
+          <div data-page-node-id="7vWW0Fk1O2CRvbcqe0Z6e6"><b data-page-node-id="GrhrYePCi5XMBsUAxCUHYc">31</b><small data-page-node-id="wQYvJaSo9qAFttIPdYBQSM">个标签</small></div>
+          <div data-page-node-id="0sH12v5gEFnmCE64GIjUOb"><b data-page-node-id="KxdVv1keEDIeHMoYFVGPjM">7</b><small data-page-node-id="hoZ5kqchUDCiHqMbwiZpcL">年坚持</small></div>
+          <div data-page-node-id="rS8AaFyfcwz7ehYVklMo2z"><b data-page-node-id="2Cixawoy8AJfH9tuCD7AA9">∞</b><small data-page-node-id="HJtxhCBFEaySeDEyPRhU1l">杯咖啡</small></div>
+        </div>
+      </div>
+
+      <div class="collage" data-page-node-id="KSVdFeYBlrHEfcwe69zaT6">
+        <div class="collage-card c1" data-page-node-id="XzfpD1bo1uUo5KYs0mlKDb"><span data-page-node-id="u4xXJu0AbvSdL9hq9eZZ8w">RAW<br data-page-node-id="1OUv0ugFp66aW6uHzDqZzg">&amp;<br data-page-node-id="dphfpiYs3guLthdv9U78lQ">BOLD</span></div>
+        <div class="collage-card sticker" data-page-node-id="jfnCeom70g0XAwKu8nDE3Z">纯手写<br data-page-node-id="yFFDMR8v5hoZSPIbsVjBpA">无插件</div>
+        <div class="collage-card c2" data-page-node-id="oREowy2BnaRZdkE4jntAxJ">
+          <b data-page-node-id="Ac9HRxlcHmEwrNqJ24Mlf8">本周更新</b>
+          <p data-page-node-id="OXjlLnk0dnXogMecU5fDam">CSS 层叠 · 栅格是脚手架 · 按钮的十七种反面教材</p>
+        </div>
+        <div class="collage-card c3" data-page-node-id="u8uNYBWCX8sCQfBVgZMBAk">不接受「差不多好看」</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 精选 -->
+  <section class="featured" data-page-node-id="yMa3RvSPfkJaZgIFTm3mR8">
+    <div class="wrap" data-page-node-id="sTK2wJ1cqjHiWWfwgbTv2t">
+      <div class="sec-title" data-page-node-id="aaAF1m0qcw6og7J4ek6Djx">
+        <h2 data-page-node-id="4YcQKpqazfmKPmHLF5RdlS">本期精选</h2>
+        <span class="rule" data-page-node-id="whZoFnZ0mW511UvkEloCxs"></span>
+        <span class="note" data-page-node-id="7ru9R9YXVnEJrzkvfJKKqm">Editor's pick</span>
+      </div>
+
+      <a href="#" class="feat-card" onclick="go('page-post');return false" data-page-node-id="NOh7eOEPolSL0JoK1P1Ozt">
+        <div class="feat-body" data-page-node-id="vH9Wl4tPtrCypROazGeqOn">
+          <span class="tag" data-page-node-id="HsRfAhNnKKMpe6Vkz6XSPi">前端工程 · 12 分钟</span>
+          <h3 class="feat-title" data-page-node-id="wWTD0bdysH2aoyuXgPomwb">当设计系统开始「不讲道理」——新粗野主义在 Web 上的实践</h3>
+          <p data-page-node-id="fDy37vJgoWJyDv3seWZOIf">圆角、柔和阴影、低饱和渐变统治了十年。是时候讨论一种反向方案：让边框回到 3 像素，让阴影不带模糊，让颜色大声说话。这不是回归丑陋，而是重新把「结构」摆在「氛围」前面。</p>
+          <div class="feat-meta" data-page-node-id="KWLTcBZl7W9CtTSzqQTc6Y">
+            <span class="ava" data-page-node-id="uRWgRqq97rD1y3DttYBV8g">陈</span>
+            <span data-page-node-id="p8Uivs5Yq7FAkF5RwGSHjF">
+              <span class="who" data-page-node-id="cEFP3VJlFodiXhSbA18gfL">陈野</span><br data-page-node-id="poKsgmeN6D2wshD9Lo8SVB">
+              <span class="when" data-page-node-id="tFfZaqnGQ8YtVmVttAQIwB">2026-09-12 · 3,482 次阅读</span>
+            </span>
+            <span class="btn yellow" style="margin-left:auto;padding:10px 18px" data-page-node-id="pSRyYentOutu8vJCjsh2Ig">阅读全文</span>
+          </div>
+        </div>
+        <div class="feat-visual" data-page-node-id="XGx2yusTtLG4rzjgxzBLoy">
+          <span class="corner" data-page-node-id="WkgMFAQ9eGoErT1tPj1j31">Featured</span>
+          <b data-page-node-id="XYM5mDsu6GBlB4jhGVfuAO">NO<br data-page-node-id="Mr8ueGDe4FdZMkzZTEB7yZ">ROUND<br data-page-node-id="0BWuqnJf4LnS2Zld5C8TDi">CORNER</b>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- 分类 + 文章网格 -->
+  <section class="posts" id="list" data-page-node-id="H7Eqlt15O9bBWFVDXzXcBi">
+    <div class="wrap" data-page-node-id="YL1vnnDwxDv9kbW7Aqnyya">
+      <div class="sec-title" data-page-node-id="kcejFKqJsyaNG5DQdoBrbC">
+        <h2 data-page-node-id="DCpbrCBngT07puzyHOq7U2">最新文章</h2>
+        <span class="rule" data-page-node-id="VJUwSsBs8oRImJuBVbnJCp"></span>
+        <span class="note" data-page-node-id="0FwZ5hejtVBiEGTQwt0oJO">248 posts</span>
+      </div>
+
+      <div class="filters" data-page-node-id="UfDGISDEU7GIFgNWOypBvK">
+        <button class="chip on" data-page-node-id="6krTkJBHBvRJsi2AKakk8j">全部<i data-page-node-id="JMoHb3BwkFuiCxFrOB8PBC">248</i></button>
+        <button class="chip" data-page-node-id="gGJeFnNhMcj4S24Hi9BUaM">前端工程<i data-page-node-id="lzNFKQt0lDWfVhMzjAnsYs">86</i></button>
+        <button class="chip" data-page-node-id="92Mj47btVEp7NmxlkKeiTM">视觉设计<i data-page-node-id="AD2a0PWXtpx59RpqL0vVR1">54</i></button>
+        <button class="chip" data-page-node-id="Vz2a9xwdJ4bs684hIv6TmR">随笔<i data-page-node-id="l3dbjAFFgYe6coVbsI0A0A">71</i></button>
+        <button class="chip" data-page-node-id="IXeSDpRAVuNRvRO52Faz3M">资源<i data-page-node-id="SsVmTCnq459Ny0DfWSIg61">37</i></button>
+      </div>
+
+      <div class="grid" data-page-node-id="LtuFuvEO0pojB6DrWdOBDB">
+
+        <article class="card" data-page-node-id="oJo4najSn7CmVnRlAITyPR">
+          <div class="card-cover pat-stripe" data-page-node-id="ltnYHM5zMvErHj9UXrz3ug">
+            <span class="tag ink cv-tag" data-page-node-id="U6zXugzYwA69cQWsh5Aqt8">前端</span>
+            <span class="cv-idx" data-page-node-id="be2HWPkrHpnfO0KFqGMHuK">01</span>
+          </div>
+          <div class="card-body" data-page-node-id="f2aS2vlXxCjIAnBAGzB7Ye">
+            <div class="card-cat" data-page-node-id="ICOHQBlEqwEEdC9ffg0G1h"><span class="tag sky" data-page-node-id="1jgD8GYm61rPnp41OtBU87">前端工程</span><span class="date" data-page-node-id="gqiCXAhgKRFL5vgZk8xAhN">2026-09-10</span></div>
+            <h3 data-page-node-id="FJNwFMeUOs65t89UrkOGtt"><a href="#" onclick="go('page-post');return false" data-page-node-id="i1XDXxnTXKbILD0WzIicmL">重新理解 CSS 层叠：为什么你的样式总在打架</a></h3>
+            <p class="excerpt" data-page-node-id="AtJqpIb79Fers4j0vqymBo">写 `.card .title` 却输给了一个孤零零的 `.title`。层叠不是玄学，它有明确的四层判定顺序，只是没人认真讲过。</p>
+            <div class="card-foot" data-page-node-id="DxZZ4uAqKUzcitrwGfpELE">
+              <span class="who" data-page-node-id="C9J7AHPzQxGIHaM6jDmaHv"><span class="ava" style="background:var(--yellow)" data-page-node-id="SCHLIOjHNAHhIma5vaIYPc">陈</span>陈野</span>
+              <span class="read" data-page-node-id="MMNnPGFG5XUBwIhXp7OHrK">9 分钟</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" data-page-node-id="g7D6EOMbqHW7zQivqLwOtB">
+          <div class="card-cover pat-dots" data-page-node-id="tFXUCcVJhhR44h0dNt99zH">
+            <span class="tag ink cv-tag" data-page-node-id="93kY0hqDtZPswz63IlsSzg">设计</span>
+            <span class="cv-idx" data-page-node-id="HhGjJW1GgH36ZDlcbVwhhv">02</span>
+          </div>
+          <div class="card-body" data-page-node-id="aRZtXNDF0tbR5aRJvOl8n9">
+            <div class="card-cat" data-page-node-id="UmWHz0OV81WBKy4PaxWQ6m"><span class="tag violet" data-page-node-id="6Hj2HVAVK2wJdy7n0EIeQ0">视觉设计</span><span class="date" data-page-node-id="gWYmpDmO8blHIq2Yvo3QOp">2026-09-08</span></div>
+            <h3 data-page-node-id="lw0VQGaE11gr28phhbboi0"><a href="#" onclick="go('page-post');return false" data-page-node-id="2UHuh58DgW0uBHUE4jGLAm">栅格是脚手架，不是牢笼</a></h3>
+            <p class="excerpt" data-page-node-id="tm1MDNLWsJeB27RrJFYBqH">十二栏格、八点基线、黄金分割——工具越多，越容易忘了它们只是手段。什么时候该打破栅格，答案藏在内容里。</p>
+            <div class="card-foot" data-page-node-id="dxErXFBGtLAFLmfaPKHhF1">
+              <span class="who" data-page-node-id="UyQB1LhkIYQATcBoJuGVl8"><span class="ava" style="background:var(--mint)" data-page-node-id="RVOKpt28Mz2Szy2INi4E47">林</span>林一</span>
+              <span class="read" data-page-node-id="O9WtUE2RTfI8y66Y53BdjL">11 分钟</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" data-page-node-id="RqiAwRnzvoZQPaAxBJcx5p">
+          <div class="card-cover pat-arc" data-page-node-id="ynzkcpuZXoOr8UQb8G98mL">
+            <span class="tag ink cv-tag" data-page-node-id="c3X7KynGuqgQvoNJQNXug2">随笔</span>
+            <span class="cv-idx" data-page-node-id="n6ZOfNlXF4ailPqDEQNt62">03</span>
+          </div>
+          <div class="card-body" data-page-node-id="N86OpGPSpntnjaJBqLm83I">
+            <div class="card-cat" data-page-node-id="o8vSO1Rm398FAmUY7krPTE"><span class="tag orange" data-page-node-id="2cS3wcfTLAtgvxkYVreHQP">随笔</span><span class="date" data-page-node-id="hMBCo4AkmFbSJB7qDJhDJD">2026-09-05</span></div>
+            <h3 data-page-node-id="SrgjEFYFTrWeEmqLh2TSo1"><a href="#" onclick="go('page-post');return false" data-page-node-id="mhVLyspplXQ5JvnDVi1Z8K">写了七年博客，我删掉了 90% 的文章</a></h3>
+            <p class="excerpt" data-page-node-id="fKbIgwGcjpJeiUSySt8sIH">删除键比发布键更需要勇气。留下的那 10%，才是真正属于我的东西。顺便聊聊「为谁而写」这件事。</p>
+            <div class="card-foot" data-page-node-id="nTCAld7MgneR4unQI1N9Vx">
+              <span class="who" data-page-node-id="kjcEwFlTQpf2v8nrNK0Nze"><span class="ava" style="background:var(--pink)" data-page-node-id="b3CgJDx7UCb8CJkGru0dGU">陈</span>陈野</span>
+              <span class="read" data-page-node-id="cMdhF1oBctx3DI3iQqwTZR">6 分钟</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" data-page-node-id="byg59EporHh2DDbQCkJxqZ">
+          <div class="card-cover pat-grid" data-page-node-id="OXtXAqGYYXBxYXxzOjf0aH">
+            <span class="tag ink cv-tag" data-page-node-id="0qFPAjAkIegfHhLNl2vjBI">资源</span>
+            <span class="cv-idx" data-page-node-id="exWixPohDkKTqvB3G7kKXZ">04</span>
+          </div>
+          <div class="card-body" data-page-node-id="7ZlcxGvAVtdQR6MRCVI4Am">
+            <div class="card-cat" data-page-node-id="BAIA9GZ1q0WW0PArQWjkAq"><span class="tag mint" data-page-node-id="rwTQfPOFIiqvpdvrLPX4sl">资源</span><span class="date" data-page-node-id="6sxvqDnUtCrYy3B4j4hmt0">2026-09-02</span></div>
+            <h3 data-page-node-id="JhTxUpu16983ihYAQFyJmX"><a href="#" onclick="go('page-post');return false" data-page-node-id="6zldhB54YKzyOI2b5FxOZ6">我常用的 12 个免费字体与配色工具</a></h3>
+            <p class="excerpt" data-page-node-id="BOVHqHqjh8gsUK73ohvXKc">全部免费商用、无需注册、打开就能用。附上每个工具最擅长的一件小事，以及我在什么场景下会打开它。</p>
+            <div class="card-foot" data-page-node-id="68V3UkRsFI2f6dXIvn3OcB">
+              <span class="who" data-page-node-id="t2Abuh8VmEr1yOmDHZBRA1"><span class="ava" style="background:var(--sky)" data-page-node-id="Dod8HeOe46nrJxAn3DSpth">苏</span>苏晴</span>
+              <span class="read" data-page-node-id="sTltuWgGgibJuhLqne5uWU">7 分钟</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" data-page-node-id="qFf6WlpAonpi0FA5nkRXOV">
+          <div class="card-cover pat-cross" data-page-node-id="P3oUuBgRy6TtlRWa0P7bD2">
+            <span class="tag ink cv-tag" data-page-node-id="my1CCKWKSFnePlPO9m8J7K">工程</span>
+            <span class="cv-idx" data-page-node-id="SzoSkQzNtZmChT11piN7vu">05</span>
+          </div>
+          <div class="card-body" data-page-node-id="KU6hbsE08M9duiQuwKRxsP">
+            <div class="card-cat" data-page-node-id="QmUqoHTxywuioxt9eAY3Oz"><span class="tag pink" data-page-node-id="yZRApbG2B4QwOfHToaBDC3">前端工程</span><span class="date" data-page-node-id="kOGll5nnDvpfDTCnCxqWTC">2026-08-29</span></div>
+            <h3 data-page-node-id="IwF8YdqbEJK67dJ9I6UFr0"><a href="#" onclick="go('page-post');return false" data-page-node-id="8cYD7Kz7m21kA57bq35qLh">从零搭一个不依赖框架的静态站</a></h3>
+            <p class="excerpt" data-page-node-id="5voLnz6Ut4obFZ8VNukvx2">没有 React，没有 Vite，没有 node_modules。一个 rss 生成脚本、一套手写 CSS、一次 rsync，就够了。</p>
+            <div class="card-foot" data-page-node-id="t1qFCj9dmeVpbsPG3zD7Ju">
+              <span class="who" data-page-node-id="zB8xLOVlZUHozyHQe0ThzI"><span class="ava" style="background:var(--violet);color:#fff" data-page-node-id="SIxzRjZnyxKXtGe3vyAzEa">周</span>周牧</span>
+              <span class="read" data-page-node-id="UqLDxlo2RWwHJHwYVGaGbp">14 分钟</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" data-page-node-id="oAAyiTi2p1jSIz0A9swDO8">
+          <div class="card-cover pat-wave" data-page-node-id="SMcgeMSb2G2OGVJmkaTWCX">
+            <span class="tag ink cv-tag" data-page-node-id="IJj1MBvkAcj1h56hJ5H5T4">设计</span>
+            <span class="cv-idx" data-page-node-id="BBAdy1nGSPCnjRy10sKvGN">06</span>
+          </div>
+          <div class="card-body" data-page-node-id="M9yXLyCSdO53N66xJfZDZT">
+            <div class="card-cat" data-page-node-id="kJ3oHeV4B7HqZqBbe2JxM0"><span class="tag yellow" style="background:var(--yellow)" data-page-node-id="mgsHg1C2yDlZOH6WjWcyJv">视觉设计</span><span class="date" data-page-node-id="1WJCcmRnAIeUbRDtDM2Dgn">2026-08-26</span></div>
+            <h3 data-page-node-id="U3x0SvoMGkvUMM34gOKlHj"><a href="#" onclick="go('page-post');return false" data-page-node-id="fPSXUhhMfKD6LRKYDOt33w">按钮的十七种反面教材</a></h3>
+            <p class="excerpt" data-page-node-id="8GzcmjVJHHsjItrN8VaWNL">禁用态做成浅灰、点击态没有位移、hover 只换颜色不换光标……每一条都是我在真实项目里踩过的坑。</p>
+            <div class="card-foot" data-page-node-id="nGcevN0hktp32rwFGGhCyC">
+              <span class="who" data-page-node-id="JsjtT58ZQoxE0aTUPHjhQS"><span class="ava" style="background:var(--orange)" data-page-node-id="L7fdf5bgkZAlHqoePYT8eb">林</span>林一</span>
+              <span class="read" data-page-node-id="XPwKqTlDd1ViUQ9bCCJvET">8 分钟</span>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+      <div class="pager" data-page-node-id="lmxAE5FMu4xG9ylwEXDAWE">
+        <a href="#" class="on" data-page-node-id="5FViUGKHBXqXTb4ytI9Uu2">1</a>
+        <a href="#" data-page-node-id="MYZe3uEqrbvEkHt1KFYitd">2</a>
+        <a href="#" data-page-node-id="LISlatyIwd2cDpfwq21KVD">3</a>
+        <a href="#" data-page-node-id="GDGOGIO05AvXVshCI1dgD3">…</a>
+        <a href="#" data-page-node-id="HyvX2WxKU12poD4mYMBRU9">21</a>
+        <a href="#" data-page-node-id="lhpMuEAaAezgXTeexb5bzz">下一页 →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 订阅 -->
+  <section class="subscribe" data-page-node-id="ABmgZkAGAx34a6P2iWZUsm">
+    <div class="wrap" data-page-node-id="8dJx9xFYCRuoz2DPipBYdZ">
+      <div class="sub-box" data-page-node-id="YLjXKqCYbQIeiGpqVkTgEP">
+        <div style="position:relative;z-index:1" data-page-node-id="stMUdwEgYjS6XI5OZZtsu1">
+          <h2 data-page-node-id="Vh7lF4GW853qsfkzD2OwcC">新文章发出时，<br data-page-node-id="vtNTMkAbs77TIJXKx0XugN">第一个告诉你</h2>
+          <p data-page-node-id="XxyNwLeHQIllCfUXcnnwxa">不发广告，不做推荐，一个月最多四封。随时一键退订。</p>
+        </div>
+        <form class="sub-form" onsubmit="return fakeSubmit(this,event)" data-page-node-id="jcF8JoPtXFXEIa6O17mOIi">
+          <input type="email" placeholder="你的邮箱地址" required data-page-node-id="fTsCGtRfVS9v0TWhGVehxS">
+          <button class="btn ink" type="submit" data-page-node-id="xB1o5Njm0rPK5UawcDPdOB">立即订阅</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /page-list -->
+
+
+<!-- ══════════════════════════════════════════════════════════
+     页面二：文章内页
+     ══════════════════════════════════════════════════════════ -->
+<div class="page" id="page-post" data-page-node-id="Ft8at5xBseCUdP9DjFIUg6">
+  <div class="wrap" data-page-node-id="SJVR6WsQhfMZ5l3irRbVkU">
+
+    <nav class="crumb" data-page-node-id="6PkaRlFuN3D9EC37Y5VyQl">
+      <a href="#" onclick="go('page-list');return false" data-page-node-id="z6WiEgtteIHgDPhbH3ujSf">首页</a>
+      <span class="sep" data-page-node-id="BUQH6eFspAY66LEdE3GVbx">/</span>
+      <a href="#" onclick="go('page-list');return false" data-page-node-id="W1A6haqEHUz0IalrVhQU3I">前端工程</a>
+      <span class="sep" data-page-node-id="HjZGnVTe6ZTr1F5ZI3TqI0">/</span>
+      <span class="now" data-page-node-id="ANEULIpJKzsThigd2D4JvB">当设计系统开始「不讲道理」</span>
+    </nav>
+
+    <div class="post-layout" data-page-node-id="7b7QCXyzgiV8iDW2YRXBQ2">
+
+      <!-- 主栏 -->
+      <div data-page-node-id="LaOGpdiI6IYC1NwyWFIHkg">
+        <header class="post-head" data-page-node-id="ZxSiCmpassxgSC7WilSQcD">
+          <span class="tag" data-page-node-id="Gh2HDrT7qSSZfVefxMXYzn">前端工程</span>
+          <span class="tag pink" data-page-node-id="aVJmKvprArbMJACPJ6ErpZ">设计系统</span>
+          <h1 data-page-node-id="GXhjV3bGxRisGWBjMRLZC6">当设计系统开始「不讲道理」——新粗野主义在 Web 上的实践</h1>
+          <div class="meta-row" data-page-node-id="7YLoicX2AlpGD3QIJZHLw4">
+            <span class="ava" data-page-node-id="dfCAEqebWhlgSLeJWC5R9y">陈</span>
+            <span data-page-node-id="E9mi7mJqIiuDB4erJLAMZE">
+              <span class="m-name" data-page-node-id="sjAibMmuqUwn3PYUh8IVFR">陈野</span><br data-page-node-id="AGdtNa4TEPD5ViCMlMmHPN">
+              <span class="m-sub" data-page-node-id="Xv5zDINQ48vm6mpTCEdvid">2026-09-12 发布</span>
+            </span>
+            <span class="m-stats" data-page-node-id="MzvmdQLiCRUJJlMKaMwbvj">
+              <span data-page-node-id="UGjNtc68u1j6WtMOAG5NST">3,482 阅读</span>
+              <span data-page-node-id="WrqH0EnRIH6dHKGBMeoHrS">128 赞</span>
+              <span data-page-node-id="eUJVAKpCHTASLZEXxyIFAf">12 分钟</span>
+            </span>
+          </div>
+        </header>
+
+        <figure class="post-cover" data-page-node-id="7PeLA7pKb7bzmz1ozGCHUG">
+          <b data-page-node-id="tkBYp7qm545qX4NEHlIFPL">RAW &amp; BOLD</b>
+          <figcaption data-page-node-id="nksOKQcaTIIbzLPZI8iUra">封面 · 硬边框 + 硬阴影 + 几何图案</figcaption>
+        </figure>
+
+        <article class="article" data-page-node-id="QM707tXuZbGhnJM6gBw3UA">
+
+          <p data-page-node-id="hp4sMTXRMpEodGVgC2NVDU">过去十年，Web 设计的主流语汇可以概括成一句话：<strong data-page-node-id="4qLDv9ZHbT0O9lGKVSHI3K">让一切变软</strong>。圆角从 4px 涨到 16px，阴影从硬边变成 20px 模糊，配色从纯色退到低饱和渐变，连按钮都要带一点「发光」。这套语汇很舒服，舒服到我们已经忘了它只是一种选择。</p>
+
+          <p data-page-node-id="mLBefOwcDCr3RnF86gROK4">新粗野主义（Neubrutalism）走的是完全相反的方向。它把 2010 年代早期那些被淘汰的粗糙做法重新捡回来，但用现代的方式重组：<em data-page-node-id="4gExPioHniE2oEyWQBxaY3">粗黑边框、无模糊硬阴影、高饱和撞色、零圆角、超大字号</em>。它不追求「优雅」，它追求「被看见」。</p>
+
+          <blockquote data-page-node-id="pzDWKSZ50yE26Cv6w14s6y">
+            <p data-page-node-id="AiBVXykRBGULjqbG1SlBE5">柔和的设计让人放松，硬朗的设计让人停下。博客的第一要务从来不是让人放松，而是让人停下。</p>
+            <cite data-page-node-id="Z7yK4aHSBzixjmXRHpUAWy">— 某个凌晨三点的自我说服</cite>
+          </blockquote>
+
+          <h2 data-page-node-id="wl9qmL2Q186oQ0RTKOzINK">一、先把「丑」这个标签摘掉</h2>
+
+          <p data-page-node-id="mBFcuoS6Bn9TuuI9qTvjgQ">很多人第一次看到这类界面会本能地皱眉，觉得「太吵」「太土」。但如果你把它的构成拆开看，会发现它的规则其实非常严格，甚至比主流的柔和风更严格：</p>
+
+          <ul data-page-node-id="x57WL2zi7TJ3GyVqZN7w3y">
+            <li data-page-node-id="g8aapqGZND6zcGOCTM2jEA"><strong data-page-node-id="mPAU7XO840WajjMyIfaxTS">边框必须可见</strong>：3px 起步，纯黑，不透明，永远不用 `rgba(0,0,0,.08)` 这种糊弄人的淡边。</li>
+            <li data-page-node-id="koB1uyap4A7KZXDjxOXC4s"><strong data-page-node-id="AoS19YTQzSgw5gaSmpJ7T9">阴影必须硬</strong>：偏移固定、零模糊、纯色，本质上是「第二层边框」而非光影。</li>
+            <li data-page-node-id="870n1fpp0eGfhXRRwpnBD3"><strong data-page-node-id="NuorwykivZHqtcaGJ5yEH2">颜色必须敢用</strong>：底色浅，强调色饱，同一屏不超过三种强调色。</li>
+            <li data-page-node-id="WYib5LU3u6f1O6emW8gCx3"><strong data-page-node-id="myAmwnOzLVi0jHqcBgFhTw">圆角必须为零</strong>：任何一处 4px 圆角都会让整套语言泄气。</li>
+          </ul>
+
+          <p data-page-node-id="CgyiszLia0Z7q4sMnj0ZTp">这些规则全部是<strong data-page-node-id="q2B50E9fprAz02SodQ7Mht">结构性</strong>的，而不是情绪性的。换句话说，它丑不丑取决于你有没有守规则，而不是取决于风格本身。</p>
+
+          <h3 data-page-node-id="XfzIkbrEbx1b7x4bQ5IEBY">1.1 阴影其实是边框的延伸</h3>
+
+          <p data-page-node-id="aEUDdtet2dfVoOqr5JWq6T">这是理解这套风格最关键的认知转换。传统设计中阴影负责模拟光照与层级；在新粗野主义里，阴影只负责<strong data-page-node-id="26iKcEsVrpVbicK0kpXJw3">加粗轮廓</strong>。所以它的阴影永远是一个方向、固定偏移、零模糊：</p>
+
+          <pre data-page-node-id="LeRYVODyqHa8WGyD8Fn4tT"><code data-page-node-id="Aqq2PvsI76FKPx2rLq0N57"><span class="c" data-page-node-id="MVHEXT9EWzk2J8SJGbpAX5">/* 错误的做法：这是柔和风 */</span>
+.card {
+  box-shadow: <span class="s" data-page-node-id="IOYIhrgdCQKUeTFBztdPrF">0 8px 24px rgba(0,0,0,.12)</span>;
+  border-radius: <span class="s" data-page-node-id="nGbj7ndLrsVX0wKIHUD32d">12px</span>;
+}
+
+<span class="c" data-page-node-id="7MVbLWzW3XWdTAZ4MxfDx6">/* 正确的做法：硬阴影 + 零圆角 */</span>
+.card {
+  border: <span class="s" data-page-node-id="7YG5VQXwRkU7gDwfn4mW2I">3px solid #101010</span>;
+  box-shadow: <span class="s" data-page-node-id="zt8xZeoYW2fllv3XjIU2b3">6px 6px 0 #101010</span>;
+  border-radius: <span class="s" data-page-node-id="4RtoVPZMTlXAeIKZm5bI8q">0</span>;
+  transition: <span class="s" data-page-node-id="YaEkXpGFwdGTfgjKe85FDH">transform .12s, box-shadow .12s</span>;
+}
+
+<span class="c" data-page-node-id="UfEsbZ5FNNEglMowUkcAJo">/* 悬停时「按下」：位移抵消阴影 */</span>
+.card:hover {
+  transform: <span class="s" data-page-node-id="ghQ3u7ahjD3BMxQWz9SalQ">translate(6px, 6px)</span>;
+  box-shadow: <span class="s" data-page-node-id="ZbaI7l6O575Pk8b8TyMSsy">0 0 0 #101010</span>;
+}</code></pre>
+
+          <p data-page-node-id="bxcDHQT7XRE7ankSErxJ28">这段代码里最有意思的是 hover 状态。元素向右下移动 6px，同时阴影收缩到 0，视觉上就像被手指按进纸面。<strong data-page-node-id="5DqhWMPGcTOEelwdDaiA8a">这个「按压感」是整套风格的灵魂</strong>，比任何颜色都重要。</p>
+
+          <figure data-page-node-id="Kg2yt6kMLvofKJK5THmlrm">
+            <div class="ph" data-page-node-id="3hwEoYi9l8GoRwdgQFa8Sf">PRESS</div>
+            <figcaption data-page-node-id="FvrX6lzY8WT3YpV245fT8s"><b data-page-node-id="AQfJe4H8sfCett3boRAQaL">图 1</b>悬停位移 6px + 阴影归零，制造物理按压的错觉</figcaption>
+          </figure>
+
+          <h2 data-page-node-id="xraCOcmV3s3u7CC6nEejmD">二、可读性不靠字号，靠对比</h2>
+
+          <p data-page-node-id="qBRGSQSBeNPwHKoAYORRjc">反对者最常见的理由是「太刺眼，读不下去」。但真正导致阅读疲劳的不是撞色，而是<strong data-page-node-id="RrDMcgsMkeoccAZH0KtDpo">对比度不足的正文</strong>。这套风格恰恰在这一点上比很多柔和风做得好：</p>
+
+          <ol data-page-node-id="AsU4gVlN4ajnQcuF9HwCIk">
+            <li data-page-node-id="FkHG2wJ4NdynVUVWJIGwhj">正文永远用接近纯黑（`#101010`）配接近纯白（`#FFFBEF`），对比度约 18:1，远超 WCAG AAA 的 7:1。</li>
+            <li data-page-node-id="3bCj2hoQgDBmCT4rIVP1jz">高饱和色只出现在<strong data-page-node-id="FEwNiNBHJC9GbZQz6mGtjS">标签、按钮、色块</strong>上，绝不铺满正文区。大面积铺色是这套风格翻车的主要原因。</li>
+            <li data-page-node-id="mRGdQ6e4A9UaxgLOCUPOmf">强调色最多三种，且固定语义：黄 = 主强调，粉 = 次强调，绿 = 状态。</li>
+          </ol>
+
+          <div class="keybox" data-page-node-id="2JSXET0YRytmo8D2eAv5Vj">
+            <b data-page-node-id="AJ6FnOxvaCxQPACuO2UDq9">一句话规则</b>
+            高饱和用在小面积，大面积留给黑与白。颜色是标点，不是句子。
+          </div>
+
+          <h3 data-page-node-id="aT6LBINxuazdwiMgiXhbxa">2.1 中文排版的额外注意</h3>
+
+          <p data-page-node-id="ynUFKT0yAr6fEiGssQ5EXU">英文字体（Archivo Black、Space Grotesk 之类）在粗野风里表现极好，但中文没有对应的超粗字重时，容易糊成一团。实践中的折中方案是：</p>
+
+          <ul data-page-node-id="nGuhkcX7HaEPKjTzCHgXmt">
+            <li data-page-node-id="HbJrCf9FTdfBRHJ3eYoBCL">标题用「黑体 + font-weight 900 + 轻微负字距」，字号放大到 32px 以上，靠体量而非字重取胜。</li>
+            <li data-page-node-id="lfd4VC25PHbIL7Ms9utves">正文严格 1.8 以上行高，中文比英文更吃行高。</li>
+            <li data-page-node-id="CdIF152XE9PbKM4RnpKOJQ">避免对中文使用 -webkit-text-stroke 描边，笔画会粘连；描边只用在英文大标题上。</li>
+          </ul>
+
+          <h2 data-page-node-id="zASo7ecOUFxeerWRIEwKrK">三、什么时候不该用它</h2>
+
+          <p data-page-node-id="XQXflE2jMxCB1dgvBOmHXs">这才是最重要的部分。这套风格有明显的适用边界，用错地方会直接劝退用户：</p>
+
+          <ul data-page-node-id="b1PSHaAb8UawWsJbVrST78">
+            <li data-page-node-id="qkPfVQ0f1MNmGU6sqgvX0N"><strong data-page-node-id="RI6Fiou7Mgp0vh9vPnJarl">不适合</strong>：银行、医疗、政务类界面。用户在这些场景需要信任感，而硬朗线条传递的是「挑衅」。</li>
+            <li data-page-node-id="8dACB17Ev4qCRUECqa08UW"><strong data-page-node-id="AxZ1IMDmit3gMwK4bYlhpr">不适合</strong>：信息密度极高的后台表格。满屏硬边框会让表格线彻底失去层次。</li>
+            <li data-page-node-id="MBaqenS0BnPCplL3FuIZaK"><strong data-page-node-id="7XBCvAuBifXThMelbKgC60">适合</strong>：个人博客、作品集、设计工作室、活动落地页、创意产品官网。</li>
+          </ul>
+
+          <p data-page-node-id="hCvfeEDfbzzcGAkdDNlucQ">换句话说，它适合<strong data-page-node-id="z2deiJIFGKZFf54RURlfac">表达立场的地方</strong>，不适合<strong data-page-node-id="tBtkp7sGCd5FJbwXyVFzIV">处理业务的地方</strong>。博客恰好是前者。</p>
+
+          <hr data-page-node-id="SjYzt8wuSMAXlxnO0FgaQu">
+
+          <p data-page-node-id="gKSxvEIWot0DbjBFwo1KJE">最后回到最初的问题：为什么要把博客做成这样？因为写博客本身就是一件有点不讲道理的事情——花十几个小时写一篇可能只有两百人读的文章。既然行为已经足够粗野了，界面温柔给谁看？</p>
+
+        </article>
+
+        <!-- 标签 + 分享 -->
+        <div class="post-tax" data-page-node-id="CEY8ZFN8Jtnnse6NJauGRL">
+          <span class="lbl" data-page-node-id="ghPOKW9eAgEheVP3Yv0SPa">标签</span>
+          <a href="#" class="tag" data-page-node-id="rCnvdqHVll3kiGhZ8dnW6c">新粗野主义</a>
+          <a href="#" class="tag sky" data-page-node-id="3R39YJ2GSWHxqscipiGBdi">CSS</a>
+          <a href="#" class="tag mint" data-page-node-id="EwFtFzr6d8I0VPgBNowBcv">设计系统</a>
+          <a href="#" class="tag pink" data-page-node-id="28qb74jD8v07eRYWLzRjFH">排版</a>
+          <a href="#" class="tag violet" data-page-node-id="jE8RyLu7sPBY8pws3klBxL">UI 风格</a>
+        </div>
+
+        <div class="share-row" data-page-node-id="Vc9mruVSLCu2SVo73py4cK">
+          <button id="likeBtn" onclick="toggleLike(this)" data-page-node-id="mPFF0DqG5cSpLK8tGMAH7G">
+            ▲ 赞 <span id="likeNum" data-page-node-id="s5U9clJkBdm91iLuz2G1Xs">128</span>
+          </button>
+          <button onclick="navigator.clipboard&amp;&amp;navigator.clipboard.writeText(location.href)" data-page-node-id="DB914qEgrfmvMYcXipsFCJ">复制链接</button>
+          <button data-page-node-id="q2Fg8n31YzRba6uqi0VKfI">分享到微博</button>
+          <button data-page-node-id="2PHNVP3YKTvahweeaDS5PM">收藏</button>
+        </div>
+
+        <!-- 作者卡 -->
+        <div class="author-card" data-page-node-id="2dALF0onoavcLze511ugOI">
+          <span class="ava" data-page-node-id="zTaf29SNkwe0b92SKvWGMZ">陈</span>
+          <div data-page-node-id="vi7TaMQAYJ9hQ60GnuiX84">
+            <h4 data-page-node-id="iYZr7fwD25jGMsTgXryZBs">陈野</h4>
+            <div class="role" data-page-node-id="YqOmUOjwEERvytrsIuLGVF">前端工程师 / 独立开发者</div>
+            <p data-page-node-id="0ACRiwevwf94q7h5J7tfUp">写了七年博客，做过六个设计系统，删掉了 90% 的文章。相信约束比自由更接近好设计，也相信一个博客最重要的功能是把话说清楚。</p>
+          </div>
+        </div>
+
+        <!-- 上下篇 -->
+        <div class="pn" data-page-node-id="HYIYfmYXunIg8sGBNxOz3v">
+          <a href="#" class="prev" onclick="go('page-post');return false" data-page-node-id="3NG9kC1u6S1BOc2SV3nwmi">
+            <span class="dir" data-page-node-id="H1gH9HnR4WhFAbQKHbpL9n">← 上一篇</span>
+            <div class="ttl" data-page-node-id="doPcC3GlujkIs5k4NXXyC2">重新理解 CSS 层叠：为什么你的样式总在打架</div>
+          </a>
+          <a href="#" class="next" onclick="go('page-post');return false" data-page-node-id="AT1Sxz9edwCnDagmnCNbVU">
+            <span class="dir" data-page-node-id="jAXajA7GIqSEbK4qotiSAM">下一篇 →</span>
+            <div class="ttl" data-page-node-id="8ACWS4vv7E4iLC1vwMinJA">栅格是脚手架，不是牢笼</div>
+          </a>
+        </div>
+
+        <!-- 评论 -->
+        <section class="comments" data-page-node-id="ruA1FsgXWj4PVnvsWS7xmU">
+          <div class="cm-count" data-page-node-id="ckQsS6wpdWmq98zrsbV6uQ">评论 <i data-page-node-id="b2DwNpJl1QRSnvPFBirQ32">3</i></div>
+
+          <form class="cm-form" onsubmit="return fakeSubmit(this,event)" data-page-node-id="tMWa4mexzNDJVpAN8BlBF8">
+            <div class="row" data-page-node-id="tYgK2kbjMCjVA2RlpGBUwU">
+              <input type="text" placeholder="昵称" required data-page-node-id="nbD6e0fsNDo8D8KT8fkErt">
+              <input type="email" placeholder="邮箱（不会公开）" required data-page-node-id="OHhZMePMW1v4eIm8lmMbnq">
+            </div>
+            <textarea placeholder="说点什么…支持 Markdown 语法"></textarea>
+            <div class="cm-actions" data-page-node-id="WoNABmhXF6hiGKPzRjxBIf">
+              <span class="hint" data-page-node-id="20TAAIxl8YDxMs9buhI7tD">提交后需经审核，通常 24 小时内可见</span>
+              <button class="btn yellow" type="submit" data-page-node-id="k3VkhnurtleqhugG4Bj07g">发表评论</button>
+            </div>
+          </form>
+
+          <div class="cm-list" data-page-node-id="8EChNP3Ld5kvKaQk7naAay">
+
+            <div class="cm-item" data-page-node-id="OMwSs0xhtuBa1F1L7Ptjvv">
+              <div class="cm-head" data-page-node-id="B0ZkEWwXqSA6ERdN0ZuVte">
+                <span class="ava" style="background:var(--sky)" data-page-node-id="iCjcGtjYtnKHQMr5yaErba">苏</span>
+                <b data-page-node-id="EfDOCYFzD4iga1g3Rq2zan">苏晴</b>
+                <span class="lz" data-page-node-id="WeZUUKACRKNDEqXWwgBNXz">作者</span>
+                <span class="floor" data-page-node-id="oeE6xQecTDTHwRmipfmDcR">1 楼</span>
+              </div>
+              <div class="cm-time" data-page-node-id="YT4GR2gz0jDYUnqB7emMe8">2026-09-12 14:02</div>
+              <div class="cm-body" data-page-node-id="eso90cSj3QNsLtHpHmObTy">「阴影是边框的延伸」这句真是点醒我了。我之前的阴影全是 `0 8px 24px rgba(...)`，难怪看着软绵绵还老觉得边框不够重。改完立刻清爽了。</div>
+              <div class="cm-foot" data-page-node-id="ee0MSV0VUts08aFL5lj5h6"><button data-page-node-id="HgH6FDf5OId5DG4qKQFUgN">回复</button><button data-page-node-id="ahNTxHDIVEx2BFygLwIjOb">点赞 12</button></div>
+            </div>
+
+            <div class="cm-item reply" data-page-node-id="wm1RnOsoSBLDnJQXpLB34D">
+              <div class="cm-head" data-page-node-id="EBtrvWenR0CvsAurEuB6kf">
+                <span class="ava" style="background:var(--yellow)" data-page-node-id="F2Psb0dgjod9a6HjhFyiFt">陈</span>
+                <b data-page-node-id="PQWEXqgiqBn95aNNqRqvjV">陈野</b>
+                <span class="lz" data-page-node-id="9KCGgvSgDohoWlJaoqfS5E">楼主</span>
+                <span class="floor" data-page-node-id="J4NQ0BWhfrAj9ezC6JAtZt">2 楼</span>
+              </div>
+              <div class="cm-time" data-page-node-id="x5wQoNXSdj2KSnEYlnfdTe">2026-09-12 14:31</div>
+              <div class="cm-body" data-page-node-id="TsxtHBro8v3Cqi94SP16Mi">
+                <div class="quote" data-page-node-id="TecjCvIc6d0qn0npLfbi1z">引用 @苏晴：阴影全是 `0 8px 24px rgba(...)`，难怪看着软绵绵……</div>
+                对，还有一个检验方法：把页面转成纯黑白灰看一眼。如果去掉颜色后结构依然清晰，说明边框和阴影的层级是对的；如果一片模糊，那就是在靠颜色硬撑。
+              </div>
+              <div class="cm-foot" data-page-node-id="DY6GSQlYMNqeAuyUWgzI39"><button data-page-node-id="cDmYCeKnGbrfYdaXI9AAFH">回复</button><button data-page-node-id="uFvKsfIrGKATMUfUChzSN7">点赞 27</button></div>
+            </div>
+
+            <div class="cm-item" data-page-node-id="hjlqLO11veRbJOFY646Tas">
+              <div class="cm-head" data-page-node-id="lH0WPSgsD4GwEfZqfehqji">
+                <span class="ava" style="background:var(--violet);color:#fff" data-page-node-id="vswEQH9tABj3Y81MaKxj1w">周</span>
+                <b data-page-node-id="Bz3OoBfnlrJ32w5JSTSrbf">周牧</b>
+                <span class="floor" data-page-node-id="esaiRF04ls6e4XxBwIhviq">3 楼</span>
+              </div>
+              <div class="cm-time" data-page-node-id="9CgSIyqhxuHNAqOVEm27s6">2026-09-13 09:18</div>
+              <div class="cm-body" data-page-node-id="LiM3Ikjs77lRq6FXADBZcM">第三节讲「什么不该用」这段最有价值。上个月我把一个内部审批系统改成这个风格，被吐槽到重做……确实，工具类界面还是得收敛。</div>
+              <div class="cm-foot" data-page-node-id="dsulZiCX3t7uVIXfk6wjHl"><button data-page-node-id="bBfFHBhSlu2332cLy80XQ4">回复</button><button data-page-node-id="uvOM1EEa2NDzFcndVQ0x3R">点赞 8</button></div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+
+      <!-- 侧栏 -->
+      <aside class="side" data-page-node-id="iSKyxvWWzqABMKVYFo8fnz">
+        <div class="side-box y" data-page-node-id="Ie4UByLezsmf96m0JcMPrD">
+          <h3 data-page-node-id="dhwYFihakN8dPCxPNcBXBh">本文目录</h3>
+          <ul class="toc" data-page-node-id="uZdoKslmRzoBpW2A1WmD0h">
+            <li data-page-node-id="cjqi1g1YvEBdcEVZFPpDAt"><a href="#" data-page-node-id="MULeFbZV2GkGGa5qMucnNP">一、先把「丑」这个标签摘掉</a></li>
+            <li class="sub" data-page-node-id="flYXjzA0rHrzZ5wOxWqbUD"><a href="#" data-page-node-id="4NAUtj2bKZm4t6MD2yDcgj">1.1 阴影其实是边框的延伸</a></li>
+            <li data-page-node-id="GIoukCk24E4A6OgqBhbfR9"><a href="#" data-page-node-id="GCk2DlUjMDmDOZxl5GwaE0">二、可读性不靠字号，靠对比</a></li>
+            <li class="sub" data-page-node-id="BLPHF3jDHAnpi3iIw3bS8F"><a href="#" data-page-node-id="EOKR2EzYDCDZK1KM5ephCF">2.1 中文排版的额外注意</a></li>
+            <li data-page-node-id="ld6ajA7Gvy4et2O4d1G2Ty"><a href="#" data-page-node-id="QGQApFVdPDl0KBsS3DzfrO">三、什么时候不该用它</a></li>
+          </ul>
+        </div>
+
+        <div class="side-box p" data-page-node-id="MbCgPykEexQCTDIjy0ReTp">
+          <h3 data-page-node-id="wbMB2Jl4TTpJtyoWn4D3KZ">热门文章</h3>
+          <ol class="hot" data-page-node-id="2jH1wn0AXqt2ZgaWZHnFDi">
+            <li data-page-node-id="Vwc9xnDXHPPWvNZQEBKONE">
+              <span data-page-node-id="tNkFb1opTlDs9JfZ0f4in6">
+                <a href="#" onclick="go('page-post');return false" data-page-node-id="186pUcirUXYxZ5lDL5JC7P">写了七年博客，我删掉了 90% 的文章</a>
+                <span class="views" data-page-node-id="zUGxDETYEgTMYi0075tlz5">4,102 次阅读</span>
+              </span>
+            </li>
+            <li data-page-node-id="ARkdcDEE9ZBdIlQm0dnhJa">
+              <span data-page-node-id="JMRD2xJr75trQfZhmjHj9k">
+                <a href="#" onclick="go('page-post');return false" data-page-node-id="iPjHSAxurNkwYveHdWnTOB">按钮的十七种反面教材</a>
+                <span class="views" data-page-node-id="L8JIYInjBukDdN9bwmsF83">3,860 次阅读</span>
+              </span>
+            </li>
+            <li data-page-node-id="ia3Ub4i6S4DJ4D8bHdu1Wj">
+              <span data-page-node-id="og0eFuly5C4CmtqMdGkzJA">
+                <a href="#" onclick="go('page-post');return false" data-page-node-id="8gtpSRcekGayGZA7lSVIfV">重新理解 CSS 层叠</a>
+                <span class="views" data-page-node-id="OWmStJKR7SHuWdtocVWeFB">3,215 次阅读</span>
+              </span>
+            </li>
+            <li data-page-node-id="o1fIDgKMh2vvQ882rvlyYn">
+              <span data-page-node-id="AsZGbT5j61CDw2RSZhNGF3">
+                <a href="#" onclick="go('page-post');return false" data-page-node-id="BGx92vsjREEDreHgDBcG8M">栅格是脚手架，不是牢笼</a>
+                <span class="views" data-page-node-id="pIIqybntJYIeauooJPJTK1">2,744 次阅读</span>
+              </span>
+            </li>
+          </ol>
+        </div>
+
+        <div class="side-box m" data-page-node-id="KR3nYTstf4rWY7TEcC4Hle">
+          <h3 data-page-node-id="GWqP0N80zwvkxl4LnXGL3f">标签云</h3>
+          <div class="cloud" data-page-node-id="fYtaFHErwqOG7a3CIoMvml">
+            <a href="#" data-page-node-id="5kA9TSxa24N6YzJ1qnPBIk">CSS</a><a href="#" data-page-node-id="SOfmULBvPCaXFXeJkX3Z1J">设计系统</a><a href="#" data-page-node-id="n57MoJOFTd8DCrYJNqRgks">排版</a>
+            <a href="#" data-page-node-id="6EGu0NXEP7J03aEAZCwvig">新粗野主义</a><a href="#" data-page-node-id="pRJ3JUpyoLDjHKFk6bJX1y">性能</a><a href="#" data-page-node-id="yCjnX9FRMCUDH33KgXfRZA">可访问性</a>
+            <a href="#" data-page-node-id="v7RPP0rRVmCAJRa4v2il9E">网格布局</a><a href="#" data-page-node-id="cF6kDbYAh5pmuU88JsmFKf">字体</a><a href="#" data-page-node-id="oifJM7blw4xeXmID8FbnBN">工具链</a>
+          </div>
+        </div>
+
+        <div class="side-cta" data-page-node-id="HpfFvZ0MCm3GL1Mb0kLvkH">
+          <b data-page-node-id="XBBXOToxVWYI7US0CxCmd2">每周两封<br data-page-node-id="Qv6zfYTd8fAgxisujjxVOg">只写干货</b>
+          <p data-page-node-id="CWfMIPtFWAzH8c0A5Yrnmh">新文章发布时通知你，含未发布草稿的片段。</p>
+          <button class="btn" onclick="alert('订阅入口 demo')" data-page-node-id="Vg18LWDLsFWYFduUcHu773">订阅邮件</button>
+        </div>
+      </aside>
+
+    </div>
+
+    <!-- 相关文章 -->
+    <section class="related" data-page-node-id="DiMiuAuOYWjdbgtsAhfO8J">
+      <div class="sec-title" data-page-node-id="ZsM1NzbnRZhe9OdCVORKzI">
+        <h2 data-page-node-id="DF1yYQnHSnJctGagVhrSBd">你可能还想看</h2>
+        <span class="rule" data-page-node-id="RDnsa2Y2mHEpTt3XZC1wpS"></span>
+        <span class="note" data-page-node-id="bSxX4Fy7XS2sMgAeYZ8s7R">Related</span>
+      </div>
+      <div class="rel-grid" data-page-node-id="zwH4THyNkFCRpIOp510jtR">
+        <a href="#" class="rel-card" onclick="go('page-post');return false" data-page-node-id="b5eMTU9iYdQkYRK8Fya7QP">
+          <span class="tag sky" data-page-node-id="EbF6FX6tO0AyemOvqhR1d3">前端工程</span>
+          <h4 data-page-node-id="ebutB8XIPlpqkWhUBY3nES">重新理解 CSS 层叠：为什么你的样式总在打架</h4>
+          <div class="r-date" data-page-node-id="eu3ehFvdMRGUuBRQeTaigj">2026-09-10 · 9 分钟</div>
+        </a>
+        <a href="#" class="rel-card" onclick="go('page-post');return false" data-page-node-id="RmVHDFQoGbHUjMV8pCGOqM">
+          <span class="tag violet" data-page-node-id="ZX50xnDpwZ8nqH0grMNqXP">视觉设计</span>
+          <h4 data-page-node-id="VPyw06JuSZrN6g2xZ2eldh">栅格是脚手架，不是牢笼</h4>
+          <div class="r-date" data-page-node-id="cJeaYDLKwA8ohZ1ZZIjBEy">2026-09-08 · 11 分钟</div>
+        </a>
+        <a href="#" class="rel-card" onclick="go('page-post');return false" data-page-node-id="vOukD13D7LhAKYHdSf52nv">
+          <span class="tag orange" data-page-node-id="BEvWkQS6KsQJgWPtUUFxF0">随笔</span>
+          <h4 data-page-node-id="PkxelSPzrmo64ko9XpTOQc">写了七年博客，我删掉了 90% 的文章</h4>
+          <div class="r-date" data-page-node-id="QqnZems3xJ3CKFwZh1YH4i">2026-09-05 · 6 分钟</div>
+        </a>
+      </div>
+    </section>
+
+  </div>
+</div><!-- /page-post -->
+
+
+<!-- ══════════ 页脚 ══════════ -->
+<footer class="site-foot" data-page-node-id="Ur43Cj4cbjJS2gB3hAFzYW">
+  <div class="wrap" data-page-node-id="oUQyCNUc6HfFrw4BB5vSMe">
+    <div class="foot-grid" data-page-node-id="ZycwKSfa82pwdhuUoY1tp2">
+      <div data-page-node-id="PoDcXNTbouDOMcPFgDBzZE">
+        <div class="foot-mark" data-page-node-id="ZS0CMAFy9aBHI8DjwqcS1L">粗</div>
+        <h4 data-page-node-id="W34JqEsJ4Tmx0nrx9CfvYu">粗野志 Brutalog</h4>
+        <p data-page-node-id="HBFpg2yXDFRJ8aHUbVQoFM">一个不修边幅的个人博客。写前端、写作设计、写那些删了又写的东西。</p>
+      </div>
+      <div data-page-node-id="RHgNwbyCgurD2JouSYs8yo">
+        <h4 data-page-node-id="HRMXhFPHEOhIUvohIBRmt6">导航</h4>
+        <ul data-page-node-id="oGPWbwGqT6YxQmrjvi4PjL">
+          <li data-page-node-id="rZGKTGQdbTTRm5UpUG2FGj"><a href="#" onclick="go('page-list');return false" data-page-node-id="e8c9aFs5Mm4at1d5zm3L9A">首页</a></li>
+          <li data-page-node-id="2HkMsuQU7WrO6FFUqDfbgl"><a href="#" onclick="go('page-list');return false" data-page-node-id="1FWsGEtiTn5wmnpIeSdA1F">文章归档</a></li>
+          <li data-page-node-id="eGbRvCmIqFL76wKCzDAl6D"><a href="#" onclick="go('page-post');return false" data-page-node-id="May1A0hhIBxBEV1Ako51Bt">关于作者</a></li>
+          <li data-page-node-id="CJxlP0QBoLAIv1Dq1F4a4C"><a href="#" data-page-node-id="7xaxea7QAeO1LN19aEShmV">RSS 订阅</a></li>
+        </ul>
+      </div>
+      <div data-page-node-id="eCPp1NUAt6PBENN79XyISj">
+        <h4 data-page-node-id="4PR2S8XL7mvR49BXaZCkyb">分类</h4>
+        <ul data-page-node-id="QT6y7gYjiOpaUAPlWcv9p9">
+          <li data-page-node-id="Rwl4nXJisbOcy5JD3ALF92"><a href="#" data-page-node-id="HDtAvRU5qfoXMSkLjZpWJJ">前端工程</a></li>
+          <li data-page-node-id="RPrp7yV3e4ib7AjcX17lMz"><a href="#" data-page-node-id="6Or11NsZW5WGuGiFan1ax8">视觉设计</a></li>
+          <li data-page-node-id="VTUugZ2GRTP8IBkUl5JSQn"><a href="#" data-page-node-id="bf9khczjurhEkle9uptcvo">随笔</a></li>
+          <li data-page-node-id="bL5izOhn3jXwrH8eAE8BiN"><a href="#" data-page-node-id="8mHWm1eQ4nYeiowEp93SeZ">资源分享</a></li>
+        </ul>
+      </div>
+      <div data-page-node-id="gNTKv3yJzSUTGqHbZsSJ3q">
+        <h4 data-page-node-id="WbsgRMS8z6RZhoXH4Ljhn0">联系</h4>
+        <ul data-page-node-id="ORIuuvYNg4CNwaOBhd2u08">
+          <li data-page-node-id="DGGRmTAWVTNRtqcDv0mV99"><a href="#" data-page-node-id="IlHocLyqQnT9MDXKThx0Ph">邮件联系</a></li>
+          <li data-page-node-id="ImOoArp7oMkxcEN2dziqfk"><a href="#" data-page-node-id="pb3wOLaKUO51CLrwpEDW6T">GitHub</a></li>
+          <li data-page-node-id="32n2tTlQB8yiimVJ2ftYIw"><a href="#" data-page-node-id="lboGWqmBsjUnuZYfSgRean">友链申请</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom" data-page-node-id="pYdU4Q7zHoWvaUWEFeSUyB">
+      <span data-page-node-id="ZYffTU5Gjd05rVgx2lzZPI">© 2026 粗野志 BRUTALOG · 新粗野风博客主题设计稿</span>
+      <span class="foot-dots" data-page-node-id="azy1Okfh0MMpgYdNGiEaG7"><i data-page-node-id="045nvXpQX8yDQooy3dlIYS"></i><i data-page-node-id="Pn7i1tRBDXUKwpDRYNVVGI"></i><i data-page-node-id="t37BwRxCG8qda4ckuxGUSD"></i><i data-page-node-id="xp5wSHJDz3bDWihOlkhYXT"></i></span>
+      <span data-page-node-id="7X536wHVYFfXiKB0JJAeve">Powered by 手写 CSS</span>
+    </div>
+  </div>
+</footer>
+
+<button class="to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="返回顶部" data-page-node-id="Hf4dKZUBvsQ8v9cS1WV8E5">
+  <svg width="20" height="20" viewBox="0 0 24 24" stroke="#101010" stroke-width="3.4" fill="none" stroke-linecap="square" data-page-node-id="I4GYuxxfRhiIDyrC8fB0wb">
+    <path d="M12 19V5M5 12l7-7 7 7" data-page-node-id="BrVIDfgLhByiqnxWok6Emd"/>
+  </svg>
+</button>
+
+<script>
+/* ---------- 页面切换 ---------- */
+function go(id){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('is-active')});
+  var t=document.getElementById(id);
+  if(t) t.classList.add('is-active');
+  document.getElementById('navLinks').classList.remove('open');
+  window.scrollTo({top:0,behavior:'instant' in document.documentElement.style?'instant':'auto'});
+  history.replaceState(null,'',id==='page-post'?'#post':'#list');
+}
+
+/* 首次进入按 hash 定位 */
+(function(){
+  if(location.hash==='#post') go('page-post');
+})();
+
+/* 浏览器前进后退 */
+window.addEventListener('popstate',function(){
+  go(location.hash==='#post'?'page-post':'page-list');
+});
+
+/* ---------- 点赞 ---------- */
+function toggleLike(btn){
+  var n=document.getElementById('likeNum');
+  var on=btn.classList.toggle('liked');
+  n.textContent=parseInt(n.textContent,10)+(on?1:-1);
+  btn.firstChild.nodeValue = on ? '▲ 已赞 ' : '▲ 赞 ';
+}
+
+/* ---------- 分类筛选 ---------- */
+document.querySelectorAll('.chip').forEach(function(c){
+  c.addEventListener('click',function(){
+    document.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on')});
+    c.classList.add('on');
+  });
+});
+
+/* ---------- 表单假提交 ---------- */
+function fakeSubmit(form,ev){
+  ev.preventDefault();
+  var b=form.querySelector('button[type=submit]');
+  var old=b.textContent;
+  b.textContent='已收到 ✓';
+  b.style.background='var(--mint)';
+  setTimeout(function(){b.textContent=old;b.style.background=''},1600);
+  form.reset();
+  return false;
+}
+</script>
+</body>
+</html>

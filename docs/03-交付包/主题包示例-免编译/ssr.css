@@ -1,0 +1,3 @@
+/* AIMARK_CSS_OK —— 外置主题免编译投放验证 */
+:root{--ink:#2b1b3d;--ink2:#5b4a72;--ink3:#9a8fb0;--paper:#f7f2ff;--line:#e0d5f5;--jade:#7c3aed;--card:#fff;--font-d:Georgia,serif}
+body{background:var(--paper);color:var(--ink)}

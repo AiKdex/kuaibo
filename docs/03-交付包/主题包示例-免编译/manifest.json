@@ -1,0 +1,8 @@
+{
+  "id": "testtheme1",
+  "name": "免编译测试主题",
+  "version": "1.0.0",
+  "kind": "theme",
+  "description": "验证 zip 安装即生效（ssr.css + page.html），无需重新编译主系统",
+  "author": "aiklog-e2e"
+}

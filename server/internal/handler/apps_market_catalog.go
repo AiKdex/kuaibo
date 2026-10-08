@@ -87,24 +87,24 @@ type marketLicense struct {
 
 // marketPlugin 目录中的插件条目（含服务端补充字段 installed/applicable）。
 type marketPlugin struct {
-	ID             string   `json:"id"`
-	Name           string   `json:"name"`
-	Version        string   `json:"version"`
-	Description    string   `json:"description"`
-	Author         string   `json:"author"`
-	DownloadURL    string   `json:"download_url"`
-	SHA256         string   `json:"sha256"`
-	Tier           string   `json:"tier"`                     // free|paid（付费预留；安装需 pro license）
-	Price          string   `json:"price,omitempty"`          // 展示价（如 ¥99/年；上游 2026-09-24 商城化新增）
-	BillingPeriod  string   `json:"billing_period,omitempty"` // yearly|monthly|once（可选）
-	PurchaseURL    string   `json:"purchase_url,omitempty"`   // 购买引导（上游暂未下发；下发后前端展示「去购买」）
-	Cover          string   `json:"cover,omitempty"`          // 市场卡片封面图 URL（可选）
-	Target         []string `json:"target,omitempty"`
-	MinCoreVersion string   `json:"min_core_version,omitempty"`
-	SettingsSchema []any    `json:"settings_schema,omitempty"`
+	ID              string   `json:"id"`
+	Name            string   `json:"name"`
+	Version         string   `json:"version"`
+	Description     string   `json:"description"`
+	Author          string   `json:"author"`
+	DownloadURL     string   `json:"download_url"`
+	SHA256          string   `json:"sha256"`
+	Tier            string   `json:"tier"` // free|paid（付费预留；安装需 pro license）
+	Price           string   `json:"price,omitempty"`           // 展示价（如 ¥99/年；上游 2026-09-24 商城化新增）
+	BillingPeriod   string   `json:"billing_period,omitempty"`  // yearly|monthly|once（可选）
+	PurchaseURL     string   `json:"purchase_url,omitempty"`    // 购买引导（上游暂未下发；下发后前端展示「去购买」）
+	Cover           string   `json:"cover,omitempty"` // 市场卡片封面图 URL（可选）
+	Target          []string `json:"target,omitempty"`
+	MinCoreVersion  string   `json:"min_core_version,omitempty"`
+	SettingsSchema  []any    `json:"settings_schema,omitempty"`
 	// 内置能力应用（builtin=true）：能力随主系统编译（如家族传承/组织架构），
 	// 无安装包可下载——"安装"=登记 blog_plugins capacity 记录（见 installBuiltinCapacity）。
-	Builtin      bool     `json:"builtin,omitempty"`
+	Builtin     bool     `json:"builtin,omitempty"`
 	Capabilities []string `json:"capabilities,omitempty"` // 命中的内核能力名（builtin 应用必填）
 	// 服务端补充
 	Installed  bool `json:"installed"`
@@ -113,19 +113,19 @@ type marketPlugin struct {
 
 // marketTheme 目录中的主题条目（安装后登记进 blog_plugins，kind=theme）。
 type marketTheme struct {
-	ID            string   `json:"id"`
-	Name          string   `json:"name"`
-	Version       string   `json:"version"`
-	Description   string   `json:"description"`
-	Author        string   `json:"author"`
-	DownloadURL   string   `json:"download_url"`
-	SHA256        string   `json:"sha256"`
-	Tier          string   `json:"tier,omitempty"`           // free|paid（付费预留）
-	Price         string   `json:"price,omitempty"`          // 展示价（上游 2026-09-24 商城化新增）
-	BillingPeriod string   `json:"billing_period,omitempty"` // yearly|monthly|once（可选）
-	PurchaseURL   string   `json:"purchase_url,omitempty"`   // 购买引导（上游暂未下发）
-	Cover         string   `json:"cover,omitempty"`          // 市场卡片封面图 URL（可选）
-	Target        []string `json:"target,omitempty"`
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Version     string   `json:"version"`
+	Description string   `json:"description"`
+	Author      string   `json:"author"`
+	DownloadURL string   `json:"download_url"`
+	SHA256      string   `json:"sha256"`
+	Tier        string   `json:"tier,omitempty"`  // free|paid（付费预留）
+	Price       string   `json:"price,omitempty"`          // 展示价（上游 2026-09-24 商城化新增）
+	BillingPeriod string `json:"billing_period,omitempty"` // yearly|monthly|once（可选）
+	PurchaseURL string   `json:"purchase_url,omitempty"`   // 购买引导（上游暂未下发）
+	Cover       string   `json:"cover,omitempty"` // 市场卡片封面图 URL（可选）
+	Target      []string `json:"target,omitempty"`
 	// 服务端补充
 	Installed  bool `json:"installed"`
 	Applicable bool `json:"applicable"`
@@ -140,8 +140,8 @@ type marketAiSupply struct {
 	Name          string   `json:"name"`
 	Version       string   `json:"version"`
 	Description   string   `json:"description"`
-	Tier          string   `json:"tier,omitempty"`           // free|paid（付费预留；购买走 purchase_url）
-	Price         string   `json:"price,omitempty"`          // 展示价（如 ¥9.9/月）
+	Tier          string   `json:"tier,omitempty"`          // free|paid（付费预留；购买走 purchase_url）
+	Price         string   `json:"price,omitempty"`         // 展示价（如 ¥9.9/月）
 	BillingPeriod string   `json:"billing_period,omitempty"` // monthly|yearly|once
 	PurchaseURL   string   `json:"purchase_url,omitempty"`   // 购买引导
 	Provider      string   `json:"provider,omitempty"`       // 凭据缺省 provider 名提示（安装以凭据为准）
@@ -271,8 +271,6 @@ func (a *API) marketView(idx *marketIndex) map[string]any {
 		"site_url":       officialMarketSiteURL, // 独立应用中心页的「打开官网」目标
 		"shell":          shell,
 		"edition":        a.licenseEdition(),
-		// 远程索引验签开关：缺省=false（信任官方/社区未签名目录，开箱即用）；true=强制验签（自托管签名目录时开启）。
-		"index_verify": a.cfg.GetString("plugin_market.index_verify") == "true",
 	}
 }
 
@@ -699,15 +697,8 @@ func (a *API) fetchMarketIndex(r *http.Request) (*marketIndex, error) {
 	if err := json.Unmarshal(body, &idx); err != nil {
 		return nil, fmt.Errorf("市场索引格式非法")
 	}
-	// 索引签名验签：缺省=false（信任官方/社区未签名目录，开箱即用）。
-	// 仅当运营者显式设 plugin_market.index_verify=true（强制验签）时执行——
-	// 用于自托管签名目录等需要严格校验的场景。逐包 sha256 完整性校验不依赖此项，仍生效。
-	if a.cfg.GetString("plugin_market.index_verify") == "true" {
-		if err := idx.verifySignature(); err != nil {
-			return nil, fmt.Errorf("市场索引验签失败：%w", err)
-		}
-	} else {
-		log.Printf("[market] 已按配置跳过远程索引签名验签（plugin_market.index_verify=false），请确保索引来源可信")
+	if err := idx.verifySignature(); err != nil {
+		return nil, fmt.Errorf("市场索引验签失败：%w", err)
 	}
 	return &idx, nil
 }

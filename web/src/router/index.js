@@ -1,7 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import { watch } from 'vue'
 import { isAuthed } from '@/api'
-import { siteName } from '@/site'
 
 const routes = [
   // 后台入口（爱库录：路径不叫 login，降低扫描撞库；公开博客不暴露）
@@ -286,23 +284,8 @@ router.beforeEach((to) => {
   return true
 })
 
-// 浏览器标签标题：公开页用真实站点名（站点设置→博客名称），其余页回退「爱库录」。
-// 首页/落地页 meta.title 已含品牌，不重复追加。
-// 站点名为公开页异步拉取，故 watch 在站名到达后重算当前路由标题，避免首屏停留在「爱库录」。
-function resolveTitle(to) {
-  const base = to.meta?.title
-  if (!base || to.name === 'home') return base || '爱库录'
-  const brand = to.meta?.public && siteName.value ? siteName.value : '爱库录'
-  return `${base} · ${brand}`
-}
-
 router.afterEach((to) => {
-  document.title = resolveTitle(to)
-})
-
-// 站名异步到达后，刷新当前路由标签标题（首屏由 afterEach 兜底，这里补齐真实站名）
-watch(siteName, () => {
-  document.title = resolveTitle(router.currentRoute.value)
+  document.title = to.meta?.title ? `${to.meta.title} · 爱库录` : '爱库录'
 })
 
 export default router

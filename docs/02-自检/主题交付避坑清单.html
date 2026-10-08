@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="RxUBZJMyBc3uAdpbUvq3Lq">
+<head data-page-node-id="6czEvJ6Urg67Rtaxa6kbCy">
+<meta charset="UTF-8" data-page-node-id="amYeSI5LE97AVY2f47RQwN">
+<meta name="viewport" content="width=device-width, initial-scale=1" data-page-node-id="uktSK80z2PYq4cGzgENHZj">
+<title>AiKlog 主题交付 · 五大避坑清单</title>
+<style>
+  :root{
+    --ink:#141b26; --ink2:#43506a; --ink3:#76839a;
+    --paper:#f4f6f9; --card:#ffffff; --line:#e2e7ef;
+    --red:#c8372f; --red-bg:#fdecea; --red-line:#f2c4bf;
+    --amber:#b8770e; --amber-bg:#fff6e6; --amber-line:#f0dcb4;
+    --yellow:#9c7b06; --yellow-bg:#fffbe8; --yellow-line:#eee4b0;
+    --green:#1f7a52; --green-bg:#eaf7f0; --green-line:#bfe3d0;
+    --code:#f5f7fa;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    background:var(--paper); color:var(--ink); font-family:var(--sans);
+    font-size:15px; line-height:1.7; -webkit-font-smoothing:antialiased;
+  }
+  .page{max-width:1080px;margin:0 auto;padding:56px 28px 80px}
+
+  /* ── header ── */
+  .kicker{
+    display:inline-block;font-size:11px;font-weight:700;letter-spacing:2.4px;
+    color:var(--green);border:1px solid var(--green-line);background:var(--green-bg);
+    padding:5px 12px;border-radius:2px;margin-bottom:20px
+  }
+  h1{font-size:38px;line-height:1.24;letter-spacing:-.7px;font-weight:800}
+  h1 span{color:var(--red)}
+  .lede{margin-top:16px;font-size:16px;color:var(--ink2);max-width:760px}
+  .meta{
+    display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:24px;padding-top:20px;
+    border-top:1px solid var(--line);font-size:12.5px;color:var(--ink3)
+  }
+  .meta b{color:var(--ink2);font-weight:600}
+
+  /* ── section ── */
+  section{margin-top:52px}
+  h2{
+    font-size:13px;font-weight:800;letter-spacing:2px;color:var(--ink3);
+    text-transform:uppercase;padding-bottom:12px;border-bottom:2px solid var(--ink);
+    margin-bottom:26px
+  }
+
+  /* ── problem card ── */
+  .prob{background:var(--card);border:1px solid var(--line);border-radius:3px;margin-bottom:22px;overflow:hidden}
+  .prob-head{display:flex;gap:14px;align-items:flex-start;padding:20px 24px 16px;border-bottom:1px dashed var(--line)}
+  .num{
+    flex:none;width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;
+    font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:2px
+  }
+  .prob-head h3{font-size:18.5px;font-weight:700;letter-spacing:-.2px;line-height:1.4}
+  .prob-head p{font-size:13.5px;color:var(--ink2);margin-top:5px}
+  .badge{
+    flex:none;font-size:11px;font-weight:800;letter-spacing:.6px;padding:4px 10px;
+    border-radius:2px;margin-left:auto;white-space:nowrap
+  }
+  .b-red{color:var(--red);background:var(--red-bg);border:1px solid var(--red-line)}
+  .b-amber{color:var(--amber);background:var(--amber-bg);border:1px solid var(--amber-line)}
+  .b-yellow{color:var(--yellow);background:var(--yellow-bg);border:1px solid var(--yellow-line)}
+
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .side{padding:18px 24px 22px}
+  .side:first-child{border-right:1px dashed var(--line)}
+  .side-t{
+    font-size:11.5px;font-weight:800;letter-spacing:1.2px;margin-bottom:11px;display:flex;align-items:center;gap:7px
+  }
+  .side-bad .side-t{color:var(--red)}
+  .side-good .side-t{color:var(--green)}
+  pre{
+    background:var(--code);border-left:3px solid var(--line);border-radius:2px;
+    padding:12px 14px;overflow-x:auto;font-family:var(--mono);
+    font-size:12.2px;line-height:1.65;color:#243043;white-space:pre
+  }
+  .side-bad pre{border-left-color:var(--red-line)}
+  .side-good pre{border-left-color:var(--green-line)}
+  .why{
+    padding:15px 24px 20px;background:#fbfcfe;border-top:1px dashed var(--line);
+    font-size:13.5px;color:var(--ink2)
+  }
+  .why b{color:var(--ink);font-weight:700}
+
+  /* ── table ── */
+  table{width:100%;border-collapse:collapse;background:var(--card);font-size:13.5px;border:1px solid var(--line)}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#eff2f7;font-size:11.5px;font-weight:800;letter-spacing:1px;color:var(--ink2)}
+  tr:last-child td{border-bottom:0}
+  td code,li code,p code{font-family:var(--mono);font-size:12.2px;background:#eef2f7;padding:1.5px 6px;border-radius:2px;color:#243043}
+  .ok{color:var(--green);font-weight:800}
+  .no{color:var(--red);font-weight:800}
+
+  /* ── checklist ── */
+  .check{display:grid;grid-template-columns:1fr 1fr;gap:0 40px}
+  .check h4{font-size:12px;font-weight:800;letter-spacing:1.4px;color:var(--ink3);margin:22px 0 11px}
+  .check ul{list-style:none}
+  .check li{position:relative;padding-left:24px;margin-bottom:8px;font-size:13.5px;color:var(--ink2)}
+  .check li::before{
+    content:"□";position:absolute;left:0;top:-1px;color:var(--ink3);font-size:14px
+  }
+  .check li.star{color:var(--ink);font-weight:600}
+  .check li.star::before{content:"★";color:var(--red);font-size:12px;top:1px}
+
+  /* ── callout ── */
+  .callout{
+    background:var(--card);border:1px solid var(--line);border-left:4px solid var(--green);
+    border-radius:3px;padding:20px 24px;font-size:14px;color:var(--ink2)
+  }
+  .callout b{color:var(--ink)}
+  .callout pre{margin-top:12px}
+
+  footer{
+    margin-top:60px;padding-top:22px;border-top:1px solid var(--line);
+    font-size:12.5px;color:var(--ink3)
+  }
+
+  @media(max-width:760px){
+    .page{padding:36px 18px 60px}
+    h1{font-size:27px}
+    .duo{grid-template-columns:1fr}
+    .side:first-child{border-right:0;border-bottom:1px dashed var(--line)}
+    .check{grid-template-columns:1fr}
+    .prob-head{flex-wrap:wrap}
+    .badge{margin-left:44px}
+    th,td{padding:9px 10px;font-size:12.5px}
+  }
+</style>
+</head>
+<body data-page-node-id="t3EHzKFac3inRWFcKr753x">
+<div class="page" data-page-node-id="QLGcR95xfB6WZivgdzsue0">
+
+  <span class="kicker" data-page-node-id="KXEV8utFx7SCrueeDlsa5g">主题交付质量基线 · v1.0</span>
+  <h1 data-page-node-id="9OtVZq9uixVJhEnA6pyeE1">主题交付<b data-page-node-id="II0hog7EojLf6CNH843BGf">五大避坑清单</b><br data-page-node-id="fIbeCMyQCML055nyijzK5J">每一处都<span data-page-node-id="2odWhtD4lEglqhoNJSC6XP">不会让构建报错</span></h1>
+  <p class="lede" data-page-node-id="AZIGMyT3G6ASGa5XkGbQJA">
+    这份清单来自 EmForum 主题 v1.1.0 的真实代码审查。以下 5 个问题有共同特征：
+    构建全部通过、控制台干干净净、代码看着完全正常 —— 只有真正点进去用，才会发现出了问题。
+  </p>
+  <div class="meta" data-page-node-id="vG4vg083lwEnUdQsBKBf4p">
+    <span data-page-node-id="D711cNQtaI9iqAeRtllH6E"><b data-page-node-id="McB6mIrCjsU24adgSJ6LS5">来源</b> EmForum v1.1.0 审查实录</span>
+    <span data-page-node-id="BIXT8ZtDQyB1ElnaJhcdNO"><b data-page-node-id="70FsVUpJiEH5HkN0FhdJEP">二次验证</b> brutal / parchment 主题</span>
+    <span data-page-node-id="yVvHm6HE9gcbFJidZb4Dkd"><b data-page-node-id="PdWnrDcznGZLZ1aG4AuZCu">配套工具</b> theme-lint.sh</span>
+    <span data-page-node-id="FAD9eIpUP1mNr2bK8vTtQe"><b data-page-node-id="hxTRDGOpsbixOqMRKefN5a">日期</b> 2026-09-15</span>
+    <span data-page-node-id="FAD9eIpUP1mNr2bK8vTtQf"><b data-page-node-id="hxTRDGOpsbixOqMRKefN5b">规范同步</b> v1.3 · 2026-09-17（新增平台能力边界 2 项检查）</span>
+  </div>
+
+  <!-- ═══ 问题清单 ═══ -->
+  <section data-page-node-id="CXrZ6MIATdVuRTBpyaDf6l">
+    <h2 data-page-node-id="E0aYfcHdGI9m2MGuKNvOKj">五个问题 · 逐条对照</h2>
+
+    <!-- 1 -->
+    <article class="prob" data-page-node-id="kS2DlM6cXPJxbmQXgmthC5">
+      <div class="prob-head" data-page-node-id="CyB2VtEawSLdXX75z3urSG">
+        <div class="num" data-page-node-id="8rYB7mMVtA8JtkyTILekyq">1</div>
+        <div data-page-node-id="h5RTtE4WP4tAsbE7uUglyG">
+          <h3 data-page-node-id="WS2GQsg8EzyUkuOGULrKX1">页内锚点写进了 <code data-page-node-id="18Wrt7Xu2QiHq2DKqt796g">hash</code></h3>
+          <p data-page-node-id="ZHSLnVgFYIm4QTY53rHJve">宿主是 hash 路由（<code data-page-node-id="cbnPFcjeTbfmDDylrLCAYX">#/blog?view=public</code>），锚点等于篡改路由状态</p>
+        </div>
+        <span class="badge b-red" data-page-node-id="CDsGncidE7cpkGVbUJbKeh">功能隐患</span>
+      </div>
+      <div class="duo" data-page-node-id="ovtCGsFnOs22WRszfCXytx">
+        <div class="side side-bad" data-page-node-id="b2DJ02OtZBD9W0WCfJwmgH">
+          <div class="side-t" data-page-node-id="G3gpupEI4LggtOwfoPdjti">✕ 错误写法</div>
+          <pre data-page-node-id="xRfqMXvLKriaC1kgkq67QM">&lt;a v-for="y in years" :key="y"
+   :href="'#y-' + y"&gt;
+  {{ y }} 年
+&lt;/a&gt;
+
+&lt;section :id="'y-' + y"&gt;…&lt;/section&gt;</pre>
+        </div>
+        <div class="side side-good" data-page-node-id="wQECCG4U2f1I5Fz1BkI7KJ">
+          <div class="side-t" data-page-node-id="UAJKPjjvPN8JrEVBDvANKs">✓ 正确写法</div>
+          <pre data-page-node-id="ydfHJKU5EvaMr2bN1MK4NQ">&lt;button v-for="y in years" :key="y"
+        type="button"
+        @click="jumpTo(y)"&gt;
+  {{ y }} 年
+&lt;/button&gt;
+
+function jumpTo(y) {
+  const el = document.getElementById('y-' + y)
+  if (el) el.scrollIntoView({behavior:'smooth'})
+}</pre>
+        </div>
+      </div>
+      <div class="why" data-page-node-id="HsuimfMeg0bjtYAMtEOY5y">
+        <b data-page-node-id="zD2fiR0iOa5HJ8jNMFV9nf">为什么危险：</b>点击后地址栏变成 <code data-page-node-id="fdWjK8j48x32VsUMYxSFHI">/app#y-2026</code>，路由匹配不到这个路径 → 可能跳 404、白屏，或与 Vue Router 的滚动管理互相打架。
+        而且<b data-page-node-id="RjGqQqa92kqyBLzdAbHUI6">开发阶段几乎发现不了</b> —— 它只在真实地址栏环境（非 iframe 预览）下才复现。
+        注意两种写法都要查：<code data-page-node-id="q91KsaLMskKDxgUpcuKjep">href="#x"</code> 和 <code data-page-node-id="H4Nk8ATcwJjdNHMAAFmSOi">:href="'#' + x"</code>。
+      </div>
+    </article>
+
+    <!-- 2 -->
+    <article class="prob" data-page-node-id="Zfsks43nJALpHmOLkzgbYB">
+      <div class="prob-head" data-page-node-id="5Ooj09cgZtGaQQX4pMOn93">
+        <div class="num" data-page-node-id="Y5IznTapeIGO7wc8XDrPdC">2</div>
+        <div data-page-node-id="LaOFTpFBtrNCmlHTd6OtUU">
+          <h3 data-page-node-id="yanuv8Qc0zTeAinyREFJPq">文案说「热门」，数据其实是「最新」</h3>
+          <p data-page-node-id="gtZGX8i6STTX7LrtxdbTUX">承诺了契约里根本不存在的能力</p>
+        </div>
+        <span class="badge b-amber" data-page-node-id="CpLvC8IX5wbNIRGHPro1N7">语义失真</span>
+      </div>
+      <div class="duo" data-page-node-id="8oEUm6aTiGTgAEgE81LmfS">
+        <div class="side side-bad" data-page-node-id="hDCBuZXjRquA68lC7Fy8Z2">
+          <div class="side-t" data-page-node-id="8qACCksqRKL625yS75nVyF">✕ 错误写法</div>
+          <pre data-page-node-id="nGp0rj28YcdKkdihxP5sHV">{{ searched
+   ? `关键词「${keyword}」的搜索结果`
+   : '热门文章' }}
+
+// 实际渲染：按 updated_at 倒序的前 8 篇
+// 「热门」需要 浏览量/点赞/评论数
+// 而契约里没有这些字段</pre>
+        </div>
+        <div class="side side-good" data-page-node-id="J0AyHoMToF35jkjeAPRspc">
+          <div class="side-t" data-page-node-id="D40fjhCe6zKpMiDNknFsKd">✓ 正确写法</div>
+          <pre data-page-node-id="vKBgmzEhtAHSn5AjX5RuhN">{{ searched
+   ? `关键词「${keyword}」的搜索结果`
+   : '最新更新 · 输入关键词开始检索' }}
+
+// 标题描述真实数据 + 给出行动指引</pre>
+        </div>
+      </div>
+      <div class="why" data-page-node-id="76sh7cudgxtGNallzGiFrv">
+        <b data-page-node-id="NjrHFYfMywGyEokXrCFJfo">为什么严重：</b>用户点进「热门」看到最新文章，会直接认为<b data-page-node-id="B7HtYQNiJcTiVW6ax2pG40">站点排序坏了或数据造假</b>。
+        规则：<b data-page-node-id="W2zk0TaA6ubp2cFkaoaS0m">文案里每个形容词都要能被真实字段证明</b>。高危词：热门、排行、热搜、精选、浏览量、点赞、阅读时长、评论数、封面图 —— 契约里全部不存在。
+        <br data-page-node-id="ACCGG5ct8Dp4MlTAJTn0A3"><br data-page-node-id="rI5E3gR8JLnBPi3XTgNt34"><b data-page-node-id="VgNAjWACllxBcqJOAukZyu">一个例外：</b><code data-page-node-id="ejMZGP8596QOBxDx8N4bqg">file.author</code> 属系统侧<b data-page-node-id="kJnnKPLQSpn0XajEeKm2Fv">待透出</b>字段（规范 §10-10），允许使用，但必须可选链降级 —— 「可能为空」和「不存在」是两回事。
+      </div>
+    </article>
+
+    <!-- 3 -->
+    <article class="prob" data-page-node-id="VOa964nArLXaSTrTNUgx9P">
+      <div class="prob-head" data-page-node-id="8lNnxpBuhIB7krcWLyhQHh">
+        <div class="num" data-page-node-id="VmAmnC5yOeLKiKGjzufY8u">3</div>
+        <div data-page-node-id="XletKNAEbCCL02DqCGc8UN">
+          <h3 data-page-node-id="FCUhASYvUw3KXFXpMURGus">类名与配色在暗示「排名」</h3>
+          <p data-page-node-id="H3wTYZh54miaM0Wn3bTnLM">实现只是按时间取前 5，命名和视觉却在宣称热度</p>
+        </div>
+        <span class="badge b-amber" data-page-node-id="ycMQciaHXyD94nIK678wPU">语义失真</span>
+      </div>
+      <div class="duo" data-page-node-id="E3mUHgkfRvgx9fLP9wQeGC">
+        <div class="side side-bad" data-page-node-id="2LBPOYyVDDdxdRz5Vu7PcN">
+          <div class="side-t" data-page-node-id="kbR1dcTvXPYRtQs8A58pu2">✕ 错误写法</div>
+          <pre data-page-node-id="82kZ4GxEi1HABG64q5JPFU">&lt;ul class="ef-hot"&gt;
+  &lt;span class="ef-rank"&gt;{{ i+1 }}&lt;/span&gt;
+  &lt;a class="ef-hot-t"&gt;…&lt;/a&gt;
+&lt;/ul&gt;
+
+/* 前三名红/金/青「榜单色」 */
+.ef-hot li:nth-child(1) .ef-rank{color:var(--th-hot)}
+.ef-hot li:nth-child(2) .ef-rank{color:var(--th-gold)}
+.ef-hot li:nth-child(3) .ef-rank{color:var(--th-jade)}</pre>
+        </div>
+        <div class="side side-good" data-page-node-id="1eA0rXtHnYJA7g9veZeH0V">
+          <div class="side-t" data-page-node-id="h3lksDhNGzbZJRGZvtZhTK">✓ 正确写法</div>
+          <pre data-page-node-id="dAlsovG39VAxL0pfz30N9A">&lt;ul class="ef-latest"&gt;
+  &lt;span class="ef-latest-no"&gt;{{ i+1 }}&lt;/span&gt;
+  &lt;a class="ef-latest-t"&gt;…&lt;/a&gt;
+&lt;/ul&gt;
+
+/* 序号统一弱化，不做名次区分 */
+.ef-latest-no{color:#c3ccd8}</pre>
+        </div>
+      </div>
+      <div class="why" data-page-node-id="ImhHEhaHiTFROmxGEGf05R">
+        <b data-page-node-id="tmjaPClDoSssfE5mj8vyJ4">为什么隐蔽：</b>类名是写给<b data-page-node-id="1v6CxhO5A8y08XKVpvs5Lo">维护者</b>的契约（半年后有人读 <code data-page-node-id="NGl8QpJlfoKydUgAFVjO4v">ef-hot</code>，会以为这里有热度计算逻辑，改需求时按错的心智动手）；
+        配色是写给<b data-page-node-id="C1WGjJ0jvpyyt7OeXgtm8N">读者</b>的语义（红/金/青前三名 = 排行榜的通用视觉语言）。
+        两者叠加，等于在代码和界面里<b data-page-node-id="RLlbdZettYZ4lBZ3l6BDYa">同时植入一个不存在的功能</b>。
+        <br data-page-node-id="Btl8oCk7Z0L6jNHGCsyrkV"><br data-page-node-id="pDNNnc7mm8cG5Hgq9t5foG"><b data-page-node-id="oQlb6SB9ymazRU4PfkmRN6">规则：命名描述事实，不描述期望。</b>时间序用 <code data-page-node-id="SPI4yl7fRy9eyGJPGF5GRB">latest</code> / <code data-page-node-id="FBgkJYEMHDclJ6NCIDufbj">recent</code>，人工置顶用 <code data-page-node-id="eboQEHS3PtSkFEA53IRY9o">pinned</code>，别用 <code data-page-node-id="QyvQxhQ8kXtmSR34n0QqdB">hot</code> / <code data-page-node-id="nCJivBFP5GP4hIiVkskaDu">rank</code> / <code data-page-node-id="odMLXuAJDqynbhcf0a6uq8">trending</code>。
+        同理，版面文案里「头条」（描述位置，可证）安全，「精选」（描述品质，不可证）危险。
+      </div>
+    </article>
+
+    <!-- 4 -->
+    <article class="prob" data-page-node-id="Hax7H65bTC8kYbQOEqqQbL">
+      <div class="prob-head" data-page-node-id="TQGM1NRMooTxvs6BU9QSOM">
+        <div class="num" data-page-node-id="jSLGua5uc5JbilBCYmPvDF">4</div>
+        <div data-page-node-id="ame2uV8FvqDJHwUJcfp7mE">
+          <h3 data-page-node-id="bBxt50nyAyERyNf7m3PUZk"><code data-page-node-id="ARVevUzZsNQ73XaF57ePTc">manifest.tokens</code> 漏报令牌</h3>
+          <p data-page-node-id="0nJ3UZHL7BJkrXveJp3oz0">CSS 定义了 15 个，台账只声明了 11 个</p>
+        </div>
+        <span class="badge b-yellow" data-page-node-id="xCgPAcVMj1X1Af6TxkJJ0d">规范偏差</span>
+      </div>
+      <div class="duo" data-page-node-id="GfXHXFciAtzVSWoDmFgSOG">
+        <div class="side side-bad" data-page-node-id="5EjFOJpwIIlVxwExbtjJK9">
+          <div class="side-t" data-page-node-id="8cvHvD4qwskArqf5ao3u6q">✕ 错误状态</div>
+          <pre data-page-node-id="HiHE1LhTGR3fqxQraRGPEA">// style.css 实际定义：
+--th-accent-soft
+--th-accent-2-soft
+--th-navy-2
+--th-hot          ← 定义了
+
+// manifest.js tokens 里：
+（以上 4 个全部漏报）</pre>
+        </div>
+        <div class="side side-good" data-page-node-id="BeWDGaZS3jR2raXUHyiHxB">
+          <div class="side-t" data-page-node-id="CuPP1QYr6DEwGQtwmvTG9L">✓ 正确做法</div>
+          <pre data-page-node-id="eSBCKC7lGYNuf47lt4UV2L">tokens: {
+  '--th-ink': '正文色（深蓝灰）',
+  '--th-accent-soft': '强调色极浅底',
+  '--th-accent-2-soft': '点缀色半透明底',
+  '--th-navy-2': '头部渐变中间色',
+  '--th-hot': '警示色',
+  …
+}
+// 与 style.css 逐项一致</pre>
+        </div>
+      </div>
+      <div class="why" data-page-node-id="aEhMQAE759H6X9fkiEJxon">
+        <b data-page-node-id="KV95INDoOf0nsXVHiwXsHz">为什么必须用工具卡：</b><code data-page-node-id="5apTijDzWDhjwxFk0dItH8">tokens</code> 是主题的<b data-page-node-id="HVsOuUTYnSZB7EPSy1CJrK">令牌台账</b>（后台据此生成可编辑项、文档自动生成、跨主题比对）。
+        但它是<b data-page-node-id="f4SvBF0DcTfrOgSvAecB0y">结构性遗忘</b> —— 随手加一条 CSS 变量，往往忘了回填 manifest。
+        证据：<b data-page-node-id="wHtjzggUFFLYqJgB1cECxi">在产主题 brutal 也漏了 5 个</b>（<code data-page-node-id="78QnGDsuEaoYZiyqILBDdy">--th-bw</code> / <code data-page-node-id="QcVczKLsgx9TNFustxp0Ua">--th-bw-2</code> / <code data-page-node-id="SaTFeNQ4xYotaXD2BbDLfZ">--th-sh</code> / <code data-page-node-id="TKKBdbj90eKGCCJXJFOY06">--th-sh-lg</code> / <code data-page-node-id="hNZGPe64ENPOuxNWp8TG9L">--th-sh-sm</code>），parchment 同样有过。这不是谁不够细心。
+      </div>
+    </article>
+
+    <!-- 5 -->
+    <article class="prob" data-page-node-id="v7F8i9i2XEvEWrL0w78rUJ">
+      <div class="prob-head" data-page-node-id="zuKHG2sKHBlGhomAgq1ldH">
+        <div class="num" data-page-node-id="GGEd1WkElAXCLqcJuJKn3D">5</div>
+        <div data-page-node-id="AlJk7x2nCFbCp2J0M0w2wI">
+          <h3 data-page-node-id="QoTljdHHADWkCmWKmXiBGX">悬空类：模板有类名，CSS 没规则</h3>
+          <p data-page-node-id="53MHn6AEuOAmArnusMBt1G">样式静默失效，靠继承「碰巧」看起来正常</p>
+        </div>
+        <span class="badge b-yellow" data-page-node-id="kt8u6SCyBOPDECRP7YHl19">规范偏差</span>
+      </div>
+      <div class="duo" data-page-node-id="gPc0G597ICitDegPsBzy1A">
+        <div class="side side-bad" data-page-node-id="dsf1SAltCZpeLCNHGBaZjH">
+          <div class="side-t" data-page-node-id="41jLNhvDtdS8p77GWS92gV">✕ 错误状态</div>
+          <pre data-page-node-id="chWno95LBpzCqN5Fzhryza">&lt;aside class="ef-side"&gt;   ← 用了
+&lt;span class="ef-feed"&gt;    ← 用了
+
+/* style.css 里： */
+（两者都没有任何规则）</pre>
+        </div>
+        <div class="side side-good" data-page-node-id="0gdL0MLQ9DKoMdT3O2zabe">
+          <div class="side-t" data-page-node-id="xQYYR9CyHjjYtvQi7uAB5q">✓ 正确做法</div>
+          <pre data-page-node-id="YHDMPUddWhTDCfohaoZ4Zw">/* 补齐最小必要规则 */
+.ef-feed{
+  font-weight:700;
+  color:var(--th-ink-2);
+  letter-spacing:.5px;
+}
+.ef-side{min-width:0}  /* 防 grid 子项被撑破 */</pre>
+        </div>
+      </div>
+      <div class="why" data-page-node-id="Ztlj89dlSv7CzArPkO6C4b">
+        <b data-page-node-id="O3RDrZH8hvXrdUs3spS7JN">为什么不只是「少写一条样式」：</b>它意味着你写下的<b data-page-node-id="idGgy450F74RQuJ6W0qDhw">结构意图没有被样式兑现</b>。
+        当前看着正常，只是因为父容器的字号颜色恰好被继承下来 —— 父级一动，这里就毫无征兆地塌掉，而排查时没人会想到一个「看起来有样式」的类根本没规则。
+        <br data-page-node-id="yXUlqpg1f29VDO3XAZVUFD"><br data-page-node-id="Ii957sR6TAYZkBUXseofXY"><b data-page-node-id="gjVjudaBJuPJPddAZobuew">顺带一个高频疏漏：</b>grid 子项忘记 <code data-page-node-id="8yE65L3Fh9msfslPydolhC">min-width: 0</code>，长标题和输入框会直接把列宽撑破（brutal 的 <code data-page-node-id="XejGWFN7ojuxQGwwLmfGeE">.bt-hero-main</code> 就是这情况）。
+      </div>
+    </article>
+  </section>
+
+  <!-- ═══ 脚本 ═══ -->
+  <section data-page-node-id="Wt42g8w4j1qr38xGQlJZwF">
+    <h2 data-page-node-id="lRAdbiVhF9O0AsWFwduimI">自查脚本 · 提交前跑一遍</h2>
+    <div class="callout" data-page-node-id="rzZEs3z58IeasRBgudywWA">
+      随包提供 <b data-page-node-id="jtddieEBuvB8LeftTrNSzq"><code data-page-node-id="4WV3DdS6p5KSEG9AeBmLtn">tools/theme-lint.sh</code></b>，复制到主题目录运行即可。v1.3 起 <b data-page-node-id="jtddieEBuvB8LeftTrNSzr">8 项检查</b>：类名交叉比对、令牌台账、hash 锚点、高危文案词、契约外字段、文章页视图隔离、<b data-page-node-id="jtddieEBuvB8LeftTrNSzs">自建密码框/解锁逻辑（新）</b>、<b data-page-node-id="jtddieEBuvB8LeftTrNSzt">!important 用量（新）</b>。
+      <div class="callout" style="margin-top:10px" data-page-node-id="rzZEs3z58IeasRBgudywWB">v1.3 修正：宿主为 hash 路由，<code data-page-node-id="4WV3DdS6p5KSEG9AeBmLto"># /blog/tag/…</code> 等内页路由链接是<b data-page-node-id="jtddieEBuvB8LeftTrNSzu">合法写法</b>，锚点检查已排除 <code data-page-node-id="4WV3DdS6p5KSEG9AeBmLtp"># /</code> 开头的 hash，只报锚点型（如 <code data-page-node-id="4WV3DdS6p5KSEG9AeBmLtq">href="#y-2026"</code>）。平台新能力（密码锁 / 置顶排序 / 阅读量 / 评论）的边界约定见规范 v1.3 <b data-page-node-id="jtddieEBuvB8LeftTrNSzv">§7.4</b>。</div>
+      <pre data-page-node-id="9KonENLJZfUa1IB7n6iURR">cd web/src/themes/&lt;id&gt;
+bash theme-lint.sh          # 类名前缀自动推断
+bash theme-lint.sh bt-      # 或显式指定
+echo $?                     # 0 = 通过；1 = 存在必修项</pre>
+    </div>
+
+    <table style="margin-top:26px" data-page-node-id="tPo856MoJ24YSzTfou8ruU">
+      <thead data-page-node-id="XBxW52XdIKTyg1qV2M6ICe">
+        <tr data-page-node-id="nUWXV5WlWWK3D0u8vP4HL5"><th style="width:52px" data-page-node-id="PcYmKg9Dt1Hu0LDXiJOEOl">组</th><th data-page-node-id="klwMQ22YNy4EoL1tAdx37h">测试对象</th><th data-page-node-id="SV1rPN49Kd7dV5aYEdM7yV">结果</th><th style="width:78px" data-page-node-id="6qwr2wqbCUFMUE992SJlli">退出码</th></tr>
+      </thead>
+      <tbody data-page-node-id="IYyswqgQsfJBkDig9cLvpG">
+        <tr data-page-node-id="OXStmsVXjrfWKmlhTAblAq"><td data-page-node-id="Y2LDezfQwcswiwbKLzRVaO"><b data-page-node-id="5qAqgaZKbQvhG3DxEkJynz">A</b></td><td data-page-node-id="T6MeW3PJlkZHukBLgJcvow">emforum 1.1.1（已修复版）</td><td class="ok" data-page-node-id="P2Md1fEFevLpa8BUEn7Bia">5 项全 OK，零误报（预期全绿）</td><td data-page-node-id="LJJwZHIHPHILz6fPDC7vs8"><b data-page-node-id="lwpEz7qBpMxE637Q5uZNZp">0</b></td></tr>
+        <tr data-page-node-id="AmTfivcjUeOpDOSPFKrshP"><td data-page-node-id="f2nCiOXqptmwBe4Cif6ZpP"><b data-page-node-id="dqb0zZ114uRCPdDHAroV6s">B</b></td><td data-page-node-id="24sjsQihG4zbEa14KyGJPU">emforum 1.1.0（含缺陷版）</td><td class="ok" data-page-node-id="5RWjF63krXq5wXSexp7QxV">精确命中全部已知缺陷，并定位到 <code data-page-node-id="qkkwrPhhfqyEQn9NhDnKCu">EmforumArchiveView.vue:25</code></td><td data-page-node-id="mcpMCTDlyStVSy6JYd4PtB"><b data-page-node-id="mDzhtfIjdTvJuR8GmQByu9">1</b></td></tr>
+        <tr data-page-node-id="pgmIIsHYFwN4P68HbLeZcB"><td data-page-node-id="gSB2kJqUlqbaMXbjV8rkEv"><b data-page-node-id="eXVBkCpV6Z7O8S7mKgbwfF">C</b></td><td data-page-node-id="IDfgeO9MJutBiYF4Ijd6Qa">brutal（在产主题）</td><td class="ok" data-page-node-id="BEVE8aVnjXP3862Htr6P4A">查出 2 类真实问题：令牌漏报 5 个、悬空类 <code data-page-node-id="CbFsar2R58nYiVzCgZK1i8">bt-hero-main</code></td><td data-page-node-id="eIrE468ptrSJIXUv0XuJrZ"><b data-page-node-id="TruUkAdJYPU32nsvFeDf9G">1 → 0</b></td></tr>
+        <tr data-page-node-id="LTh0s5lb6ofl1P783jdaYV"><td data-page-node-id="rlTh80a8VY2Gg8wIsR5DNc"><b data-page-node-id="0yaokEsfn0ihsbk2N530L5">D</b></td><td data-page-node-id="eRnAfyWqFfjE8Qcdm2p2BJ">parchment（内置主题）</td><td class="ok" data-page-node-id="vmZqnQUSy20CaQymGNB6dq">查出历史遗留死 CSS <code data-page-node-id="xhBTZrwB41kUMDxR18xqDX">pa-comments</code></td><td data-page-node-id="QnVgHaI21kbtb0k75pZoVR"><b data-page-node-id="G69gd4kObNIu5iXg8AwHRc">0</b></td></tr>
+      </tbody>
+    </table>
+
+    <p style="margin-top:18px;font-size:13.5px;color:var(--ink2)" data-page-node-id="ZGY8NZA2AyXh1YHMpEUVlB">
+      <b data-page-node-id="kmtFAADuokJl0LpyExHqWC">脚本也有盲区，命中 <code data-page-node-id="6oAWciiuknuG3H2IQ0EFHX">[!]</code> 时务必人工确认：</b>
+      动态拼接的类名（如 <code data-page-node-id="ks4mQqn86CA6eFBX8XJGat">'bt-pat-' + name</code>）静态扫描看不到，会被误报成死 CSS；
+      类名前缀自动推断可能取错；只扫 <code data-page-node-id="mOmGx9oIfADxyq1QTV6BCN">.vue</code>，辅助 JS 里的类名不在范围。
+      <br data-page-node-id="hVjvbeqmE9JazOP1kft0xP"><br data-page-node-id="9KXXbYeVCZtoyBXVhUMpw3">
+      <b data-page-node-id="bZJeBgJcOHjhY2k8nImvGs">值得说明的是，脚本自己也踩过两个坑并已修正：</b>
+      初版把「解释『不要这样写』的注释」判成违规（已加注释剔除）；
+      正则用 <code data-page-node-id="6tkhF3hWiMiIcjbUCk4EwM">awk -v</code> 传参导致反斜杠被吞、<code data-page-node-id="TmkByWVHgsT7Od0k2doVUl">\.cover</code> 退化成 <code data-page-node-id="RlhFw5jE2xTK7A0uI5zzOA">.cover</code>，把 <code data-page-node-id="FcrgMOnkxSx7Dw5E31CWcx">bt-cover</code> 误报为契约外字段（已改用 <code data-page-node-id="dyCa94cSb279VqMnFPaj3K">ENVIRON</code>）。
+    </p>
+  </section>
+
+  <!-- ═══ 清单 ═══ -->
+  <section data-page-node-id="r8LMPFm0AEAJse1CHenKxh">
+    <h2 data-page-node-id="hoMfp9dvN9FUw5T5yzJyfj">提交前自检清单</h2>
+    <div class="check" data-page-node-id="ZL57zUe8Ias2cDxnN1dSiD">
+      <div data-page-node-id="2dUz1pELlMukwhqJbQG33b">
+        <h4 data-page-node-id="cJ72jLIjAwFjTDmMatifEd">构建与协议</h4>
+        <ul data-page-node-id="6vNVGOm4nF4S3ZRcyniYwF">
+          <li data-page-node-id="CAAqlFIi8qkBIUDJ8HxRGn"><code data-page-node-id="oBYg56j4ZKzOawAAK7nXRn">npm run build</code> 零错误零警告</li>
+          <li data-page-node-id="wkZtnWccaARDHqzzry5sN3">console 无「主题缺少 entry/id」</li>
+          <li data-page-node-id="8TTUJG6C2UNupycGC39c4a">入口组件内 <code data-page-node-id="8qu9wC99ndvXoUQidm7BgV">import './style.css'</code></li>
+          <li data-page-node-id="SUEwaiP3M2PqWGzkGkez7V">选择器全部挂 <code data-page-node-id="DL09BJZ5Fq9bhdE5jVL0gW">.xx-root</code></li>
+          <li class="star" data-page-node-id="6ds6bSIp19bQnRVTnn4SfO">tokens 与 CSS 实际令牌逐项一致</li>
+        </ul>
+        <h4 data-page-node-id="KDMvgAjQpdT0KmPP5kZ3Be">数据契约</h4>
+        <ul data-page-node-id="Xz5JN8cdlGtV75Q2dFVbuu">
+          <li data-page-node-id="4eijvnPDc0rNywy0AxPLcx">数据全部 <code data-page-node-id="O2DMxM31VsbNCwV5zcBHdp">inject('themeContext')</code></li>
+          <li data-page-node-id="IoME5cbUEcbZa7HUOW6O4J">只用 <code data-page-node-id="4qpY3LoujDPgjIa001tE8H">token/path/preview/created_at/file.*</code></li>
+          <li data-page-node-id="gOeH9XkR3S2pEfBRRJBXSf">不臆造 <code data-page-node-id="4LGk8DnFZP2DvApnegC52w">views/likes/comments/cover/readTime</code></li>
+          <li data-page-node-id="q9ly3fkEKC5XFhJC7OU8UM">不自行重排 <code data-page-node-id="vJv8CFwbc9CILoAQZv8pY8">posts</code></li>
+          <li data-page-node-id="Pgp1ADGNIbtkHFHfJ8HPbR">三态齐全：loading / error / 空态</li>
+          <li data-page-node-id="M8HzBiHT4V7VUoljUau4ku">首篇不重复</li>
+        </ul>
+      </div>
+      <div data-page-node-id="Guo3qaoakke7LLeQv6E8cc">
+        <h4 data-page-node-id="VUGfbEE6kHmKFF4wctQpiv">文案与语义</h4>
+        <ul data-page-node-id="ahMeDITH0kpIDsLT0zn846">
+          <li class="star" data-page-node-id="HkOxehHsMVMBChejk6PNhv">每个形容词都能被真实字段证明</li>
+          <li class="star" data-page-node-id="BeZvBSCSz7OPYFx9sCjnV6">类名描述事实，不描述期望</li>
+          <li class="star" data-page-node-id="G3xeOYPUfQAECQ2563A8sK">榜单配色仅在真有排名数据时使用</li>
+          <li data-page-node-id="0dxUV0RvXWLOGiiwdAujEu">标签云空时隐藏，非链接输出</li>
+          <li data-page-node-id="7B7uWqdoRwn03SIhE1dysx">站名用 <code data-page-node-id="GYc7O7BIvQ7e1zMvCktYBS">&lt;div&gt;</code>，不占 <code data-page-node-id="t06igJMQIJvHk5C4CXX24i">&lt;h1&gt;</code></li>
+        </ul>
+        <h4 data-page-node-id="tmk9VDksbDvWtoXgwr9DaL">交互 · 样式 · 接入</h4>
+        <ul data-page-node-id="mqHc75vZgEIW3ew70nuEs7">
+          <li class="star" data-page-node-id="s8kkSyKvjE8ekqYCTaAbaG">全站无把锚点写进 hash 的写法</li>
+          <li data-page-node-id="zo3jgxpYYfhA267aMKknSi">页内跳转用 <code data-page-node-id="SmG4iFbhPmSfJa0AKJCFy9">scrollIntoView()</code></li>
+          <li data-page-node-id="kX9Edkt49jzA7GggO1cWqE">文章点击走 <code data-page-node-id="EZf0jwxj6aPTQPKT3Tr9fs">ctx.postUrl()</code> 跳 SSR</li>
+          <li class="star" data-page-node-id="PhFQO3tFm2RO2cGhhFT06A">无悬空类、无死 CSS</li>
+          <li data-page-node-id="3Zz6OGyxcF79GVCdLJK9PI">grid 子项加 <code data-page-node-id="CtqgKZJBmhFJsYNgZkCgG5">min-width: 0</code></li>
+          <li data-page-node-id="SLDx0CNqNC7bjDA2vvWWcE">已加 <code data-page-node-id="7uqbExGi6mtF7CyWESeJuM">BlogView</code> import 与白名单</li>
+          <li data-page-node-id="0obBAxzXDlxXnJbhlBBvJh">已交付 <code data-page-node-id="QRLDAREvOdfpZLquJsgV0Y">ssr.css</code> + <code data-page-node-id="OxaYbqd9LjTXgSOuzp3pF6">manifest.json</code></li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:20px;font-size:13px;color:var(--ink3)" data-page-node-id="9optU1BXgbPTFEfh14NykR">★ = 本轮新增的检查项</p>
+  </section>
+
+  <footer data-page-node-id="fJTUE38ESEGdAVWJrsDsNG">
+    完整依据与逐条详解见同目录 <b data-page-node-id="THE23XL3yn8Az6a4HcAD2B">《博客主题开发-常见缺陷清单与自检手册》</b> · 配套脚本 <b data-page-node-id="ZZEpsDj2KFnp6wpJFHRmYt">theme-lint.sh</b>（随主题包 <code data-page-node-id="HePUjwp2aPBOVje5TEQuFO">tools/</code> 分发）
+  </footer>
+
+</div>
+</body>
+</html>

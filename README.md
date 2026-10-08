@@ -1,54 +1,131 @@
-# 快博 kuaibo
+# 爱库录 AiKlog
 
-> 基于 爱库录（AiKlog）引擎的**自部署 AI 知识库博客 / 建站系统**。
+**目录即站点，文件即文章**
 
-**目录即站点，文件即文章。** 拖拽文件即发布，语义检索与双链互文开箱可用；Go 单二进制 + SQLite，数据完全在自己手里。
+自部署 AI 知识库博客系统。拖拽即发、语义检索、双链互文；Go 单二进制 + SQLite，数据在自己手里。
 
-## 特性
+- 样板房：<https://aiklog.com>
+- 公开博客：`https://aiklog.com/app#/blog?view=public`
+- 控制台：`https://aiklog.com/#/desk`（路径不对外宣传）
 
-- **前台即后台**：拖拽文件发成博客，无需单独 CMS
-- **语义检索 + 双链互文**：知识自动成网，引用即关联
-- **应用中心**：主题与插件从官方目录一键安装（目录强制 ed25519 验签）
-- **商城**：商品 / 购物车 / 收银台 / 订单 / 优惠券 / 退款 / 退货全链路
-- **数字交付**：付款后凭条目级下载令牌取件，带次数上限
-- **集成**：IM 绑定、Webhook 事件、字幕/转码、缩略图派生、离线备份
+---
+
+## 这是什么
+
+爱库录（AiKlog）是 **AiKmap 主系统的精简发行版**：去掉采集、IM、重可视化，只保留 **文件 → 知识库引擎 → 公开博客** 这条链。
+
+| | |
+|---|---|
+| 产品全称 | 爱库录AI知识库博客系统 |
+| 对标 | emlog / Typecho（多一个知识底座） |
+| 体积 | Linux 二进制约 **13MB**（精简发行） |
+| 依赖 | 无需 PHP / MySQL |
+
+---
 
 ## 快速开始
 
-```bash
-git clone --depth 1 https://github.com/AiKdex/kuaibo.git
-cd kuaibo
-sudo bash scripts/install.sh --domain blog.example.com
-```
-
-脚本会自动：装依赖（Go / Node / nginx）→ 构建前后端 → 装到 `/opt/aiklog` → systemd 托管 → nginx 反代 → 健康检查。**幂等**，重复执行即升级（自动备份旧二进制与数据库）。
-
-- 没有域名先试跑：`sudo bash scripts/install.sh`，会给你一个 `http://<公网IP>.nip.io` 入口
-- 已有反代（Cloudflare Tunnel / Caddy）：加 `--no-nginx`，把入口指向 `127.0.0.1:8780`
-
-部署后务必记下管理员初始密码（脚本与启动日志各打印一次）：
+### 从源码构建
 
 ```bash
-grep '初始管理员密码' /opt/aiklog/log/aiklog.log | tail -1
+# 前端
+cd web
+npm install
+npm run build
+# 产物复制到 Go embed 路径
+rm -rf ../server/internal/handler/webdist
+cp -r dist ../server/internal/handler/webdist
+
+# 后端（Linux 示例）
+cd ../server
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+  go build -trimpath -ldflags "-s -w" -o aiklog ./cmd/aikmap
 ```
 
-## 站点名称可自定义
+### 运行
 
-这是一套**建站系统**：站点名称可在后台「设置」里自行修改，出厂默认是引擎名，部署后改成你自己的站名即可，不影响引擎本身。
+```bash
+AIKMAP_ADMIN_PASSWORD='请改成强密码' \
+  ./aiklog -addr 127.0.0.1:8780 -db ./data/aiklog.db
+```
 
-## 安全组
+| 端点 | 说明 |
+|---|---|
+| `GET /` | SPA（需反代时可另挂产品落地页） |
+| `GET /app#/blog?view=public` | 公开博客 |
+| `GET /app#/desk` | 控制台 |
+| `GET /api/v1/health` | 健康检查 |
+| `GET /api/v1/blog/feed.xml` | RSS |
 
-放行 22 / 80（用 HTTPS 则加 443）。**不要放行 8780** —— 服务只监听本机，由 nginx 对外。
+### systemd 示例
 
-## 数据与备份
+```ini
+[Service]
+User=aiklog
+Environment=AIKMAP_ADMIN_PASSWORD=请改成强密码
+ExecStart=/opt/aiklog/bin/aiklog -addr 127.0.0.1:8780 -db /opt/aiklog/data/aiklog.db
+Restart=on-failure
+```
 
-数据都在 `/opt/aiklog/data`：`aikmap.db`（SQLite）+ `files/`（上传的文件）。备份这两个即可；schema 迁移在启动时自动执行。
+Nginx 反代到 `127.0.0.1:8780`，并传递 `X-Forwarded-Proto`（HTTPS 下 Cookie 会自动 Secure）。
+
+---
+
+## 核心概念
+
+1. **目录即站点**：固定「博客」目录 = 公开站内容源；子目录 = 分类  
+2. **文件即文章**：Markdown 放入即成为文章；移除即下线  
+3. **稳定 slug**：发布后生成，改文件名/分类不碎链  
+4. **上传策略可配**：`blog.auto_publish_on_upload`（默认关，草稿确认后再发）  
+5. **插件挂载点**：`post_bottom` / `sidebar` / `list_item` / `head`  
+6. **主题协议**：`web/src/themes/aiklog` 为默认门面主题  
+
+---
+
+## 仓库结构
+
+```
+server/           Go 服务（cmd/aikmap + internal）
+web/              Vue3 前端（含 themes/aiklog 爱库录主题）
+docs/             白皮书与产品文档
+CHANGELOG.md      更新日志
+```
+
+---
+
+## 与 Aikdex 的边界
+
+```
+爱库录（本仓库）= 博客系统，无采集
+Aikdex           = 采集内容站（独立项目）
+Aikdex → POST /api/v1/blog/posts → 爱库录（样例投递）
+```
+
+---
 
 ## 文档
 
-- 一键安装脚本（含详细注释）：`scripts/install.sh`
-- 文档索引：`docs/README.md`
+| 文档 | 说明 |
+|---|---|
+| [docs/爱库录白皮书.md](docs/爱库录白皮书.md) | 定位、竞品、市场、应用市场、部署与运营 |
+| [docs/AIKLOG-精简发行方案.md](docs/AIKLOG-精简发行方案.md) | 裁剪/保留清单 |
+| [docs/AIKLOG-样板房计划.md](docs/AIKLOG-样板房计划.md) | 样板房与部署记录 |
+| [docs/AIKLOG-主题设计.md](docs/AIKLOG-主题设计.md) | 爱库录主题设计令牌 |
 
-## 许可
+---
 
-MIT，见 `LICENSE`。
+## 安全
+
+- 首次启动务必设置 **`AIKMAP_ADMIN_PASSWORD`**，上线后立即改密  
+- 写接口需登录；公开面仅 health/version/公开博客相关 GET  
+- 请置于反代与 HTTPS 之后，勿直接暴露管理端口  
+
+---
+
+## 许可与来源
+
+基于 AiKmap 博客底座精简发行。第三方依赖许可见各目录声明；发布前请补充 LICENSE 文件（由维护者选定）。
+
+---
+
+**爱库录 · 目录即站点，文件即文章**

@@ -8,11 +8,7 @@
       :aria-expanded="open ? 'true' : 'false'"
       @click="open = !open"
     >
-      <svg class="lsw-ico" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="9" />
-        <line x1="3" y1="12" x2="21" y2="12" />
-        <path d="M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18" />
-      </svg>
+      <span class="lsw-ico" aria-hidden="true">文</span>
       <span v-if="mode === 'inline'" class="lsw-cur">{{  currentLabel  }}</span>
     </button>
 
@@ -89,10 +85,9 @@ function pick(v) {
   background: var(--primary-soft, #eef2ff);
 }
 .lsw-ico {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.78;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.75;
 }
 .lsw-menu {
   position: absolute;

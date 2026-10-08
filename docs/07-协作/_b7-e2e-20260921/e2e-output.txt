@@ -1,0 +1,105 @@
+=== 0 登录与准备 ===
+  [PASS] admin/bob/carol 三会话签发
+  [PASS] 沙箱开启 telegram（写沙箱库）
+=== 1 未鉴权拦截（新端点全部 401）===
+  [PASS] 匿名 GET /im/bindings -> 401
+  [PASS] 匿名 POST /im/bindings/code -> 401
+  [PASS] 匿名 DELETE /im/bindings/xxx -> 401
+  [PASS] 匿名 GET /skills -> 401
+  [PASS] 匿名 GET /skills/grants -> 401
+  [PASS] 匿名 POST /skills/x/claim -> 401
+  [PASS] 匿名 POST /admin/skills -> 401
+  [PASS] 匿名 POST /admin/skills/x/grant -> 401
+  [PASS] 匿名 GET /files/nonexistent/media -> 401
+=== 2 B7 绑定码生成 ===
+  [PASS] 生成绑定码 200
+  [PASS] 码长 6 且只含去混字符集（无 I/L/O/0/1）
+  [PASS] TTL=600s
+  [PASS] hint 含 /bind 指令
+  [PASS] 码落库且归属 bob、未使用（used_at=0）
+  [PASS] 过期时间约 TTL 之后（毫秒口径，容忍时钟取整 ±2s）
+  [PASS] 非法平台 -> 400 IM_BAD_PLATFORM
+  [PASS] platform 可空（任意平台码）
+  [PASS] 换平台不复用即不互相作废（同平台才替换）
+  [PASS] 同平台再生成 -> 旧码作废（used_at 置位）
+=== 3 B7 IM 端 /bind 消费 + 身份注入 ===
+  [PASS] IM 端 /bind 消费成功（webhook 匿名可打）
+  [PASS] 绑定落库指向 bob（身份注入成功）
+  [PASS] chat_id 一并记录
+  [PASS] 码标记已用（used_at 非空）
+  [PASS] 同码二次消费被拒（一次性，handled=false）
+  [PASS] 二次消费不改动绑定
+  [PASS] bob 看到自己的 1 条绑定
+  [PASS] 平台可用状态随配置（telegram enabled）
+  [PASS] carol 看不到 bob 的绑定（用户隔离）
+=== 4 B7 平台错配 / 改绑 / 解绑 / 非法码 ===
+  [PASS] 限定平台码在错配平台消费被拒（handled=false）
+  [PASS] 错配消费未产生任何绑定改动
+  [PASS] 同 IM 身份改绑 carol -> 只有 1 行且归属 carol
+  [PASS] IM 端 /unbind 解除绑定
+  [PASS] 解绑后行被删除
+  [PASS] 未绑定时 /unbind 有提示不报错
+  [PASS] 重新绑定成功（可逆）
+  [PASS] 不存在的码被拒（handled=false）
+  [PASS] 缺参 /bind 走用法提示（handled=false）
+  [PASS] 被拒的三次均未改动绑定
+  [PASS] 越权删除他人绑定 -> 404
+  [PASS] 本人删除绑定 200
+  [PASS] 删除后无残留
+=== 5 B7 未绑定回退 owner（零破坏）===
+  [PASS] 未绑定 IM 身份仍可 /status（回退 owner，不报错）
+=== 6 B8 媒体元信息（图片 header 级探测）===
+  [PASS] 上传 PNG 成功
+  [PASS] 媒体探测 200 且 probe_status=ok
+  [PASS] 宽高正确（120x45）
+  [PASS] format=png
+  [PASS] 落库 file_media 一行
+  [PASS] 二次调用命中缓存（值一致）
+  [PASS] 非图片 -> unsupported（音视频字段留空）
+  [PASS] 不存在的文件 -> 404 FILE_NOT_FOUND
+=== 7 B9 技能包目录与领取 ===
+  [PASS] 非管理员上架 -> 403 FORBIDDEN
+  [PASS] 管理员上架免费包 200
+  [PASS] 管理员上架付费包 200
+  [PASS] 管理员上架草稿包 200
+  [PASS] 非法 kind -> 400 SKILL_BAD_KIND
+  [PASS] 空 name -> 400 SKILL_BAD_NAME
+  [PASS] 目录只含 published（草稿不外露）
+  [PASS] 未领取时 granted=false
+  [PASS] kind 过滤生效
+  [PASS] 非法 kind 过滤 -> 400 SKILL_BAD_KIND
+  [PASS] 领取草稿包 -> 403 SKILL_NOT_PUBLISHED
+  [PASS] 领取付费包 -> 402 SKILL_NOT_FREE
+  [PASS] 领取免费包 200
+  [PASS] 重复领取幂等（仍 200）
+  [PASS] 授权落库且 grantee=user/bob
+  [PASS] 重复领取不产生第二行
+  [PASS] 不存在的包 -> 404 SKILL_NOT_FOUND
+  [PASS] 领取后 granted=true
+  [PASS] carol 的 granted 仍 false（按用户隔离）
+  [PASS] 我的授权列表含免费包
+  [PASS] carol 授权列表为空（用户隔离）
+=== 8 B9 管理员手工发放 ===
+  [PASS] 管理员给 carol 发放付费包 200
+  [PASS] carol 授权列表出现付费包
+  [PASS] 非管理员发放 -> 403 FORBIDDEN
+  [PASS] 非法 grantee_type -> 400 SKILL_BAD_GRANTEE
+  [PASS] 给不存在的包发放 -> 404 SKILL_NOT_FOUND
+=== 9 向后兼容（既有能力未回归）===
+  [PASS] 既有端点 GET /health -> 200
+  [PASS] 既有端点 GET /files -> 200
+  [PASS] 既有端点 GET /notifications -> 200
+  [PASS] 既有端点 GET /subscriptions -> 200
+  [PASS] 既有端点 GET /mentions -> 200
+  [PASS] 既有端点 GET /im/status -> 200
+  [PASS] 既有端点 GET /admin/sites -> 200
+  [PASS] 既有端点 GET /admin/apps/market -> 200
+  [PASS] 对外 feed 仍 200（/api/v1/blog/feed.xml）
+=== 10 库内残留核对 ===
+  im_bindings       = 0
+  im_binding_codes  = 6
+  file_media        = 2
+  skill_packages    = 3
+  skill_grants      = 2
+
+===== 结果：87/87 PASS =====
