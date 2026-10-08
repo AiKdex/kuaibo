@@ -79,7 +79,10 @@
           </div>
 
           <a class="vd-feat" :href="postHref(ctx, featured)">
-            <span class="vd-feat-art" :class="catTone(catName(featured))" aria-hidden="true">
+            <span v-if="featCover" class="vd-feat-cover" aria-hidden="true">
+              <img :src="featCover" :alt="postTitle(featured)" loading="lazy" @error="featCoverFailed = true" />
+            </span>
+            <span v-else class="vd-feat-art" :class="catTone(catName(featured))" aria-hidden="true">
               <span class="vd-feat-leaf"></span>
             </span>
             <span class="vd-feat-body">
@@ -279,6 +282,18 @@ const showFeatured = computed(
   () => page.value === 1 && sortBy.value === 'system' && !keyword.value.trim(),
 )
 const featured = computed(() => (showFeatured.value && sorted.value.length ? sorted.value[0] : null))
+
+// 头条封面：优先文章封面字段，回退青野有机图形占位；加载失败回退占位
+const featCoverFailed = ref(false)
+const featCover = computed(() => {
+  if (featCoverFailed.value) return ''
+  const p = featured.value || {}
+  const c = p.file?.cover
+  if (typeof c === 'string' && c.trim()) return c.trim()
+  const s = p.preview || ''
+  const m = /!\[[^\]]*\]\((https?:\/\/[^)\s]+|\/[^)\s]+)\)/.exec(s)
+  return m ? m[1] : ''
+})
 const gridPool = computed(() => (featured.value ? sorted.value.slice(1) : sorted.value))
 
 const totalPages = computed(() => Math.max(1, Math.ceil(gridPool.value.length / PAGE_SIZE)))
@@ -312,3 +327,19 @@ watch([activeCat, keyword, sortBy], () => {
   page.value = 1
 })
 </script>
+
+<style scoped>
+.vd-feat-cover {
+  position: relative;
+  min-height: 220px;
+  overflow: hidden;
+  background: var(--th-leaf, #eef5e9);
+}
+.vd-feat-cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  object-fit: cover;
+}
+</style>
