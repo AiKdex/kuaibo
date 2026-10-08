@@ -186,11 +186,12 @@ async function saveAsSite() {
 
 .thsw-menu-head {
   padding: 4px 10px 6px;
+  margin-bottom: 2px;
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   color: #94a3b8;
-  text-transform: uppercase;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.05);
 }
 
 .thsw-item {
@@ -220,7 +221,16 @@ async function saveAsSite() {
 
 .thsw-item.on {
   background: rgba(13, 122, 106, 0.1);
-  color: #0d7a6a;
+  color: #0b6e5f;
+  box-shadow: inset 3px 0 0 #0d7a6a;
+}
+
+.thsw-item.on .thsw-item-t {
+  color: #0b6e5f;
+}
+
+.thsw-item.on .thsw-item-d {
+  color: rgba(13, 122, 106, 0.72);
 }
 
 .thsw-item.on::after {
@@ -234,19 +244,23 @@ async function saveAsSite() {
 
 .thsw-item-t {
   display: block;
+  font-size: 13.5px;
   font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #0f172a;
 }
 
 .thsw-item-d {
-  display: block;
-  margin-top: 2px;
-  font-size: 11px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  margin-top: 3px;
+  font-size: 11.5px;
   font-weight: 400;
   font-style: normal;
+  line-height: 1.45;
   color: #64748b;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .thsw-foot {
