@@ -129,22 +129,24 @@
     </div>
 
     <div v-if="tab === 'themes'" class="ac-grid">
-      <div v-for="t in themes" :key="t.id" class="ac-item">
-        <img v-if="t.cover" :src="t.cover" class="ac-cover" alt="" loading="lazy" />
+      <!-- 🔴 循环变量禁用 t：遮蔽 i18n 的 t 函数（B23/B24 同款坑）——
+           本循环体要调 t('已安装') 等，主题目录非空时必然 TypeError 白屏（2026-10-09 实测）。 -->
+      <div v-for="th in themes" :key="th.id" class="ac-item">
+        <img v-if="th.cover" :src="th.cover" class="ac-cover" alt="" loading="lazy" />
         <div class="ac-item-t">
-          <span class="ac-name">{{  t.name  }}</span>
-          <span v-if="!t.applicable" class="ac-badge ac-badge-muted">{{  t('本壳不可用')  }}</span>
-          <span v-if="t.tier === 'paid'" class="ac-badge ac-badge-paid">{{  t.price ? t('付费 · ') + t.price : t('付费')  }}</span>
-          <span v-if="t.installed" class="ac-badge ac-badge-ok">{{  t('已安装')  }}</span>
+          <span class="ac-name">{{  th.name  }}</span>
+          <span v-if="!th.applicable" class="ac-badge ac-badge-muted">{{  t('本壳不可用')  }}</span>
+          <span v-if="th.tier === 'paid'" class="ac-badge ac-badge-paid">{{  th.price ? t('付费 · ') + th.price : t('付费')  }}</span>
+          <span v-if="th.installed" class="ac-badge ac-badge-ok">{{  t('已安装')  }}</span>
         </div>
-        <p class="ac-desc">{{  t.description  }}</p>
+        <p class="ac-desc">{{  th.description  }}</p>
         <div class="ac-item-f">
-          <span class="ac-dim">v{{  t.version  }} · {{  t.author || '—'  }}</span>
-          <a v-if="t.tier === 'paid' && t.purchase_url && !t.installed" class="btn btn-sm" :href="t.purchase_url" target="_blank" rel="noopener">{{  t('去购买')  }}</a>
-          <button v-if="!t.installed && t.applicable" class="btn btn-sm" :disabled="busy" @click="install(t)">
-            {{  t.tier === 'paid' ? t('购买安装') : t('安装')  }}
+          <span class="ac-dim">v{{  th.version  }} · {{  th.author || '—'  }}</span>
+          <a v-if="th.tier === 'paid' && th.purchase_url && !th.installed" class="btn btn-sm" :href="th.purchase_url" target="_blank" rel="noopener">{{  t('去购买')  }}</a>
+          <button v-if="!th.installed && th.applicable" class="btn btn-sm" :disabled="busy" @click="install(th)">
+            {{  th.tier === 'paid' ? t('购买安装') : t('安装')  }}
           </button>
-          <span v-else-if="!t.applicable" class="ac-dim">{{  t('不可用')  }}</span>
+          <span v-else-if="!th.applicable" class="ac-dim">{{  t('不可用')  }}</span>
           <span v-else class="ac-dim">{{  t('已安装')  }}</span>
         </div>
       </div>
