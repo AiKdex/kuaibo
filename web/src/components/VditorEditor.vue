@@ -242,7 +242,11 @@ defineExpose({
   // 保存用：先跑插件 beforeSave 钩子链，再返回最终内容
   getSaveValue: () => runHook('beforeSave', vd?.getValue?.() || '', makeCtx()),
   setValue: (md) => vd?.setValue(md || '', false),
-  focus: () => vd?.focus?.()
+  focus: () => vd?.focus?.(),
+  // 统一编辑器协议（2026-10-09 编辑器插件化）：光标处插入（WriteView AI 插入等宿主能力）
+  insertAtCursor: (text) => {
+    try { vd?.insertValue(text || '') } catch (_) { /* 编辑器未就绪 */ }
+  },
 })
 </script>
 

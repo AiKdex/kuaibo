@@ -122,6 +122,41 @@ func (a *API) publicBlogThemes(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
+// publicBlogEditors GET /api/v1/public/blog/editors（公开）：可选文章编辑器列表。
+// 来源 = 常驻兜底 plain + blog_plugins kind=editor 且 enabled=1（应用中心「编辑器」类别装/卸驱动）。
+// 写作轨与阅读页快编轨共用此列表渲染「编辑器」下拉（两轨一致）；plain 恒在列。
+func (a *API) publicBlogEditors(w http.ResponseWriter, r *http.Request) {
+	type editorItem struct {
+		ID          string `json:"id"`
+		Title       string `json:"title"`
+		Description string `json:"description,omitempty"`
+		Version     string `json:"version,omitempty"`
+	}
+	items := []editorItem{{
+		ID:          "plain",
+		Title:       "极简 Markdown",
+		Description: "分栏编辑 + 实时预览（常驻兜底，不可卸载）",
+	}}
+	if a.db != nil {
+		rows, err := a.db.QueryContext(r.Context(),
+			`SELECT id, COALESCE(name,''), COALESCE(description,''), COALESCE(version,'') FROM blog_plugins
+			 WHERE kind='editor' AND enabled=1 ORDER BY created_at ASC`)
+		if err == nil {
+			for rows.Next() {
+				var it editorItem
+				if rows.Scan(&it.ID, &it.Title, &it.Description, &it.Version) == nil && it.ID != "plain" {
+					if it.Title == "" {
+						it.Title = it.ID
+					}
+					items = append(items, it)
+				}
+			}
+			rows.Close()
+		}
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
 // boolToStr 布尔转 "true"/"false"（与既有 ai_ask_open 字符串约定一致）。
 func boolToStr(b bool) string {
 	if b {

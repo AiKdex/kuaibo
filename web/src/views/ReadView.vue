@@ -279,14 +279,9 @@
       />
     </template>
 
-    <!-- 文本类：编辑模式（Vditor Markdown 编辑器） -->
+    <!-- 文本类：编辑模式（编辑器本体轨：与写作轨共用同一编辑器偏好，2026-10-09 统一） -->
     <div v-else-if="isText && editMode" class="edit-wrap">
-      <VditorEditor
-        ref="editorRef"
-        v-model="editContent"
-        :height="Math.max(320, windowHeight - 160)"
-        class="vd-wrap"
-      />
+      <component :is="quickEditorComp" ref="editorRef" v-model="editContent" :height="Math.max(320, windowHeight - 160)" class="vd-wrap" />
     </div>
 
     <!-- 图片 -->
@@ -326,13 +321,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
+import { ref, computed, shallowRef, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import AikIcon from '@/components/AikIcon.vue'
 import { useReadingStore } from '@/stores/reading'
 import { getFile, fetchTextContent, fetchMediaUrl, revokeMediaUrl, updateDocContent, getChunk, getLocateChunk, getFileLinks, resolveWikiTitle, getFileSummary, listFileVersions, restoreFileVersion, downloadFileVersion, subscriptionStatus, subscribeTarget, unsubscribeTarget, requestJSON, uploadFiles, mkdir } from '@/api'
 import { renderMarkdown } from '@/utils/markdown'
-import VditorEditor from '@/components/VditorEditor.vue'
+import { getEditorLoader, readEditorPref } from '@/editors/registry'
 import MarkdownArticle from '@/components/MarkdownArticle.vue'
 
 const props = defineProps({
@@ -363,6 +358,23 @@ const aiInfo = ref(null)
 const editMode = ref(false)
 const editContent = ref('')
 const editorRef = ref(null)
+// 编辑器本体轨：快编与写作共用同一偏好（readEditorPref），进编辑模式时解析组件
+const quickEditorComp = shallowRef(null)
+async function loadQuickEditor() {
+  const id = readEditorPref()
+  const loader = getEditorLoader(id)
+  if (!loader) return
+  try {
+    const mod = await loader()
+    quickEditorComp.value = mod.default || mod
+  } catch (e) {
+    console.warn('[read] 编辑器加载失败，回退 plain:', e)
+    try {
+      const m = await getEditorLoader('plain')()
+      quickEditorComp.value = m.default || m
+    } catch (_) { /* 组件都不可用时保持 null */ }
+  }
+}
 const saving = ref(false)
 const savedMsg = ref('')
 const windowHeight = ref(window.innerHeight)
@@ -795,6 +807,7 @@ async function startEdit() {
     editOriginal.value = text
     editMode.value = true
     savedMsg.value = ''
+    if (!quickEditorComp.value) await loadQuickEditor()
     probeBlogMeta() // 异步探测，不阻塞编辑器打开
   } catch (e) {
     error.value = e.message

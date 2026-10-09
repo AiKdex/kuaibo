@@ -278,6 +278,7 @@ func (a *API) Routes() http.Handler {
 	mux.HandleFunc("GET /api/v1/public/site", a.blogSiteGet)
 	// 已安装博客主题列表（公开；前端懒加载基座 + 主题切换器的已安装口径来源）
 	mux.HandleFunc("GET /api/v1/public/blog/themes", a.publicBlogThemes)
+	mux.HandleFunc("GET /api/v1/public/blog/editors", a.publicBlogEditors)
 	mux.HandleFunc("GET /api/v1/public/popular", a.popularPosts)
 	mux.HandleFunc("POST /api/v1/public/blog/ask", a.publicBlogAsk)
 	mux.HandleFunc("GET /api/v1/public/blog/ask/quota", a.publicBlogAskQuota)

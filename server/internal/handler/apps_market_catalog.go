@@ -31,6 +31,9 @@ type marketIndex struct {
 	SchemaVersion string          `json:"schema_version"`
 	Plugins       []marketPlugin  `json:"plugins"`
 	Themes        []marketTheme   `json:"themes"`
+	// Editors 内置编辑器条目（2026-10-09 编辑器插件化）：仅本实例 marketView 下发，
+	// 不进远程签名索引（omitempty 保证索引规范化字节不变，验签不受影响）。
+	Editors  []marketTheme   `json:"editors,omitempty"`
 	Licenses      []marketLicense `json:"licenses"`
 	// AiSupplies 平台 AI 供给条目（B38）：平台供模型套餐（aikgw 网关 key + 初始额度）。
 	AiSupplies []marketAiSupply `json:"ai_supplies,omitempty"`
@@ -186,6 +189,67 @@ func (a *API) installBuiltinTheme(w http.ResponseWriter, r *http.Request, entry 
 	})
 }
 
+// builtinEditorEntries 内置源码编辑器条目（2026-10-09 编辑器插件化）：随主系统编译
+// （懒 chunk），不进远程索引，本地注入「编辑器」类别。plain 为常驻兜底编辑器，
+// 永远可用、不可卸载，故不进目录；后续新编辑器在此追加。
+func builtinEditorEntries() []marketTheme {
+	return []marketTheme{
+		{
+			ID:          "vditor",
+			Name:        "所见即所得编辑器（Vditor）",
+			Version:     coreVersion,
+			Description: "所见即所得 + 源码 + 分屏预览三模式；双链联想、图片粘贴/拖入上传、编辑器扩展插件协议。安装后在写作页「编辑器」下拉切换，阅读页快编同步生效",
+			Author:      "爱库录",
+			Tier:        "free",
+			Builtin:     true,
+			Applicable:  true,
+		},
+	}
+}
+
+// IsBuiltinEditor 判定 id 是否为内置源码编辑器（应用中心可一键安装）。
+func IsBuiltinEditor(id string) bool {
+	for _, e := range builtinEditorEntries() {
+		if e.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
+// installBuiltinEditor 内置编辑器安装：无 zip，「安装」= 登记 blog_plugins
+// (kind=editor, enabled=1)。登记后 /public/blog/editors 立即可见 → 写作页/快编
+// 的编辑器下拉出现该项，即时生效无需重启。
+func (a *API) installBuiltinEditor(w http.ResponseWriter, r *http.Request, entry *marketPlugin) {
+	if !IsBuiltinEditor(entry.ID) {
+		writeErr(w, http.StatusUnprocessableEntity, "MARKET_BAD_REQ", "非内置编辑器")
+		return
+	}
+	if entry.Name == "" {
+		entry.Name = entry.ID
+	}
+	now := time.Now().UnixMilli()
+	ver := entry.Version
+	if ver == "" {
+		ver = coreVersion
+	}
+	if _, err := a.db.ExecContext(r.Context(),
+		`INSERT INTO blog_plugins (id, name, version, description, author, kind, enabled, created_at, updated_at)
+		 VALUES (?,?,?,?,?,'editor',1,?,?,?)
+		 ON CONFLICT(id) DO UPDATE SET name=excluded.name, version=excluded.version, description=excluded.description,
+		   author=excluded.author, kind='editor', enabled=1, updated_at=excluded.updated_at`,
+		entry.ID, entry.Name, ver, entry.Description, entry.Author, now, now); err != nil {
+		writeErr(w, http.StatusInternalServerError, "INTERNAL", err.Error())
+		return
+	}
+	log.Printf("应用中心：内置编辑器 %s 已登记（kind=editor，即时生效）", entry.ID)
+	writeJSON(w, http.StatusOK, map[string]any{
+		"ok": true, "id": entry.ID, "kind": "editor", "enabled": true, "builtin": true,
+		"apply": "immediate",
+		"message": "已安装：在写作页「编辑器」下拉选择即可使用",
+	})
+}
+
 // marketAiSupply 目录中的「平台 AI 供给」条目（B38）。
 // download_url 指向纯文本 JSON 供给凭据（schema=aiklog-ai-supply/v1：网关地址 + gw key +
 // 初始 token 额度）；开通 = 下载验 sha256 后解析凭据 → 登记/追加网关 provider + 站点池充值。
@@ -300,6 +364,17 @@ func (a *API) marketView(idx *marketIndex) map[string]any {
 		t.Applicable = len(t.Target) == 0 || containsStr(t.Target, shell)
 		out.Themes = append(out.Themes, t)
 	}
+	// 内置源码主题（2026-10-09 主题改版）：随主系统编译、不进远程索引，本地注入目录。
+	// （修复：builtinSourceThemeEntries 此前定义未接线，应用中心看不到内置主题。）
+	for _, t := range builtinSourceThemeEntries() {
+		t.Installed = installed[t.ID]
+		out.Themes = append(out.Themes, t)
+	}
+	// 内置编辑器（2026-10-09 编辑器插件化）：安装=登记 blog_plugins kind=editor（免 zip）
+	for _, e := range builtinEditorEntries() {
+		e.Installed = installed[e.ID]
+		out.Editors = append(out.Editors, e)
+	}
 	for i := range idx.Licenses {
 		l := idx.Licenses[i]
 		l.Installed = granted[l.ID]
@@ -320,6 +395,7 @@ func (a *API) marketView(idx *marketIndex) map[string]any {
 		"schema_version": idx.SchemaVersion,
 		"plugins":        out.Plugins,
 		"themes":         out.Themes,
+		"editors":        out.Editors,
 		"licenses":       out.Licenses,
 		"ai_supplies":    out.AiSupplies,
 		"index_url":      a.marketIndexURL(),
@@ -351,6 +427,30 @@ func (a *API) marketInstall(w http.ResponseWriter, r *http.Request) {
 	dlURL, sha := req.URL, strings.ToLower(req.SHA)
 	kind := strings.TrimSpace(req.Kind)
 	var indexSS []any
+	// 本地内置兜底（优先于远程索引）：builtin 主题/编辑器随主系统编译、不进远程索引，
+	// 离线/远程不可达时也必须可装。「安装」= 登记 blog_plugins，即时生效。
+	if req.ID != "" {
+		if kind == "theme" || kind == "" {
+			for _, t := range builtinSourceThemeEntries() {
+				if t.ID == req.ID {
+					a.installBuiltinTheme(w, r, &marketPlugin{
+						ID: t.ID, Name: t.Name, Version: t.Version, Description: t.Description, Author: t.Author,
+					})
+					return
+				}
+			}
+		}
+		if kind == "editor" || kind == "" {
+			for _, e := range builtinEditorEntries() {
+				if e.ID == req.ID {
+					a.installBuiltinEditor(w, r, &marketPlugin{
+						ID: e.ID, Name: e.Name, Version: e.Version, Description: e.Description, Author: e.Author,
+					})
+					return
+				}
+			}
+		}
+	}
 	// 按 id 从市场索引解析
 	if req.ID != "" {
 		idx, err := a.fetchMarketIndex(r)

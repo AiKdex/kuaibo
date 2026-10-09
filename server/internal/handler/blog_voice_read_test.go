@@ -152,6 +152,8 @@ func TestPublicPathBlogTTS(t *testing.T) {
 		// 已安装主题列表（2026-10-09 主题改版：前端懒加载基座依赖，匿名 GET 放行）
 		{http.MethodGet, "/api/v1/public/blog/themes", true},
 		{http.MethodPost, "/api/v1/public/blog/themes", false}, // 写操作不公开
+		{http.MethodGet, "/api/v1/public/blog/editors", true},
+		{http.MethodPost, "/api/v1/public/blog/editors", false}, // 写操作不公开
 	}
 	for _, c := range cases {
 		req := httptest.NewRequest(c.method, c.path, nil)

@@ -645,6 +645,13 @@ export function publicBlogThemes() {
   return requestJSON('/public/blog/themes')
 }
 
+// 已安装文章编辑器列表（公开读）：{ items: [{ id, title, description }] }
+// 来源 = 常驻兜底 plain + blog_plugins kind=editor 且 enabled=1。
+// 写作轨与阅读页快编轨共用此列表决定「编辑器选择」下拉项（两轨一致）。
+export function publicBlogEditors() {
+  return requestJSON('/public/blog/editors')
+}
+
 // 读者 AI 问答（公开；仅公开文章上下文，进程内限流）
 export function publicBlogAsk(question, path) {
   return requestJSON('/public/blog/ask', {

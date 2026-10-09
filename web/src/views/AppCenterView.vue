@@ -49,6 +49,9 @@
       <button class="ac-tab" :class="{ on: tab === 'themes' }" @click="tab = 'themes'">
         {{  t('主题')  }}<span v-if="themes.length">({{  themes.length  }})</span>
       </button>
+      <button class="ac-tab" :class="{ on: tab === 'editors' }" @click="tab = 'editors'">
+        {{  t('编辑器')  }}<span v-if="editors.length">({{  editors.length  }})</span>
+      </button>
       <button class="ac-tab" :class="{ on: tab === 'ai' }" @click="tab = 'ai'">
         {{  t('AI 供给')  }}<span v-if="aiSupplies.length">({{  aiSupplies.length  }})</span>
       </button>
@@ -148,6 +151,28 @@
       <div v-if="!themes.length" class="ac-empty">{{  busy ? t('加载中…') : (err ? t('目录加载失败') : t('暂无主题'))  }}</div>
     </div>
 
+    <!-- 编辑器类别（2026-10-09 编辑器插件化）：安装=登记 kind=editor（builtin 免 zip）；
+         装完在写作工作台/阅读页快编的「编辑器」下拉即可切换（两轨一致）。 -->
+    <div v-if="tab === 'editors'" class="ac-grid">
+      <div v-for="e in editors" :key="e.id" class="ac-item">
+        <div class="ac-item-t">
+          <span class="ac-name">{{  e.name  }}</span>
+          <span v-if="e.tier === 'paid'" class="ac-badge ac-badge-paid">{{  e.price ? t('付费 · ') + e.price : t('付费')  }}</span>
+          <span v-if="e.installed" class="ac-badge ac-badge-ok">{{  t('已安装')  }}</span>
+        </div>
+        <p class="ac-desc">{{  e.description  }}</p>
+        <div class="ac-item-f">
+          <span class="ac-dim">v{{  e.version  }} · {{  e.author || '—'  }}</span>
+          <button v-if="!e.installed && e.applicable !== false" class="btn btn-sm" :disabled="busy" @click="install(e)">
+            {{  e.tier === 'paid' ? t('购买安装') : t('安装')  }}
+          </button>
+          <span v-else-if="e.installed" class="ac-dim">{{  t('已安装 · 在写作页切换使用')  }}</span>
+          <span v-else class="ac-dim">{{  t('不可用')  }}</span>
+        </div>
+      </div>
+      <div v-if="!editors.length" class="ac-empty">{{  busy ? t('加载中…') : (err ? t('目录加载失败') : t('暂无编辑器'))  }}</div>
+    </div>
+
     <!-- AI 供给（B38）：平台供模型套餐，开通即登记平台网关 provider + 站点池充值 -->
     <div v-if="tab === 'ai'" class="ac-grid">
       <div v-for="s in aiSupplies" :key="s.id" class="ac-item">
@@ -199,6 +224,7 @@ const toast = useToastStore()
 const tab = ref('plugins')
 const plugins = ref([])
 const themes = ref([])
+const editors = ref([])
 const aiSupplies = ref([])
 const indexUrl = ref('')
 const siteUrl = ref('https://aikmap.cn/market')
@@ -242,6 +268,7 @@ async function load() {
     const m = await api.appsMarketList()
     plugins.value = m.plugins || []
     themes.value = m.themes || []
+    editors.value = m.editors || []
     aiSupplies.value = m.ai_supplies || []
     indexUrl.value = m.index_url || ''
     if (m.site_url) siteUrl.value = m.site_url
@@ -251,6 +278,7 @@ async function load() {
     err.value = e?.message || String(e)
     plugins.value = []
     themes.value = []
+    editors.value = []
   } finally {
     busy.value = false
   }

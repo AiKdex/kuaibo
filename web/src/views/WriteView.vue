@@ -8,7 +8,11 @@
         <option value="">{{  $t('未分类')  }}</option>
         <option v-for="c in cats" :key="c.id" :value="c.name">{{  c.name  }}</option>
       </select>
-      <button class="btn btn-sm" :class="{ 'bm-primary': showToc }" @click="showToc = !showToc" :title="$t('显示/隐藏正文大纲')">{{  $t('☰ 大纲')  }}</button>
+      <!-- 编辑器选择（2026-10-09 编辑器插件化）：写作轨与阅读页快编轨共用同一偏好 -->
+      <select v-model="editorId" class="wv-input wv-cat" :title="$t('选择编辑器（阅读页快编同步生效）')" @change="onEditorChange">
+        <option v-for="e in editorOptions" :key="e.id" :value="e.id">{{  e.title  }}</option>
+      </select>
+      <button v-if="editorId === 'plain'" class="btn btn-sm" :class="{ 'bm-primary': showToc }" @click="showToc = !showToc" :title="$t('显示/隐藏正文大纲')">{{  $t('☰ 大纲')  }}</button>
       <button class="btn btn-sm" :disabled="busy || !canSave" @click="savePost">{{  editingId ? $t('保存修改') : $t('发布文章')  }}</button>
     </div>
 
@@ -142,8 +146,8 @@
     </details>
 
     <!-- 双栏：编辑 / 预览（左侧可选大纲） -->
-    <div class="wv-panes" :class="{ 'has-toc': showToc }">
-      <aside v-if="showToc" class="wv-toc">
+    <div class="wv-panes" :class="{ 'has-toc': showToc && editorId === 'plain' }">
+      <aside v-if="showToc && editorId === 'plain'" class="wv-toc">
         <p class="wv-toc-title">{{ $t('大纲') }}</p>
         <p v-if="!toc.length" class="wv-toc-empty">{{ $t('用 # 标题生成大纲') }}</p>
         <a
@@ -155,17 +159,21 @@
           @click="jumpToc(t)"
         >{{  t.text  }}</a>
       </aside>
-      <textarea
-        ref="editorEl"
-        v-model="content"
-        class="wv-editor"
-        :placeholder="$t('Markdown 正文…（左侧编辑，右侧实时预览；可直接粘贴/拖入图片）')"
-        spellcheck="false"
-        @paste="onPaste"
-        @drop.prevent="onDrop"
-        @dragover.prevent
-      ></textarea>
-      <div ref="previewEl" class="wv-preview prose" v-html="previewHtml"></div>
+      <!-- 编辑器本体轨（2026-10-09 插件化）：plain = 分栏 textarea + 右侧预览（本页渲染）；
+           其它编辑器（Vditor 等）= 整栏动态组件，预览/双链由编辑器自理。v-model 统一走 content。 -->
+      <template v-if="editorId === 'plain'">
+        <PlainEditor
+          ref="plainRef"
+          v-model="content"
+          class="wv-plain-host"
+          :height="editorHeight"
+          :placeholder="$t('Markdown 正文…（左侧编辑，右侧实时预览；可直接粘贴/拖入图片）')"
+          @paste="onPaste"
+          @drop="onDrop"
+        ></PlainEditor>
+        <div ref="previewEl" class="wv-preview prose" v-html="previewHtml"></div>
+      </template>
+      <component :is="editorComp" v-else-if="editorComp" ref="edRef" v-model="content" :height="editorHeight" :placeholder="$t('Markdown 正文…（可直接粘贴/拖入图片）')" class="wv-host-editor"></component>
     </div>
     <span v-if="uploading" class="wv-uploading">{{ $t('图片上传中…（') }}{{  uploading  }}）</span>
   </div>
@@ -173,10 +181,15 @@
 
 <script setup>
 import { t as i18t } from '@/i18n'
-import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, shallowRef, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useToastStore } from '@/stores/toast'
-import { requestJSON, fetchFileText, uploadFiles, mkdir, listPrompts, renderPrompt, aiChat } from '@/api'
+import { requestJSON, fetchFileText, uploadFiles, mkdir, listPrompts, renderPrompt, aiChat, publicBlogEditors } from '@/api'
 import { renderMarkdown, extractToc, enhanceMermaid } from '@/utils/markdown'
+import {
+  listEditors, getEditorLoader, isEditorInstalled,
+  readEditorPref, saveEditorPref, applyInstalledEditors,
+} from '@/editors/registry'
+import PlainEditor from '@/components/PlainEditor.vue'
 import { t } from '@/i18n'
 
 const toast = useToastStore()
@@ -308,9 +321,47 @@ const previewHtml = computed(() => {
 const toc = computed(() => extractToc(content.value))
 
 // ---- 大纲跳转（id 失配时按标题序号兜底）----
-const editorEl = ref(null)
 const previewEl = ref(null)
 const showToc = ref(true)
+
+// ---- 编辑器本体轨（2026-10-09 编辑器插件化）----
+// plain 在本页直接渲染（PlainEditor + 分栏预览）；其它编辑器动态加载组件整栏渲染。
+// 已安装列表来自 /public/blog/editors（见 loadInstalledEditors）；拉取失败降级为全部内置可见。
+const editorId = ref('plain')
+const editorComp = shallowRef(null)
+const plainRef = ref(null)
+const edRef = ref(null)
+const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 800
+const editorHeight = computed(() => Math.max(420, windowHeight - 320))
+const editorOptions = computed(() => listEditors())
+async function mountEditor(id) {
+  const loader = getEditorLoader(id)
+  if (!loader) { editorComp.value = null; return }
+  try {
+    const mod = await loader()
+    editorComp.value = mod.default || mod
+  } catch (e) {
+    console.warn('[write] 编辑器加载失败，回退 plain:', e)
+    editorId.value = 'plain'
+    saveEditorPref('plain')
+    editorComp.value = null
+  }
+}
+function onEditorChange() {
+  if (!isEditorInstalled(editorId.value)) editorId.value = 'plain'
+  saveEditorPref(editorId.value)
+  if (editorId.value !== 'plain') mountEditor(editorId.value)
+  else editorComp.value = null
+}
+async function loadInstalledEditors() {
+  try {
+    const d = await publicBlogEditors()
+    applyInstalledEditors((d?.items || []).map((x) => x.id))
+  } catch (_) { /* 离线兜底：installedIds 保持 null → 全部内置可见 */ }
+  const pref = readEditorPref()
+  editorId.value = pref
+  if (pref !== 'plain') await mountEditor(pref)
+}
 function jumpToc(item) {
   const root = previewEl.value
   if (!root) return
@@ -342,18 +393,13 @@ async function ensureMediaDir() {
   return mediaDirId
 }
 function insertAtCursor(text) {
-  const ta = editorEl.value
-  if (!ta) {
-    content.value = (content.value || '') + text
+  // 编辑器本体轨：委托给当前编辑器实例（PlainEditor/VditorEditor 均实现 insertAtCursor）
+  const inst = editorId.value === 'plain' ? plainRef.value : edRef.value
+  if (inst && typeof inst.insertAtCursor === 'function') {
+    inst.insertAtCursor(text)
     return
   }
-  const s = ta.selectionStart ?? (content.value || '').length
-  const e = ta.selectionEnd ?? s
-  content.value = (content.value || '').slice(0, s) + text + (content.value || '').slice(e)
-  nextTick(() => {
-    ta.selectionStart = ta.selectionEnd = s + text.length
-    ta.focus()
-  })
+  content.value = (content.value || '') + text
 }
 async function uploadImageFile(file, setCover = false) {
   if (!file || !/^image\//.test(file.type || '')) return false
@@ -679,6 +725,7 @@ async function doSearch() {
 onMounted(() => {
   localLoad()
   loadManage()
+  loadInstalledEditors()
 })
 onUnmounted(() => {
   if (saveTimer) clearTimeout(saveTimer)
@@ -911,20 +958,20 @@ onUnmounted(() => {
   border-radius: 4px;
   border: 1px solid var(--border, #e3e6eb);
 }
-.wv-editor {
-  resize: none;
+/* plain 编辑器宿主：textarea 在 PlainEditor 内部，这里管外框与撑满 */
+.wv-plain-host {
+  display: block;
   border: 1px solid var(--border, #e3e6eb);
   border-radius: 10px;
-  padding: 14px;
-  font-family: var(--mono, ui-monospace, monospace);
-  font-size: 13px;
-  line-height: 1.7;
   background: var(--bg-1, #fff);
-  color: var(--text-1, #1f2329);
-  outline: none;
+  overflow: hidden;
 }
-.wv-editor:focus {
+.wv-plain-host:focus-within {
   border-color: var(--primary, #4f7cff);
+}
+/* 非 plain 编辑器（Vditor 等）整栏渲染 */
+.wv-panes:not(.has-toc) .wv-host-editor {
+  grid-column: 1 / -1;
 }
 .wv-preview {
   border: 1px solid var(--border, #e3e6eb);
