@@ -30,7 +30,9 @@
         <h1 class="anp-article-h1">{{ title }}</h1>
         <div class="anp-article-meta">
           <span v-if="cat" class="anp-tag anp-tag-blue">{{ cat }}</span>
+          <span v-if="author" class="anp-meta-date">✍ {{ author }}</span>
           <span v-if="date" class="anp-meta-date">📅 {{ date }}</span>
+          <BlogPluginSlot mount="post_meta" :ctx="{ slug: post.slug }" />
         </div>
       </header>
 
@@ -81,6 +83,7 @@ import AskWidget from '../AskWidget.vue'
 import SideWidget from '../SideWidget.vue'
 import { computed, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import BlogPluginSlot from '@/components/BlogPluginSlot.vue'
 import './style.css'
 import './post.css'
 
@@ -95,6 +98,7 @@ const year = new Date().getFullYear()
 const homeHref = '/app#/blog?view=public'
 
 const title = computed(() => post.value.title || t('common.unnamed'))
+const author = computed(() => String(post.value.author || ''))
 const cat = computed(() => post.value.cat || post.value.category || '')
 const date = computed(() => {
   const v = post.value.updatedAt

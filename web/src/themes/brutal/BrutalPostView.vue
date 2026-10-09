@@ -23,6 +23,7 @@
               <span class="bt-m-name">{{ authorName }}</span>
               <span class="bt-m-sub">{{ dateText }}</span>
             </span>
+            <BlogPluginSlot mount="post_meta" :ctx="pluginCtx" />
           </div>
         </header>
 

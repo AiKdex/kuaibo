@@ -29,6 +29,8 @@
             <div class="ak-post-meta">
               <span v-if="post.author">{{ post.author }}</span>
               <span v-if="postDate(post)">{{ postDate(post) }}</span>
+              <span v-if="post.size">{{ fmtSize(post.size) }}</span>
+              <BlogPluginSlot mount="post_meta" :ctx="{ slug: post.slug }" />
             </div>
           </header>
 
@@ -72,6 +74,7 @@
 import AskWidget from '../AskWidget.vue'
 import SideWidget from '../SideWidget.vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import BlogPluginSlot from '@/components/BlogPluginSlot.vue'
 import { computed, ref } from 'vue'
 import { useBlog, postTitle, postCat, postDate, postHref } from './helpers.js'
 import './post.css'
@@ -111,5 +114,12 @@ async function copyLink() {
 
 function pKey(p) {
   return p.path || p.file?.slug || p.token || Math.random()
+}
+
+function fmtSize(n) {
+  if (!n) return ''
+  if (n < 1024) return `${n} B`
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`
+  return `${(n / 1024 / 1024).toFixed(2)} MB`
 }
 </script>

@@ -10,7 +10,7 @@
       <header class="cxp-head">
         <div class="cxp-head-tags"><span v-if="cat" class="cxp-chip">{{ cat }}</span></div>
         <h1 class="cxp-h1">{{ title }}</h1>
-        <div class="cxp-meta"><span v-if="date" class="cxp-meta-item">📅 {{ date }}</span><span v-if="cat" class="cxp-meta-item">📂 {{ cat }}</span></div>
+        <div class="cxp-meta"><span v-if="author" class="cxp-meta-item">✍ {{ author }}</span><span v-if="date" class="cxp-meta-item">📅 {{ date }}</span><span v-if="cat" class="cxp-meta-item">📂 {{ cat }}</span><BlogPluginSlot mount="post_meta" :ctx="{ slug: post.slug }" /></div>
       </header>
       <div v-if="post.preview" class="cxp-summary"><div class="cxp-summary-label">{{ $t('📋 摘要') }}</div><p>{{ post.preview }}</p></div>
       <div class="cxp-body" v-html="postHtml"></div>
@@ -33,6 +33,7 @@ import AskWidget from '../AskWidget.vue'
 import SideWidget from '../SideWidget.vue'
 import { computed, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import BlogPluginSlot from '@/components/BlogPluginSlot.vue'
 import './style.css'
 import './post.css'
 const raw=inject('themeContext');const ctx=computed(()=>raw?.value||raw||{posts:[],loading:true})
@@ -40,6 +41,7 @@ const loading=computed(()=>ctx.value.loading);const error=computed(()=>ctx.value
 const page=computed(()=>ctx.value.page||{});const post=computed(()=>page.value.post||{})
 const year=new Date().getFullYear();const homeHref='/app#/blog?view=public'
 const title=computed(()=>post.value.title|| t('common.unnamed'))
+const author=computed(()=>String(post.value.author||''))
 const cat=computed(()=>post.value.cat||post.value.category||'')
 const date=computed(()=>{const v=post.value.updatedAt;if(!v)return'';const ms=typeof v==='number'?(v>1e12?v:v*1000):Date.parse(v);if(!Number.isFinite(ms))return'';const d=new Date(ms);const z=n=>String(n).padStart(2,'0');return`${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`})
 const postHtml=computed(()=>post.value.html||'')

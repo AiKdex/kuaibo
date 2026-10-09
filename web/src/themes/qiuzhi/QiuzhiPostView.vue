@@ -29,6 +29,7 @@
             <span v-if="author">{{ author }}</span>
             <span v-if="dateText">{{ dateText }}</span>
             <span v-if="cat">{{ cat }}</span>
+            <BlogPluginSlot mount="post_meta" :ctx="{ slug: post.slug }" />
           </div>
           <article class="qz-article" v-html="postHtml"></article>
           <div v-if="tags.length" class="qz-p-tax">
@@ -55,6 +56,7 @@ import { t } from '@/i18n'
 import AskWidget from '../AskWidget.vue'
 import SideWidget from '../SideWidget.vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import BlogPluginSlot from '@/components/BlogPluginSlot.vue'
 import { computed } from 'vue'
 import { useBlog, postTitle, postCat, postDate } from './helpers.js'
 import './post.css'

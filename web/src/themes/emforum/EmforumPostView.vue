@@ -24,6 +24,7 @@
               <span class="ef-m-sub">{{ dateText }} · {{ post.cat || $t('默认版块') }}</span>
             </span>
             <span class="ef-floor">{{ $t('楼主') }}</span>
+            <BlogPluginSlot mount="post_meta" :ctx="pluginCtx" />
           </div>
         </header>
 

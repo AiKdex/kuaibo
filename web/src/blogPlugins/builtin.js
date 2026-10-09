@@ -95,9 +95,10 @@ registerBlogPlugin({
   component: Stats
 })
 
-// 语音朗读：文章页朗读播放器（复用 ai.tts 语音合成，服务端磁盘缓存）
+// 语音朗读：文章页标题下元信息行内联按钮（复用 ai.tts 语音合成，服务端磁盘缓存）
+// manifest（后端 EnsureBlogSpace 种子）的 mount_points 同步为 ['post_meta']
 registerBlogPlugin({
   id: 'blog-voice-read',
-  mountPoints: ['post_bottom'],
+  mountPoints: ['post_meta'],
   component: VoiceRead
 })

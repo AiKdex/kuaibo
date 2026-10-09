@@ -929,6 +929,7 @@ func (a *API) sharesGet(w http.ResponseWriter, r *http.Request) {
 			fileList = append(fileList, map[string]any{
 				"path": it.path, "name": it.f.Name, "kind": it.f.Kind, "mime": it.f.Mime,
 				"size": it.f.Size, "updated_at": it.f.UpdatedAt, "preview": it.preview, "slug": it.f.Slug,
+				"author": it.author, // 作者展示名（collectDirFiles 已批量补齐；文章页标题下元信息行用）
 			})
 		}
 		var dirMeta any
@@ -947,9 +948,14 @@ func (a *API) sharesGet(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusNotFound, "SHARE_FILE_GONE", "shared file not found")
 		return
 	}
+	// 单文件分享也带作者展示名（前端文章页元信息行 page.post.author 读取）
+	fileView := struct {
+		*service.File
+		Author string `json:"author"`
+	}{File: f, Author: a.postAuthorName(r.Context(), row.FileID)}
 	writeJSON(w, http.StatusOK, map[string]any{
 		"share": row,
-		"file":  f,
+		"file":  fileView,
 	})
 }
 

@@ -29,6 +29,7 @@
             <div class="el-post-meta">
               <span v-if="post.author">{{ post.author }}</span>
               <span v-if="postDate(post)">{{ postDate(post) }}</span>
+              <BlogPluginSlot mount="post_meta" :ctx="{ slug: post.slug }" />
             </div>
           </header>
 
@@ -72,6 +73,7 @@
 import AskWidget from '../AskWidget.vue'
 import SideWidget from '../SideWidget.vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import BlogPluginSlot from '@/components/BlogPluginSlot.vue'
 import { computed, ref } from 'vue'
 import { useBlog, postTitle, postCat, postDate, postHref } from './helpers.js'
 import './post.css'

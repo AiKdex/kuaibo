@@ -68,6 +68,7 @@
               <span>{{ dateOf(post) }}</span>
               <span class="hj-meta-dot"></span>
               <a :href="shareHref" class="hj-post-share" target="_blank" rel="noopener">{{ $t('查看静态页') }}</a>
+              <BlogPluginSlot mount="post_meta" :ctx="pluginCtx" />
             </div>
             <div class="hj-post-body" v-html="post.html"></div>
           </article>

@@ -33,6 +33,7 @@
             <span class="cl-meta-date">{{ dateOf(post) }}</span>
             <span class="cl-meta-dot"></span>
             <a :href="shareHref" class="cl-post-share" target="_blank" rel="noopener">{{ $t('查看静态页') }}</a>
+            <BlogPluginSlot mount="post_meta" :ctx="{ slug: post.slug }" />
           </div>
         </div>
         <div class="cl-post-body" v-html="post.html"></div>
@@ -72,6 +73,7 @@ import AskWidget from '../AskWidget.vue'
 import SideWidget from '../SideWidget.vue'
 import { computed, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import BlogPluginSlot from '@/components/BlogPluginSlot.vue'
 import './style.css'
 
 const raw = inject('themeContext')

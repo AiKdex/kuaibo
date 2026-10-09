@@ -18,6 +18,7 @@
         <h1 class="zc-post-title">{{ post.title }}</h1>
         <div class="zc-post-meta">
           <span v-for="(m, i) in meta" :key="i" class="zc-post-meta-i">{{ m }}</span>
+          <BlogPluginSlot mount="post_meta" :ctx="pluginCtx" />
         </div>
       </header>
 

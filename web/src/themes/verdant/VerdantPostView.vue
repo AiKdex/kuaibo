@@ -20,6 +20,7 @@
           <span class="vd-post-author">{{ authorName }}</span>
           <span class="vd-post-date">{{ dateText }}</span>
         </span>
+        <BlogPluginSlot mount="post_meta" :ctx="pluginCtx" />
       </div>
     </header>
 

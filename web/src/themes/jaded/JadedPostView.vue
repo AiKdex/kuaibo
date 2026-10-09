@@ -41,6 +41,7 @@
             </div>
             <span v-if="date" class="jdp-meta-item">📅 {{ date }}</span>
             <span v-if="size" class="jdp-meta-item">📊 {{ size }} {{ $t('字') }}</span>
+            <BlogPluginSlot mount="post_meta" :ctx="{ slug: post.slug }" />
           </div>
         </header>
 
@@ -100,6 +101,7 @@ import AskWidget from '../AskWidget.vue'
 import SideWidget from '../SideWidget.vue'
 import { computed, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import BlogPluginSlot from '@/components/BlogPluginSlot.vue'
 import './style.css'
 import './post.css'
 

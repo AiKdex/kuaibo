@@ -18,6 +18,7 @@
         <h1 class="au-post-title">{{ post.title }}</h1>
         <div class="au-post-meta">
           <span v-for="(m, i) in meta" :key="i" class="au-post-meta-i">{{ m }}</span>
+          <BlogPluginSlot mount="post_meta" :ctx="pluginCtx" />
         </div>
       </header>
 

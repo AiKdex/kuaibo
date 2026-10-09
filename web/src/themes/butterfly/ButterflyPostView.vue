@@ -24,6 +24,7 @@
             </span>
             <span v-if="dateText" class="bf-post-meta-i">{{ dateText }}</span>
             <span v-if="sizeText" class="bf-post-meta-i">{{ sizeText }}</span>
+            <BlogPluginSlot mount="post_meta" :ctx="pluginCtx" />
           </div>
         </header>
 

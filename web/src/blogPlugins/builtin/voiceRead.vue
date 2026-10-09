@@ -1,24 +1,17 @@
 <template>
-  <aside class="vrt-card">
-    <div class="vrt-row">
-      <button class="vrt-btn" :disabled="busy || !hasSlug" @click="toggle">
-        <span v-if="busy">{{ $t('合成中…') }}</span>
-        <span v-else-if="playing">{{ $t('停止朗读') }}</span>
-        <span v-else>{{ $t('🎧 朗读全文') }}</span>
-      </button>
-      <span v-if="truncated" class="vrt-note">{{ $t('正文较长，已朗读前 4000 字') }}</span>
+  <!-- 语音朗读插件（紧凑内联版）：挂载 post_meta（文章标题下元信息行） -->
+  <span class="vrt-inline">
+    <button class="vrt-btn-inline" :disabled="busy || !hasSlug" @click="toggle">
+      <span v-if="busy">{{ $t('合成中…') }}</span>
+      <span v-else-if="playing">{{ $t('⏹ 停止朗读') }}</span>
+      <span v-else>{{ $t('🎧 朗读全文') }}</span>
+    </button>
+    <span v-if="truncated" class="vrt-note-inline">{{ $t('前4000字') }}</span>
+    <div v-if="src" class="vrt-audio-wrap">
+      <audio ref="audioEl" :src="src" controls class="vrt-audio-inline" @ended="playing = false" @pause="playing = false"></audio>
     </div>
-    <audio
-      v-if="src"
-      ref="audioEl"
-      :src="src"
-      controls
-      class="vrt-audio"
-      @ended="playing = false"
-      @pause="playing = false"
-    ></audio>
-    <div v-if="error" class="vrt-error">{{ error }}</div>
-  </aside>
+    <div v-if="error" class="vrt-error-inline">{{ error }}</div>
+  </span>
 </template>
 
 <script setup>
@@ -95,44 +88,53 @@ watch(slug, () => {
 </script>
 
 <style scoped>
-.vrt-card {
-  border: 1px solid var(--border, #e3e6eb);
-  border-radius: 10px;
-  background: var(--surface, #fff);
-  padding: 14px 16px;
-  font-size: 13px;
-}
-.vrt-row {
-  display: flex;
+/* 元信息行内联样式：颜色继承主题元信息行，避免各主题配色冲突 */
+.vrt-inline {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   flex-wrap: wrap;
 }
-.vrt-btn {
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  background: #0d7a6a;
-  color: #fff;
+.vrt-btn-inline {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 10px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  opacity: 0.85;
   cursor: pointer;
   font: inherit;
+  font-size: inherit;
+  line-height: 1.6;
   white-space: nowrap;
+  transition: opacity 0.15s ease;
 }
-.vrt-btn:disabled {
-  opacity: 0.55;
+.vrt-btn-inline:hover {
+  opacity: 1;
+}
+.vrt-btn-inline:disabled {
+  opacity: 0.45;
   cursor: not-allowed;
 }
-.vrt-note {
-  color: var(--text-3, #8a919f);
-  font-size: 12px;
+.vrt-note-inline {
+  font-size: inherit;
+  opacity: 0.65;
 }
-.vrt-audio {
+/* 播放时音频条出现在元信息行下方（整行换行展示，不挤元信息） */
+.vrt-audio-wrap {
+  flex-basis: 100%;
+}
+.vrt-audio-inline {
   display: block;
   width: 100%;
-  margin-top: 12px;
+  max-width: 420px;
+  height: 32px;
+  margin-top: 4px;
 }
-.vrt-error {
-  margin-top: 8px;
+.vrt-error-inline {
+  flex-basis: 100%;
   color: #b91c1c;
   font-size: 12px;
 }

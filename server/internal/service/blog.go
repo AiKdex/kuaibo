@@ -147,7 +147,7 @@ func EnsureBlogSpace(ctx context.Context, db *sql.DB) error {
 		{"blog-cover", "封面图", "列表项封面：从正文预览提取首图（挂载点 list_item）", `["list_item"]`, "blog-cover"},
 		{"blog-reader-ai", "读者问答", "公开页读者 AI 问答（限公开文章上下文，挂载点 post_bottom）", `["post_bottom"]`, "blog-reader-ai"},
 		{"blog-stats", "访问统计", "文章 PV 本地计数（挂载点 post_bottom）", `["post_bottom"]`, "blog-stats"},
-		{"blog-voice-read", "语音朗读", "文章页语音朗读播放器（复用 ai.tts 语音合成，挂载点 post_bottom）", `["post_bottom"]`, "blog-voice-read"},
+		{"blog-voice-read", "语音朗读", "文章页标题下元信息行内联朗读按钮（复用 ai.tts 语音合成，挂载点 post_meta）", `["post_meta"]`, "blog-voice-read"},
 	}
 	for _, p := range plugins {
 		if _, err := db.ExecContext(ctx,
@@ -166,6 +166,13 @@ func EnsureBlogSpace(ctx context.Context, db *sql.DB) error {
 			r.newName, now, r.id, r.oldName); err != nil {
 			return fmt.Errorf("backfill blog plugin name %s: %w", r.id, err)
 		}
+	}
+	// 内置插件挂载点回填：blog-voice-read 从文章底部（post_bottom）上移到标题下元信息行（post_meta）。
+	// 同样只改「仍等于旧值」的库，站长若已自行调整过挂载点则不覆盖。
+	if _, err := db.ExecContext(ctx,
+		`UPDATE blog_plugins SET mount_points=?, updated_at=? WHERE id=? AND mount_points=?`,
+		`["post_meta"]`, now, "blog-voice-read", `["post_bottom"]`); err != nil {
+		return fmt.Errorf("backfill blog plugin mount %s: %w", "blog-voice-read", err)
 	}
 	return nil
 }
