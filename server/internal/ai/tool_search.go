@@ -19,7 +19,7 @@ import (
 func NewSearchFilesTool(files *service.FileStore, spaceID string, gate *Gateway, db *sql.DB, vecModel string) *Tool {
 	return &Tool{
 		Name:        "search_files",
-		Description: "在用户的知识库中检索文件/文件夹。根据关键词、类型、MIME、最近修改时间查找匹配的文件，返回文件列表（含名称、类型、大小、路径、修改时间）。适合用户用自然语言描述想找的内容（如“找一下关于向量检索的文档”“最近上传的图片”）时调用。",
+		Description: "在用户的知识库中检索文件/文件夹。根据关键词、类型、MIME、最近修改时间查找匹配的文件，返回文件列表（含名称、类型、大小、路径、修改时间）。适合用户用自然语言描述想找的内容（如“找一下关于向量检索的文档”“最近上传的图片”）时调用。注意：「最近上传/最近修改了哪些文件」这类时间范围问题，请用 days 参数（如 days=30）并把 query 留空，不要把问题原文当关键词。",
 		Parameters: map[string]any{
 			"type": "object",
 			"properties": map[string]any{
@@ -54,6 +54,14 @@ func NewSearchFilesTool(files *service.FileStore, spaceID string, gate *Gateway,
 				if ex := ExpandQuery(ctx, gate, q); len(ex) > 0 {
 					expanded = ex
 					queries = append(queries, ex...)
+				}
+			}
+			if len(queries) == 0 {
+				// 无 query 但有过滤条件（days/mime/type）→ 空词检索 = 按条件列举。
+				// FileStore.Search 本就支持 filter-only（空 criteria 才报错）；此前这里
+				// 空 query 直接跳过检索，导致「最近上传了哪些文件」这类无关键词问题恒返回空。
+				if args.Days > 0 || args.Mime != "" || typ != "" {
+					queries = append(queries, "")
 				}
 			}
 			limit := args.Limit
@@ -93,17 +101,38 @@ func NewSearchFilesTool(files *service.FileStore, spaceID string, gate *Gateway,
 					}
 				}
 			}
+			// 零命中兜底（AI 助手可用性）：有关键词但全无命中时，附最近 30 天更新的文件
+			//（hit_in=recent 标记），模型可据此回答「最近上传/修改了哪些」并说明未精确匹配。
+			fallbackRecent := false
+			if len(seen) == 0 && strings.TrimSpace(args.Query) != "" {
+				opts.Query = ""
+				opts.Days = 30
+				if hits, err := files.Search(ctx, opts); err == nil && len(hits) > 0 {
+					for _, h := range hits {
+						seen[h.File.ID] = &agg{f: h.File, score: 0, hitIn: "recent"}
+					}
+					fallbackRecent = true
+				}
+			}
 			// 按总分排序，取 top N
 			sorted := make([]*agg, 0, len(seen))
 			for _, a := range seen {
 				sorted = append(sorted, a)
 			}
-			sort.Slice(sorted, func(i, j int) bool {
-				if sorted[i].score != sorted[j].score {
-					return sorted[i].score > sorted[j].score
-				}
-				return sorted[i].f.Name < sorted[j].f.Name
-			})
+			// 无关键词的条件列举（如「最近上传」）与零命中兜底：按更新时间倒序更符合直觉；
+			// 有关键词时按分数排序（相关度优先）
+			if strings.TrimSpace(args.Query) == "" || fallbackRecent {
+				sort.Slice(sorted, func(i, j int) bool {
+					return sorted[i].f.UpdatedAt > sorted[j].f.UpdatedAt
+				})
+			} else {
+				sort.Slice(sorted, func(i, j int) bool {
+					if sorted[i].score != sorted[j].score {
+						return sorted[i].score > sorted[j].score
+					}
+					return sorted[i].f.Name < sorted[j].f.Name
+				})
+			}
 			if len(sorted) > limit {
 				sorted = sorted[:limit]
 			}
@@ -164,6 +193,12 @@ func NewSearchFilesTool(files *service.FileStore, spaceID string, gate *Gateway,
 				"expanded": expanded,
 				"semantic": len(expanded) > 0,
 				"vector":   vecUsed,
+				"fallback": func() string {
+					if fallbackRecent {
+						return "recent"
+					}
+					return ""
+				}(),
 			})
 			if err != nil {
 				return "", err
