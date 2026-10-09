@@ -88,6 +88,7 @@
         <!-- 文章列表 -->
         <div class="hj-post-list">
           <article v-for="(p, i) in listPosts" :key="p.token" class="hj-post-card">
+            <PostCover :post="p" round />
             <span class="hj-post-num">{{ String(i + 1).padStart(2, '0') }}</span>
             <div class="hj-post-body">
               <span v-if="catOf(p)" class="hj-post-cat">{{ catOf(p) }}</span>
@@ -201,6 +202,7 @@
 import { t } from '@/i18n'
 import { ref, computed, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import PostCover from '@/components/PostCover.vue'
 import HuajianAsk from './HuajianAsk.vue'
 import './style.css'
 

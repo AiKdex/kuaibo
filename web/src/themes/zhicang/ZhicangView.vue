@@ -95,7 +95,9 @@
         </div>
         <div v-if="courseGroup" class="zc-course-list">
           <a v-for="p in courseGroup.posts" :key="p.token" class="zc-course-card" :href="postHref(p)">
-            <div class="zc-course-thumb" :style="thumbStyle(p)"><span>{{ catEmoji(postCat(p)) }}</span></div>
+            <PostCover :post="p" round>
+              <div class="zc-course-thumb" :style="thumbStyle(p)"><span>{{ catEmoji(postCat(p)) }}</span></div>
+            </PostCover>
             <div class="zc-course-info">
               <h3>{{ postTitle(p) }}</h3>
               <p>{{ p.preview || $t("暂无摘要") }}</p>
@@ -114,9 +116,11 @@
         </div>
         <div class="zc-res-grid">
           <a v-for="p in gridPosts" :key="p.token" class="zc-res-card" :href="postHref(p)">
-            <div class="zc-res-cover" :style="coverStyle(p)">
-              <div class="zc-res-pattern">{{ catEmoji(postCat(p)) }}</div>
-            </div>
+            <PostCover :post="p" round>
+              <div class="zc-res-cover" :style="coverStyle(p)">
+                <div class="zc-res-pattern">{{ catEmoji(postCat(p)) }}</div>
+              </div>
+            </PostCover>
             <div class="zc-res-body">
               <div class="zc-res-type">{{ postCat(p) || '资源' }}</div>
               <h3>{{ postTitle(p) }}</h3>
@@ -199,6 +203,7 @@ import { t } from '@/i18n'
 import AskWidget from '../AskWidget.vue'
 import { ref, computed, inject, watch, nextTick } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import PostCover from '@/components/PostCover.vue'
 import './style.css'
 
 const raw = inject('themeContext')

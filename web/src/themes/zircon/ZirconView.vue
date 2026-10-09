@@ -101,7 +101,7 @@
             <div v-if="tags.length" class="zc-side-box">
               <div class="zc-side-t">{{ $t('标签聚合') }}</div>
               <div class="zc-side-tags">
-                <span v-for="t in tags" :key="t" class="zc-side-tag">{{ t }}</span>
+                <span v-for="t in tags" :key="t.name" class="zc-side-tag">{{ t.name }}<em v-if="t.count" class="zc-tag-n">{{ t.count }}</em></span>
               </div>
             </div>
           </aside>

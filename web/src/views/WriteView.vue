@@ -94,8 +94,8 @@
       </div>
     </div>
 
-    <!-- SEO 与封面（编辑已有文章时可设置；新文章发布后再载入设置） -->
-    <details v-if="editingId" class="wv-seo">
+    <!-- SEO 与封面（新文章可先填好，发布时随首保存；已有文章直接改） -->
+    <details class="wv-seo">
       <summary>{{ $t('封面图 / 摘要 / SEO') }}</summary>
       <div class="wv-seo-grid">
         <label class="wv-seo-label">{{ $t('封面图 URL') }}
@@ -483,6 +483,17 @@ async function savePost() {
       })
       toast.success(t('已发布：') + (d?.path || title.value))
       editingId.value = d?.id || ''
+      // 新文章：发布前填的封面/摘要/SEO 随发布一并保存（元数据接口需要 id，故在发布成功后补写）
+      if (editingId.value && (cover.value || excerpt.value || seoTitle.value || seoDesc.value)) {
+        try {
+          await requestJSON('/blog/posts/meta', {
+            method: 'POST',
+            body: JSON.stringify({ id: editingId.value, cover: cover.value, excerpt: excerpt.value, seo_title: seoTitle.value, seo_desc: seoDesc.value }),
+          })
+        } catch (me) {
+          toast.error(t('正文已发布，但封面/SEO 保存失败：') + (me.message || me))
+        }
+      }
       try { localStorage.removeItem(DRAFT_KEY) } catch (_) {}
       hasLocalDraft.value = false
     }

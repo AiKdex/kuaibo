@@ -97,12 +97,14 @@
         <div class="cl-grid-3">
           <article v-for="p in gridPosts" :key="p.token" class="cl-card">
             <a :href="hrefOf(p)" class="cl-card-link">
-              <div class="cl-card-thumb" :style="{ background: gradientOf(p) }">
-                <span class="cl-card-emoji">{{ emojiOf(p) }}</span>
-                <div class="cl-card-tags" v-if="catOf(p)">
-                  <span class="cl-card-tag">{{ catOf(p) }}</span>
+              <PostCover :post="p" round>
+                <div class="cl-card-thumb" :style="{ background: gradientOf(p) }">
+                  <span class="cl-card-emoji">{{ emojiOf(p) }}</span>
+                  <div class="cl-card-tags" v-if="catOf(p)">
+                    <span class="cl-card-tag">{{ catOf(p) }}</span>
+                  </div>
                 </div>
-              </div>
+              </PostCover>
               <div class="cl-card-body">
                 <h3 class="cl-card-title">{{ titleOf(p) }}</h3>
                 <p class="cl-card-excerpt" v-if="p.preview">{{ cleanPreview(p.preview) }}</p>
@@ -124,9 +126,11 @@
           <div class="cl-left-col">
             <article v-for="p in listPosts" :key="p.token" class="cl-list-item">
               <a :href="hrefOf(p)" class="cl-list-link">
-                <div class="cl-list-thumb" :style="{ background: gradientOf(p) }">
-                  <span class="cl-list-emoji">{{ emojiOf(p) }}</span>
-                </div>
+                <PostCover :post="p" round>
+                  <div class="cl-list-thumb" :style="{ background: gradientOf(p) }">
+                    <span class="cl-list-emoji">{{ emojiOf(p) }}</span>
+                  </div>
+                </PostCover>
                 <div class="cl-list-body">
                   <div class="cl-list-tags" v-if="catOf(p)">
                     <span class="cl-list-tag">{{ catOf(p) }}</span>
@@ -241,6 +245,7 @@ import { t } from '@/i18n'
 import AskWidget from '../AskWidget.vue'
 import { ref, computed, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import PostCover from '@/components/PostCover.vue'
 import './style.css'
 
 const raw = inject('themeContext')

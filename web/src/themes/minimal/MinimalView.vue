@@ -16,6 +16,7 @@
       <div v-else-if="!posts.length" class="mn-state">{{ $t('还没有公开文章') }}</div>
 
       <article v-for="(p, i) in posts" v-else :key="i" class="mn-item">
+        <PostCover :post="p" round />
         <a class="mn-link" :href="href(p)">
           <h2 class="mn-title">{{ title(p) }}</h2>
           <p v-if="p.preview" class="mn-excerpt">{{ clean(p.preview) }}</p>
@@ -40,6 +41,7 @@ import { t } from '@/i18n'
 import AskWidget from '../AskWidget.vue'
 import { computed, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import PostCover from '@/components/PostCover.vue'
 import './style.css'
 
 const raw = inject('themeContext')

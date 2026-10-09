@@ -142,6 +142,17 @@
       <span v-if="savedMsg" class="edit-saved">{{  savedMsg  }}</span>
     </div>
 
+    <!-- 博客文章编辑：封面图（仅博客目录下的文章显示；点保存时随元数据接口写入，不影响摘要/SEO） -->
+    <div v-if="editMode && isBlogPost" class="edit-cover-bar">
+      <span class="ecb-label">{{ $t('封面图') }}</span>
+      <input v-model="blogCover" class="ecb-input" :placeholder="$t('https://… 或站内可公开访问的图片地址（留空不设）')" />
+      <label class="btn btn-sm ecb-up">
+        {{  blogCoverUploading ? $t('上传中…') : $t('上传封面')  }}
+        <input type="file" accept="image/*" hidden @change="rvUploadCover" />
+      </label>
+      <img v-if="blogCover" :src="blogCover" class="ecb-thumb" :alt="$t('封面预览')" @error="$event.target.style.display='none'" />
+    </div>
+
     <!-- 阅读设置抽屉 -->
     <Transition name="slide">
       <div v-if="showReadingSettings" class="reading-panel">
@@ -319,7 +330,7 @@ import { ref, computed, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import AikIcon from '@/components/AikIcon.vue'
 import { useReadingStore } from '@/stores/reading'
-import { getFile, fetchTextContent, fetchMediaUrl, revokeMediaUrl, updateDocContent, getChunk, getLocateChunk, getFileLinks, resolveWikiTitle, getFileSummary, listFileVersions, restoreFileVersion, downloadFileVersion, subscriptionStatus, subscribeTarget, unsubscribeTarget } from '@/api'
+import { getFile, fetchTextContent, fetchMediaUrl, revokeMediaUrl, updateDocContent, getChunk, getLocateChunk, getFileLinks, resolveWikiTitle, getFileSummary, listFileVersions, restoreFileVersion, downloadFileVersion, subscriptionStatus, subscribeTarget, unsubscribeTarget, requestJSON, uploadFiles, mkdir } from '@/api'
 import { renderMarkdown } from '@/utils/markdown'
 import VditorEditor from '@/components/VditorEditor.vue'
 import MarkdownArticle from '@/components/MarkdownArticle.vue'
@@ -727,6 +738,56 @@ function exitReading() {
 }
 
 // ---- 编辑模式 ----
+
+// 博客文章封面（阅读页编辑态也可设封面；仅博客目录下的文章显示此栏）
+const BLOG_DIR = '00000000-0000-0000-0000-000000000010'
+const isBlogPost = ref(false)
+const blogCover = ref('')
+const blogCoverUploading = ref(false)
+let blogMediaDirId = ''
+async function blogMediaDir() {
+  if (blogMediaDirId) return blogMediaDirId
+  try {
+    const items = await requestJSON('/files?parent=' + BLOG_DIR)
+    const hit = (Array.isArray(items) ? items : items?.items || []).find((x) => x.kind === 'dir' && x.name === '媒体')
+    if (hit?.id) { blogMediaDirId = hit.id; return blogMediaDirId }
+  } catch (_) { /* 列目录失败则直接建 */ }
+  const d = await mkdir(t('媒体'), BLOG_DIR)
+  blogMediaDirId = d?.id || ''
+  return blogMediaDirId
+}
+async function rvUploadCover(e) {
+  const f = e.target?.files?.[0]
+  e.target.value = ''
+  if (!f || !/^image\//.test(f.type || '')) return
+  blogCoverUploading.value = true
+  try {
+    const parent = await blogMediaDir()
+    if (!parent) throw new Error(t('媒体目录不可用'))
+    const rs = await uploadFiles([{ file: f, path: f.name }], parent)
+    const fid = rs?.[0]?.file?.id
+    if (!fid) throw new Error(t('上传无结果'))
+    blogCover.value = '/api/v1/public/media/' + fid
+  } catch (err) {
+    showToast(t('封面上传失败：') + (err.message || err))
+  } finally {
+    blogCoverUploading.value = false
+  }
+}
+// 进入编辑时探测：当前文档是否为博客文章（是则带出已设封面）。非博客/无权限时静默不显示。
+async function probeBlogMeta() {
+  isBlogPost.value = false
+  blogCover.value = ''
+  try {
+    const d = await requestJSON('/blog/manage')
+    const p = (d.posts || []).find((x) => x.id === file.value?.id)
+    if (p) {
+      isBlogPost.value = true
+      blogCover.value = p.cover || ''
+    }
+  } catch (_) { /* 非博客管理员等：不显示封面栏 */ }
+}
+
 async function startEdit() {
   try {
     const text = await fetchTextContent(file.value.id)
@@ -734,6 +795,7 @@ async function startEdit() {
     editOriginal.value = text
     editMode.value = true
     savedMsg.value = ''
+    probeBlogMeta() // 异步探测，不阻塞编辑器打开
   } catch (e) {
     error.value = e.message
   }
@@ -791,6 +853,17 @@ async function saveEdit() {
         ? editorRef.value.getSaveValue()
         : editContent.value
     await updateDocContent(file.value.id, finalContent)
+    // 博客文章：封面一并保存（后端指针语义，只传 cover 不会动摘要/SEO；失败不阻断正文保存）
+    if (isBlogPost.value) {
+      try {
+        await requestJSON('/blog/posts/meta', {
+          method: 'POST',
+          body: JSON.stringify({ id: file.value.id, cover: blogCover.value }),
+        })
+      } catch (me) {
+        showToast(t('正文已保存，但封面保存失败：') + (me.message || me))
+      }
+    }
     // 重新加载渲染 + 提示（AI 后台会自动重新解读/向量化）
     editMode.value = false
     savedMsg.value = ''
@@ -1152,6 +1225,54 @@ async function goLink(link) {
   color: var(--primary);
   font-size: var(--fs-small);
   border-bottom: 1px solid var(--border);
+}
+
+/* 博客文章编辑：封面图栏 */
+.edit-cover-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  background: var(--primary-soft);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-small);
+}
+
+.ecb-label {
+  flex-shrink: 0;
+  color: var(--text-2, #4b5563);
+  font-weight: 600;
+}
+
+.ecb-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border, #e3e6eb);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: inherit;
+  background: var(--surface, #fff);
+  color: var(--text, #1f2329);
+}
+
+.ecb-input:focus {
+  outline: none;
+  border-color: var(--primary, #4c7df0);
+}
+
+.ecb-up {
+  flex-shrink: 0;
+  position: relative;
+}
+
+.ecb-thumb {
+  flex-shrink: 0;
+  width: 46px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 5px;
+  border: 1px solid var(--border, #e3e6eb);
 }
 
 .edit-saved {

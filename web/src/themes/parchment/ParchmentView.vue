@@ -17,9 +17,11 @@
 
     <!-- Featured Post -->
     <a v-if="featured" :href="postUrl(featured)" class="pa-feat">
-      <div class="pa-feat-img">
-        <div class="pa-feat-ph" :style="getGradient(featured)">{{ getEmoji(featured) }}</div>
-      </div>
+      <PostCover :post="featured" round>
+        <div class="pa-feat-img">
+          <div class="pa-feat-ph" :style="getGradient(featured)">{{ getEmoji(featured) }}</div>
+        </div>
+      </PostCover>
       <div class="pa-feat-body">
         <span v-if="getCategory(featured)" class="pa-cat">{{ getCategory(featured) }}</span>
         <h2>{{ getTitle(featured) }}</h2>
@@ -42,9 +44,11 @@
             :href="postUrl(post)"
             class="pa-card"
           >
-            <div class="pa-card-img">
-              <div class="pa-card-ph" :style="getGradient(post)">{{ getEmoji(post) }}</div>
-            </div>
+            <PostCover :post="post" round>
+              <div class="pa-card-img">
+                <div class="pa-card-ph" :style="getGradient(post)">{{ getEmoji(post) }}</div>
+              </div>
+            </PostCover>
             <div class="pa-card-body">
               <span v-if="getCategory(post)" class="pa-cat-sm">{{ getCategory(post) }}</span>
               <h3>{{ getTitle(post) }}</h3>
@@ -102,6 +106,7 @@ import { t } from '@/i18n'
 import AskWidget from '../AskWidget.vue'
 import { computed, ref, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import PostCover from '@/components/PostCover.vue'
 import './style.css'
 
 const raw = inject('themeContext')

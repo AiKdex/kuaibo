@@ -1,7 +1,14 @@
 // AiKlog（爱库录）API 客户端：对接后端 /api/v1 文件 API
 // 阶段 1 覆盖：文件列表/树/上传/下载/目录/移动/删除/预览内容
 
+import { reactive } from 'vue'
+
 const BASE = '/api/v1'
+
+// 响应式登录态：cookie 会话（HttpOnly）无法被 isAuthed 的 localStorage/sessionStorage 判定捕捉，
+// 故以 /auth/me 实探结果作为权威，所有 computed(() => isAuthed()) 自动跟随。
+export const authState = reactive({ loggedIn: false, ready: false, user: null })
+let _authProbe = null
 
 // ---- 会话（安全加固：登录鉴权） ----
 const TOKEN_KEY = 'aikmap_token'
@@ -22,9 +29,40 @@ export function setAuthFlag() {
 export function clearAuthFlag() {
   sessionStorage.removeItem(AUTH_FLAG)
 }
-// 鉴权判定：旧 token（localStorage，兼容旧会话/API 客户端）或登录标记（新会话 HttpOnly cookie 模式）
+// 鉴权判定：响应式实探结果（权威）或旧 token 或登录标记
 export function isAuthed() {
-  return !!getToken() || sessionStorage.getItem(AUTH_FLAG) === '1'
+  return authState.loggedIn || !!getToken() || sessionStorage.getItem(AUTH_FLAG) === '1'
+}
+// 启动 / 需要时调用一次：实探 /auth/me 校准响应式登录态。带幂等保护，只探一次。
+// 匿名态 401 不会触发 handle401 跳转（这里直接 fetch，不经由 requestJSON）。
+export function refreshAuth() {
+  if (_authProbe) return _authProbe
+  _authProbe = (async () => {
+    if (getToken() || sessionStorage.getItem(AUTH_FLAG) === '1') {
+      authState.loggedIn = true
+      authState.ready = true
+      return true
+    }
+    try {
+      const r = await fetch(BASE + '/auth/me', { headers: authHeaders(), credentials: 'same-origin' })
+      if (r.ok) {
+        try { authState.user = await r.json() } catch (_) {}
+        authState.loggedIn = true
+      } else {
+        authState.loggedIn = false
+      }
+    } catch (_) {
+      authState.loggedIn = false
+    }
+    authState.ready = true
+    return authState.loggedIn
+  })()
+  return _authProbe
+}
+// 登录态探测（供组件按需调用；已确认登录则直接返回 true）
+export async function probeAuthed() {
+  if (isAuthed()) return true
+  return refreshAuth()
 }
 function authHeaders(headers = {}) {
   const tok = getToken()
@@ -41,6 +79,7 @@ function handle401(url) {
   if (url.includes('/auth/login') || url.includes('/auth/register') || url.includes('/auth/email-code') || url.includes('/auth/config')) return
   clearToken()
   clearAuthFlag()
+  authState.loggedIn = false
   if (location.hash.startsWith('#/desk') || location.hash.startsWith('#/login')) {
     _authRedirecting = false
     return
@@ -51,10 +90,16 @@ function handle401(url) {
   location.hash = `#/desk?next=${encodeURIComponent(cur)}`
 }
 export function authLogin(username, password) {
-  return requestJSON('/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) })
+  const d = requestJSON('/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) })
+  authState.loggedIn = true
+  return d
 }
 export function authLogout() {
-  return requestJSON('/auth/logout', { method: 'POST', body: JSON.stringify({}) })
+  const d = requestJSON('/auth/logout', { method: 'POST', body: JSON.stringify({}) })
+  authState.loggedIn = false
+  clearAuthFlag()
+  clearToken()
+  return d
 }
 export function authMe() {
   return requestJSON('/auth/me')
@@ -71,10 +116,12 @@ export function authConfig() {
 }
 // 开放注册（受 site.registration_open 门禁；email_required 时强制邮箱+验证码）；注册成功即登录
 export function authRegister(username, password, displayName = '', email = '', code = '') {
-  return requestJSON('/auth/register', {
+  const d = requestJSON('/auth/register', {
     method: 'POST',
     body: JSON.stringify({ username, password, display_name: displayName || '', email: email || '', code: code || '' })
   })
+  authState.loggedIn = true
+  return d
 }
 // 发送邮箱验证码（purpose: register|bind；debug 模式响应含 debug_code）
 export function emailCode(email, purpose = 'register') {

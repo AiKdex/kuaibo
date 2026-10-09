@@ -255,10 +255,49 @@ if [[ "$NO_NGINX" != "1" ]] && command -v nginx >/dev/null; then
     NG_CONF=/etc/nginx/conf.d/aiklog.conf
     NG_EN="$NG_CONF"
   fi
+  # B52：若域名已有 Let's Encrypt 证书，则自动补回 443(HTTPS) 段并保留 80→443 重定向，
+  # 避免重装把 certbot 配好的 SSL 抹掉（此前每次 install 都会把 nginx 配置覆盖成纯 HTTP）。
+  CERT_DIR="/etc/letsencrypt/live/$ENTRY_HOST"
+  if [[ -f "$CERT_DIR/fullchain.pem" ]]; then
+    REDIRECT_LINE='    return 301 https://$host$request_uri;'
+    SSL_BLOCK=$(cat <<'SSLEOF'
+server {
+    listen 443 ssl;
+    server_name __DOMAIN__;
+    ssl_certificate __CERTDIR__/fullchain.pem;
+    ssl_certificate_key __CERTDIR__/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    client_max_body_size 200M;
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml text/javascript image/svg+xml;
+    location / {
+        proxy_pass http://127.0.0.1:__PORT__;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 300s;
+        proxy_buffering off;
+    }
+}
+SSLEOF
+)
+    SSL_BLOCK="${SSL_BLOCK//__DOMAIN__/$ENTRY_HOST}"
+    SSL_BLOCK="${SSL_BLOCK//__CERTDIR__/$CERT_DIR}"
+    SSL_BLOCK="${SSL_BLOCK//__PORT__/$PORT}"
+    echo "    检测到已有证书，已自动补回 HTTPS(443) 段"
+  else
+    REDIRECT_LINE=""
+    SSL_BLOCK=""
+  fi
   $SUDO tee "$NG_CONF" > /dev/null <<EOF
 server {
     listen 80;
     server_name $ENTRY_HOST;
+$REDIRECT_LINE
     client_max_body_size 200M;
     gzip on;
     gzip_types text/plain text/css application/json application/javascript text/xml text/javascript image/svg+xml;
@@ -275,6 +314,7 @@ server {
         proxy_buffering off;
     }
 }
+$SSL_BLOCK
 EOF
   [[ "$NG_CONF" != "$NG_EN" ]] && $SUDO ln -sf "$NG_CONF" "$NG_EN"
   $SUDO nginx -t && $SUDO systemctl reload nginx

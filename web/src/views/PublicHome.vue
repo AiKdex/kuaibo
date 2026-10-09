@@ -41,6 +41,7 @@
         <div class="ph-list">
           <article v-for="p in loose" :key="p.token + '/' + (p.path || '')" class="ph-post">
             <a class="ph-post-link" :href="postUrl(p)">
+              <PostCover :post="p" round />
               <h2 class="ph-post-title">{{  p.file?.name || $t('（未命名）')  }}
                 <span v-if="p.scope === 'dir' && p.token !== 'blog'" class="dir-tag" :title="$t('来自文件夹整体分享')">{{  $t('文件夹')  }}</span>
               </h2>
@@ -68,6 +69,7 @@
         <div class="ph-list">
           <article v-for="p in g.posts" :key="p.token + '/' + (p.path || '')" class="ph-post">
             <a class="ph-post-link" :href="postUrl(p)">
+              <PostCover :post="p" round />
               <h2 class="ph-post-title">{{  p.file?.name || $t('（未命名）')  }}
                 <span v-if="p.scope === 'dir' && p.token !== 'blog'" class="dir-tag" :title="$t('来自文件夹整体分享')">{{  $t('文件夹')  }}</span>
               </h2>
@@ -105,6 +107,7 @@ import DOMPurify from 'dompurify'
 import BlogPluginSlot from '@/components/BlogPluginSlot.vue'
 import GuestEntry from '@/components/GuestEntry.vue'
 import LangSwitch from '@/components/LangSwitch.vue'
+import PostCover from '@/components/PostCover.vue'
 import '@/blogPlugins/builtin' // 注册内置博客插件
 import { loadEnabledPlugins } from '@/blogPlugins'
 import { t } from '@/i18n'

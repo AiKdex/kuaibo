@@ -32,7 +32,7 @@
 
 <script setup>
 import { ref, nextTick, onMounted } from 'vue'
-import { publicComments, createComment, isAuthed } from '@/api'
+import { publicComments, createComment, probeAuthed } from '@/api'
 
 const props = defineProps({ ctx: { type: Object, default: () => ({}) } })
 const list = ref([])
@@ -96,7 +96,9 @@ async function jumpToAnchor() {
 }
 
 onMounted(async () => {
-  authed.value = isAuthed()
+  // 登录态用 /auth/me 实探：cookie 会话跨标签页打开时 sessionStorage 标记缺失，
+  // 同步 isAuthed() 会误判「未登录」导致已登录用户也看到「登录后可发表评论」。
+  probeAuthed().then((ok) => { authed.value = ok })
   await load()
   jumpToAnchor()
 })

@@ -92,6 +92,7 @@
           class="pp-card"
           :href="href(p)"
         >
+          <PostCover :post="p" round />
           <div class="pp-card-badge" :class="badgeClass(p)">{{ cat(p) || $t("文") }}</div>
           <div class="pp-card-body">
             <h3>{{ title(p) }}</h3>
@@ -124,6 +125,7 @@ import { t } from '@/i18n'
 import AskWidget from '../AskWidget.vue'
 import { computed, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import PostCover from '@/components/PostCover.vue'
 import './style.css'
 
 const raw = inject('themeContext')

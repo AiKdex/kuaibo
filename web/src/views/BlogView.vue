@@ -70,6 +70,7 @@ import LangSwitch from '@/components/LangSwitch.vue'
 import GuestEntry from '@/components/GuestEntry.vue'
 import { listThemes, activeThemeId, applyServerTheme, pageEntry } from '@/themes'
 import { publicPosts, publicSite, publicTags, isAuthed } from '@/api'
+import { postCover } from '@/utils/postCover.js'
 import '@/themes/all' // 注册全部主题（与文章页 BlogPostView 共用同一份清单）
 import { t } from '@/i18n'
 
@@ -180,7 +181,8 @@ async function loadBlogContext() {
       publicSite().catch(() => null),
       publicTags().catch(() => ({ items: [] })),
     ])
-    ctx.value.posts = postsRes.items || []
+    // 统一注入封面字段（单一来源）：各主题卡片直接读 post.cover 即可，无需各自计算
+    ctx.value.posts = (postsRes.items || []).map((p) => ({ ...p, cover: postCover(p) }))
     ctx.value.tags = tagsRes?.items || []
     if (siteRes?.site) {
       if (siteRes.site.title) ctx.value.siteName = siteRes.site.title

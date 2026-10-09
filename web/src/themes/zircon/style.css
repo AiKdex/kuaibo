@@ -475,6 +475,13 @@
   color: var(--th-ink-2);
 }
 
+.zc-tag-n {
+  margin-left: 5px;
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--th-primary);
+}
+
 /* ── 内页分节（归档年份） ────────────────────────────────────────── */
 .zc-year {
   margin-top: 22px;

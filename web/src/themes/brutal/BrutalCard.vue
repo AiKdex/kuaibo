@@ -1,10 +1,12 @@
 <template>
   <!-- 文章卡片（列表页 / 分类页 / 作者页 / 搜索页共用） -->
   <a class="bt-card" :href="postHref(ctx, post)">
-    <span class="bt-cover" :class="patClass(index)">
-      <span v-if="showCat" class="bt-cover-tag">{{ cat }}</span>
-      <b class="bt-cover-no">{{ seqNo(index) }}</b>
-    </span>
+    <PostCover :post="post" round>
+      <span class="bt-cover" :class="patClass(index)">
+        <span v-if="showCat" class="bt-cover-tag">{{ cat }}</span>
+        <b class="bt-cover-no">{{ seqNo(index) }}</b>
+      </span>
+    </PostCover>
     <span class="bt-card-body">
       <span class="bt-card-cat">
         <span class="bt-chip" :class="catColor(cat)">{{ cat }}</span>
@@ -23,6 +25,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import PostCover from '@/components/PostCover.vue'
 import {
   catColor,
   catName,

@@ -63,7 +63,9 @@
         <div class="cx-post-list">
           <!-- Featured (first) -->
           <a v-if="featured" class="cx-post-card cx-featured" :href="postHref(featured)">
-            <div class="cx-post-thumb" :style="thumbStyle(featured)"><div class="cx-thumb-inner">{{ catEmoji(postCat(featured)) }}</div></div>
+            <PostCover :post="featured" round>
+              <div class="cx-post-thumb" :style="thumbStyle(featured)"><div class="cx-thumb-inner">{{ catEmoji(postCat(featured)) }}</div></div>
+            </PostCover>
             <div class="cx-post-body">
               <div class="cx-post-cats"><span class="cx-post-cat" :class="catColorClass(postCat(featured))">{{ postCat(featured)||$t("未分类") }}</span></div>
               <h2>{{ postTitle(featured) }}</h2>
@@ -73,7 +75,9 @@
           </a>
           <!-- Rest -->
           <a v-for="p in restPosts" :key="p.token" class="cx-post-card" :href="postHref(p)">
-            <div class="cx-post-thumb" :style="thumbStyle(p)"><div class="cx-thumb-inner">{{ catEmoji(postCat(p)) }}</div></div>
+            <PostCover :post="p" round>
+              <div class="cx-post-thumb" :style="thumbStyle(p)"><div class="cx-thumb-inner">{{ catEmoji(postCat(p)) }}</div></div>
+            </PostCover>
             <div class="cx-post-body">
               <div class="cx-post-cats"><span class="cx-post-cat" :class="catColorClass(postCat(p))">{{ postCat(p)||$t("未分类") }}</span></div>
               <h2>{{ postTitle(p) }}</h2>
@@ -133,6 +137,7 @@ import { t } from '@/i18n'
 import AskWidget from '../AskWidget.vue'
 import { ref, computed, inject, watch, nextTick } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import PostCover from '@/components/PostCover.vue'
 import './style.css'
 const raw=inject('themeContext')
 const ctx=computed(()=>raw?.value||raw||{posts:[],tags:[],loading:true})

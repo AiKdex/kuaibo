@@ -31,9 +31,11 @@
       <main class="el-main">
         <!-- Featured Post -->
         <a v-if="featured" :href="postUrl(featured)" class="el-card el-feat">
-          <div class="el-feat-img">
-            <div class="el-feat-ph" :style="getGradient(featured)">{{ getEmoji(featured) }}</div>
-          </div>
+          <PostCover :post="featured" round>
+            <div class="el-feat-img">
+              <div class="el-feat-ph" :style="getGradient(featured)">{{ getEmoji(featured) }}</div>
+            </div>
+          </PostCover>
           <div class="el-feat-body">
             <div class="el-tags">
               <span v-if="getCategory(featured)" class="tag">{{ getCategory(featured) }}</span>
@@ -53,9 +55,11 @@
           :href="postUrl(post)"
           class="el-card"
         >
-          <div class="el-card-img">
-            <div class="el-card-ph" :style="getGradient(post)">{{ getEmoji(post) }}</div>
-          </div>
+          <PostCover :post="post" round>
+            <div class="el-card-img">
+              <div class="el-card-ph" :style="getGradient(post)">{{ getEmoji(post) }}</div>
+            </div>
+          </PostCover>
           <div class="el-card-body">
             <div class="el-tags">
               <span v-if="getCategory(post)" class="tag">{{ getCategory(post) }}</span>
@@ -142,6 +146,7 @@ import { t } from '@/i18n'
 import AskWidget from '../AskWidget.vue'
 import { computed, ref, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import PostCover from '@/components/PostCover.vue'
 import './style.css'
 
 const raw = inject('themeContext')

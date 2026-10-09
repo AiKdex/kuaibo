@@ -1,11 +1,13 @@
 <template>
   <a class="bf-item" :class="{ 'is-rev': reversed }" :href="href">
-    <!-- 契约不含封面图（无 cover 字段）→ 用纯 CSS 渐变 + 纹样做版面块，色相按分类稳定派生，只作装饰 -->
-    <span class="bf-item-art" :class="tone" aria-hidden="true">
-      <span class="bf-item-art-pat"></span>
-      <span class="bf-item-art-ch">{{ ch }}</span>
-      <span class="bf-item-art-read"><span>{{ $t('阅读') }}</span></span>
-    </span>
+    <PostCover :post="post" round>
+      <!-- 契约不含封面图（无 cover 字段）→ 用纯 CSS 渐变 + 纹样做版面块，色相按分类稳定派生，只作装饰 -->
+      <span class="bf-item-art" :class="tone" aria-hidden="true">
+        <span class="bf-item-art-pat"></span>
+        <span class="bf-item-art-ch">{{ ch }}</span>
+        <span class="bf-item-art-read"><span>{{ $t('阅读') }}</span></span>
+      </span>
+    </PostCover>
 
     <span class="bf-item-info">
       <span class="bf-item-cats">
@@ -37,6 +39,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import PostCover from '@/components/PostCover.vue'
 import {
   catName, catTone, daysAgo, initials, postDate, postHref,
   postSize, postSummary, postTitle, useBlog,

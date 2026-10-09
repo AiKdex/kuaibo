@@ -89,9 +89,11 @@
             class="jd-featured"
             :href="postHref(featured)"
           >
-            <div class="jd-featured-img" :style="featStyle(featured)">
-              <span class="jd-featured-emoji">{{ catEmoji(postCat(featured)) }}</span>
-            </div>
+            <PostCover :post="featured" round>
+              <div class="jd-featured-img" :style="featStyle(featured)">
+                <span class="jd-featured-emoji">{{ catEmoji(postCat(featured)) }}</span>
+              </div>
+            </PostCover>
             <div class="jd-featured-body">
               <div class="jd-card-tags">
                 <span class="jd-chip">{{ postCat(featured) || $t("未分类") }}</span>
@@ -111,9 +113,11 @@
             class="jd-card"
             :href="postHref(p)"
           >
-            <div class="jd-card-img" :style="cardStyle(p)">
-              <span class="jd-card-emoji">{{ catEmoji(postCat(p)) }}</span>
-            </div>
+            <PostCover :post="p" round>
+              <div class="jd-card-img" :style="cardStyle(p)">
+                <span class="jd-card-emoji">{{ catEmoji(postCat(p)) }}</span>
+              </div>
+            </PostCover>
             <div class="jd-card-body">
               <div class="jd-card-tags">
                 <span class="jd-chip">{{ postCat(p) || $t("未分类") }}</span>
@@ -225,6 +229,7 @@ import { t as i18t } from '@/i18n'
 import AskWidget from '../AskWidget.vue'
 import { ref, computed, inject, nextTick } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
+import PostCover from '@/components/PostCover.vue'
 import './style.css'
 
 const raw = inject('themeContext')

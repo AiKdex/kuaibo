@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="8KFPIrYpfraAXq7q4hqxIs">
+<head data-page-node-id="F3b4HeLA3f09jgxMFWEBt4">
+<meta charset="UTF-8" data-page-node-id="SWX09N6K2L70h9fI0N6E4Q">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="CzLS8v1j678Npcmth5HlPT">
+<title>AiKlog 免费版 / 收费版功能清单</title>
+<style>
+  :root{
+    --ink:#1f2329; --sub:#5b5b5b; --line:#e5e6eb;
+    --blue:#4c6ef5; --green:#2b8a3e; --green-bg:#e9f7ee;
+    --orange:#e8590c; --orange-bg:#fff4e6;
+    --red:#c92a2a; --red-bg:#fdecec; --grey-bg:#f4f5f7;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:#f7f8fa;color:var(--ink);
+       font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+       font-size:14px;line-height:1.65;}
+  .wrap{max-width:980px;margin:0 auto;padding:32px 20px 64px;}
+  h1{font-size:24px;margin:0 0 6px;}
+  .meta{color:var(--sub);font-size:12px;margin-bottom:28px;}
+  h2{font-size:18px;margin:36px 0 12px;padding-left:10px;border-left:4px solid var(--blue);}
+  h2.free{border-color:var(--green);} h2.paid{border-color:var(--orange);} h2.tech{border-color:#868e96;}
+  h3{font-size:15px;margin:20px 0 8px;}
+  p.note{color:var(--sub);font-size:13px;margin:4px 0 10px;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);
+        border-radius:8px;overflow:hidden;font-size:13.5px;}
+  th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--grey-bg);font-weight:600;white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  td.k{white-space:nowrap;font-weight:500;}
+  .tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11.5px;margin:1px 2px;white-space:nowrap;}
+  .tg-green{background:var(--green-bg);color:var(--green);}
+  .tg-orange{background:var(--orange-bg);color:var(--orange);}
+  .tg-red{background:var(--red-bg);color:var(--red);}
+  .tg-grey{background:var(--grey-bg);color:var(--sub);}
+  .tg-blue{background:#edf2ff;color:var(--blue);}
+  ul.tight{margin:6px 0;padding-left:20px;}
+  ul.tight li{margin:3px 0;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:12px 0;}
+  .legend{background:var(--grey-bg);border-radius:8px;padding:10px 14px;font-size:12.5px;color:var(--sub);margin-bottom:8px;}
+  code{background:#f1f3f5;border-radius:4px;padding:1px 5px;font-size:12.5px;}
+</style>
+</head>
+<body data-page-node-id="N4Vp2xSezE6LwW6o4xYaB7">
+<div class="wrap" data-page-node-id="IhfQnKaiTUQduBUlZBeUb7">
+
+<h1 data-page-node-id="UWKWzUY6HTW93mCZuHPFgz">AiKlog 爱库录 · 免费版与收费版功能清单</h1>
+<div class="meta" data-page-node-id="7iV0Irtlm2qCfM3w8QIOZL">版本锚点：main = a392549（family.8.4）· 2026-10-03 · 对外发布口径请同步产品措辞（勿写"已支持多人协作"）</div>
+
+<div class="legend" data-page-node-id="6GwFbPedBIwo7WIRC0VHyE">
+  标记说明：<span class="tag tg-green" data-page-node-id="DgFEDXusRKGCYP6gkNF8XI">免费 · 开箱即用</span> 下载即有，无需平台任何凭据
+  &nbsp;<span class="tag tg-blue" data-page-node-id="ypj0dfjF05EVmu7ZyHgRCr">免费 · 需自备</span> 功能免费，但需自备外部资源（如模型 key / 域名）
+  &nbsp;<span class="tag tg-orange" data-page-node-id="jqEZE56G8e3FwjSAoumDyb">收费</span> 需付费/平台签发后开放
+  &nbsp;<span class="tag tg-red" data-page-node-id="iitjVaptgI4XLq3Dep9mbG">平台侧</span> 代码与运行均不进开源包
+  &nbsp;<span class="tag tg-grey" data-page-node-id="7bJZKQizAauFSUfGYvYumU">默认关闭</span> 代码在，capability 开关默认 off
+</div>
+
+<!-- ================= 免费版 ================= -->
+<h2 class="free" data-page-node-id="PVoJ3mdYjreqEAQIURgLcw">一、免费版（开源 · 自托管）功能清单</h2>
+
+<h3 data-page-node-id="7xS64VXD3emUIqCvn8B1er">1. 博客核心（开箱即用）</h3>
+<table data-page-node-id="1kC9lVZ6w0tPZQ9cY7LAfq">
+  <tr data-page-node-id="suyNKsHm5xxBWMqVtAA6iE"><th style="width:170px" data-page-node-id="FKrOYXIKQ7RJKuuKpswMnH">模块</th><th data-page-node-id="XCVmXXPmFoMONQ86dibsbG">功能明细</th><th style="width:130px" data-page-node-id="VFNOgUkrobXbqIk7ZZSDfK">标记</th></tr>
+  <tr data-page-node-id="ojgomfgYN4aAfsEBQq1haE"><td class="k" data-page-node-id="Z7lAMEbFqJPsHaD4KVySPH">发布引擎</td><td data-page-node-id="zCObkf1uotEDUe0DjhT96m">SSR 首屏渲染、文章/页面/草稿、编辑器、分类/标签、置顶、定时发布</td><td data-page-node-id="3Yw3wcpqRBFH4gvLHwiqIw"><span class="tag tg-green" data-page-node-id="p6LWGxTzVSiI0s8iH1q7Zt">免费 · 开箱即用</span></td></tr>
+  <tr data-page-node-id="kJ8rubEAUZrozY20kRq3PR"><td class="k" data-page-node-id="9FA7A3mSuWPIYDOdyXlXdN">主题系统</td><td data-page-node-id="9ELz4ZhSBUeAFIUnnJnXAp">主题热投放（data/themes/ 即时生效）、SPA 主题（builtinThemes）、主题切换</td><td data-page-node-id="IgFTis9ItwJitUTqvXi0oV"><span class="tag tg-green" data-page-node-id="y24yrUUVtmjegG5vvJ7lfi">免费 · 开箱即用</span></td></tr>
+  <tr data-page-node-id="WstpHdsjFJ7NImCrCXnwV2"><td class="k" data-page-node-id="K2k7UedsXo30pmpi3aSAap">互动</td><td data-page-node-id="k6m50DKmDVsbARaKZXEXTH">评论、审核、RSS / RSS 全文、sitemap</td><td data-page-node-id="pcyHgx7AgpX6HLkGdhMkqP"><span class="tag tg-green" data-page-node-id="7r72v0MpHm8QVMVK1RGrqI">免费 · 开箱即用</span></td></tr>
+  <tr data-page-node-id="T8PJDO9NM62FpgjQNalmfO"><td class="k" data-page-node-id="kFFgTN5Q6lgoJFvBz7rT2T">SEO / i18n</td><td data-page-node-id="qDlpNoPIFzMunkLyySfdx0">SEO 设置、多语言界面（zh/en）、国际化键名体系</td><td data-page-node-id="XDtXsWFnamsP6EhUbFCuw7"><span class="tag tg-green" data-page-node-id="Ld7OEXUDMoHw9JSHKfewDU">免费 · 开箱即用</span></td></tr>
+  <tr data-page-node-id="7Sful4WlUXXmq0TdcBMB3H"><td class="k" data-page-node-id="AIy4r7YZILOp2Vu0z8XFOG">相关文章</td><td data-page-node-id="QtI62OLn83O0lIdD8KKT76">同分类降级推荐（无向量时）；配置 embedding key 后自动升级为向量召回</td><td data-page-node-id="QBElZVQ41A1CyVJSljkDwg"><span class="tag tg-green" data-page-node-id="9v0t7gr5OeL8BFYLO3ieRA">免费 · 开箱即用</span> <span class="tag tg-blue" data-page-node-id="nODJYvyJWx2J87HtjPHL3e">需自备</span></td></tr>
+</table>
+
+<h3 data-page-node-id="6aoIvfJBp43xHOMfatBxCz">2. 多用户与权限（开箱即用）</h3>
+<table data-page-node-id="RiOvNBITxtwC4X8QO2WHzE">
+  <tr data-page-node-id="PrEatnGq2LEu8GMlZZ4UO8"><th style="width:170px" data-page-node-id="0w7clquJe5tDagUGVzOEO8">模块</th><th data-page-node-id="q6iBYMBS9AagRZ8mujm3QC">功能明细</th><th style="width:130px" data-page-node-id="at1LUYlbk76GpmHXNTZHN4">标记</th></tr>
+  <tr data-page-node-id="uUFieuzhf8KinkunMjxk3a"><td class="k" data-page-node-id="gLcCiEbvfXEsiuwkaxGjpi">账号体系</td><td data-page-node-id="fsGfoh23QzWAY8Dg8Xi3Ec">注册（可开关）、登录、会话、角色（owner/admin/作者/读者）</td><td data-page-node-id="8YAEguN19cWKocQdHPOxR2"><span class="tag tg-green" data-page-node-id="blOFT9RqJXHRdqbtemXNhI">免费 · 开箱即用</span></td></tr>
+  <tr data-page-node-id="KuLzC9OtFp3AfUUAIE9TXd"><td class="k" data-page-node-id="ZULrSRilhAu4abgH8ADnIV">创作权限</td><td data-page-node-id="lg8GXCmeDKa1X0x7n48qAc">作者白名单（blogAuthorOnly）、管理守卫（blogAdminOnly / isAdmin）</td><td data-page-node-id="tzLJHOg8gGNub30bj488bA"><span class="tag tg-green" data-page-node-id="g1TgptiyQJcev5rIS7OxLX">免费 · 开箱即用</span></td></tr>
+  <tr data-page-node-id="EU29egv03SVESv5yvQuEKz"><td class="k" data-page-node-id="d4CLmqODCHY6pnVrRU2fSy">内容门禁</td><td data-page-node-id="Dj4Brdxcaj3yuqw5GgP4j8">文章付费墙 / 密码墙（正文 + 预览双收口，excerpt / paid_preview）</td><td data-page-node-id="IO07ZiyDFcnDPtmz9PPr4U"><span class="tag tg-green" data-page-node-id="AFDc6m6CXdkBZwMdPAT3jl">免费 · 开箱即用</span></td></tr>
+</table>
+
+<h3 data-page-node-id="nDp9bzMbfyPUbIEMIyA5gV">3. 文件与媒体（开箱即用）</h3>
+<table data-page-node-id="VQGVtsKxTUnemBxb9U0LdG">
+  <tr data-page-node-id="kUt0AI5JfseSPZXJQsnopH"><th style="width:170px" data-page-node-id="7DXDPnC9CEvkX7trO90Oqu">模块</th><th data-page-node-id="2yZMCgZt0ixA0W6DLRptFC">功能明细</th><th style="width:130px" data-page-node-id="r6VvijDQvNuVWU0nTRQpU4">标记</th></tr>
+  <tr data-page-node-id="qlV6Zfqnc33K723dAAPVpB"><td class="k" data-page-node-id="CmnPEJP9SHYgL0LYm55wGo">文件管理</td><td data-page-node-id="YV284Q042d2w1ZsfvLwks0">上传、下载、引用计数、软删/回收</td><td data-page-node-id="2nPk6nkNmYkGEJlRCzcq2n"><span class="tag tg-green" data-page-node-id="Tjx4PbgMXPzckQMjjzK2yJ">免费 · 开箱即用</span></td></tr>
+  <tr data-page-node-id="wISoz3ZvcRTNjoQvOFtqzo"><td class="k" data-page-node-id="6N6zTyCOYJEJDCcYR8jCql">媒体处理</td><td data-page-node-id="KsWlQiR5VM0fYj7ZKKCrDo">缩略图（长边参数化 media.thumb_max_edge）、派生缓存、purge 接口；ffmpeg 转码/抽帧（装了 ffmpeg 自动启用，实时探测）</td><td data-page-node-id="HddWtEaSfHymaAXEhtZUrQ"><span class="tag tg-green" data-page-node-id="3K6HPJvH4hiZ7WATnUmSQR">免费 · 开箱即用</span></td></tr>
+  <tr data-page-node-id="PA1A6kB10bjxotP3jDIpJj"><td class="k" data-page-node-id="4VJw8PQvYPns6sdvDo13zG">导入导出</td><td data-page-node-id="yVRobU01oX26NxtQss9F4v">备份导出 / 导入、知识库条目导入</td><td data-page-node-id="9IwqG6YQiAbeI8BK6zDgvb"><span class="tag tg-green" data-page-node-id="yagyiP03wF9T7aMiWSrjBH">免费 · 开箱即用</span></td></tr>
+</table>
+
+<h3 data-page-node-id="uUSixIS7VeXC8CU1Luu18R">4. AI 能力（免费 · 自备模型）</h3>
+<p class="note" data-page-node-id="I4MEVSqeDluCNsPo8I78jE">免费版的 AI 全量开放，但模型供给 = 站长自备（custom provider，填任意 OpenAI 兼容端点与 key）。自备模型不计量、不限量。</p>
+<table data-page-node-id="LP9YbdEhwXpaISsizJoi2F">
+  <tr data-page-node-id="0X2Zi4M7Rfr5aCAuJ2p9yl"><th style="width:170px" data-page-node-id="8W4lkMYCvHoB87K2PIa4Ys">模块</th><th data-page-node-id="jkAZ2BbO5kfQlNV4gGPbw3">功能明细</th><th style="width:130px" data-page-node-id="QDDr3W9nc9H4NA5agcNzST">标记</th></tr>
+  <tr data-page-node-id="TebCSiRfO6kubn3TQwd90i"><td class="k" data-page-node-id="pdTgOtSUeJzsgkgTWu2bnV">模型管理后台</td><td data-page-node-id="JyhwXu8FE2BH7Eyi22tpdq">任意 provider 增删改、token 池多 key 轮替、连接测试、热加载、能力级绑定（llm/image/embed/ocr）、语音候选</td><td data-page-node-id="uHVZ5yprlgclSWw4t7Z9UK"><span class="tag tg-green" data-page-node-id="ZW8gPZmoRA37yeCvoSH8bt">免费 · 开箱即用</span> <span class="tag tg-blue" data-page-node-id="LhVMyEQfFckSF3StVBX7HM">需自备 key</span></td></tr>
+  <tr data-page-node-id="0J9I5DYgzsapIlE6oBQmXE"><td class="k" data-page-node-id="hINFrPvDD3BQaSf0o9lDTP">AI 写作</td><td data-page-node-id="kHAovYDnUPiw4ipE6UCRZG">AI 问答（blog_ask）、摘要、润色等 LLM 能力</td><td data-page-node-id="0qYOSGRTjsLB0vaMovD0Xz"><span class="tag tg-blue" data-page-node-id="hIgtRBW4VA3zoct2tixTcp">需自备 key</span></td></tr>
+  <tr data-page-node-id="xyZvD0mnCY31lx0PgLG7eZ"><td class="k" data-page-node-id="OcnfCO3Mk9rmdHaFOJRSlD">文章语音朗读</td><td data-page-node-id="qHow9nMG7xM96lfEVOonci">TTS 逐块流式合成 + 缓存（长文 400 字切分，30min 预算）</td><td data-page-node-id="F3Fd40PQUekkdZVSH2onEN"><span class="tag tg-blue" data-page-node-id="YhIQ0iNNPixo6hrrJxV9wT">需自备 TTS</span></td></tr>
+  <tr data-page-node-id="D4v3MSeRPfiOi69ROBMbmQ"><td class="k" data-page-node-id="rZDxAzV22pHAmxgRY5r2ex">向量 / OCR</td><td data-page-node-id="IEhwMGS1ZMvNKgFQkIkhkr">向量检索（配 embedding 自动升级）、OCR 识别</td><td data-page-node-id="KpZl6QmTjwOPYBZI8qwu2Z"><span class="tag tg-blue" data-page-node-id="EVTSDMBgMgGK95rrlIms8M">需自备 key</span></td></tr>
+  <tr data-page-node-id="jliTcDVeOfngHWoB3Omohf"><td class="k" data-page-node-id="T8iB9qhj5FbgOQpFuB0ME0">实例内用量管控</td><td data-page-node-id="WAChumgMiWDuqWUdghfmT5">站长自管：功能次数配额分层、计费开关、按主体今日用量、余额与充值（管自己用户）</td><td data-page-node-id="XmL92yJUQFcRsuXfHlMN3X"><span class="tag tg-green" data-page-node-id="2RxxZTelvBciI0rbyxYBR2">免费 · 开箱即用</span></td></tr>
+</table>
+
+<h3 data-page-node-id="DE2QEEnkzWpz0uXp9MCgSA">5. 应用中心（开箱即用）</h3>
+<table data-page-node-id="gw0NNWXVmiimY7zXAYFJbq">
+  <tr data-page-node-id="wmBIuogrPJLOsq8Cy1Ukzs"><th style="width:170px" data-page-node-id="6SUTAKqyEA2fP31JozHrmH">模块</th><th data-page-node-id="2AGiz6zSwv2CDudZ1mWGBi">功能明细</th><th style="width:130px" data-page-node-id="AqEtwecuiINdC7PzbMdIkh">标记</th></tr>
+  <tr data-page-node-id="XCogEuJrEvTf5pS0b6eGUS"><td class="k" data-page-node-id="HWXu5FItSX6ZIkv72INJgD">应用目录</td><td data-page-node-id="p8dFFxZVsEKp7oL6vicb89">在线目录浏览（插件/主题/授权/AI 供给四类）、索引验签、sha256 校验、一键安装</td><td data-page-node-id="oKa34pnAIH8987RyG2EpZ1"><span class="tag tg-green" data-page-node-id="7304x3RlidqWhrB7rJdewR">免费 · 开箱即用</span></td></tr>
+  <tr data-page-node-id="rDoHTJBIAeLn2CJh8HoOJ3"><td class="k" data-page-node-id="SsYhsrsQE0Bjhd69qwNeCZ">免费商品</td><td data-page-node-id="aQZDlJ13tMqaE0dPH9DSvD">免费主题 / 免费插件 / 源码包安装与升级</td><td data-page-node-id="89errfCZYgHKQInMdgOrCr"><span class="tag tg-green" data-page-node-id="MAo6tDN6gjA8SG3GaG7qQH">免费 · 开箱即用</span></td></tr>
+</table>
+
+<h3 data-page-node-id="IBcHAQgLwu5rTuKNd02DbL">6. 平台与运维接口（开箱即用）</h3>
+<table data-page-node-id="IUk0I6xNKBkz6MUgguDcFw">
+  <tr data-page-node-id="e5x5T1hyqrzsYVieelfdAu"><th style="width:170px" data-page-node-id="twB8PqZ5hMlEV9EKmgLqSj">模块</th><th data-page-node-id="87BWwDVe7siSIxEQw5XSZ6">功能明细</th><th style="width:130px" data-page-node-id="Co9nmnl22Urp8FMYF1PcsS">标记</th></tr>
+  <tr data-page-node-id="CGUJfgQjauXdpB2PyfCNj5"><td class="k" data-page-node-id="C7lsJMluctYV5bINluOdDX">开放接口</td><td data-page-node-id="zDyHT2X8TXbHk2HcXtdICg">REST API 全量、WebDAV、health 端点</td><td data-page-node-id="AkjvpFCBO9bsfc8ORpjtYJ"><span class="tag tg-green" data-page-node-id="ynEYADdJEoY4H5A8EZFCiO">免费 · 开箱即用</span></td></tr>
+  <tr data-page-node-id="2TbRmJALs5RcdpzcWcgQcH"><td class="k" data-page-node-id="vh1QdB18J4F838ZnQup0bM">部署形态</td><td data-page-node-id="FDQEVXSgdDEEgl1bb6zfjP">单二进制（go:embed 前端）+ SQLite（WAL）、install.sh 一键部署、systemd、nginx 模板</td><td data-page-node-id="Qx07NgPwDVZSnkO5KkWkh0"><span class="tag tg-green" data-page-node-id="S8vm7mN8vXwukRCYdlcgec">免费 · 开箱即用</span></td></tr>
+</table>
+
+<h3 data-page-node-id="EDjtifdc8HcKiYKC01ccNU">7. 有代码、默认关闭（社区版可自行打开，但无平台侧配套）</h3>
+<table data-page-node-id="dd3KBKgRI6mw169Z4sM8Ap">
+  <tr data-page-node-id="6pCTCdJgvC2Uey60GcjGBl"><th style="width:170px" data-page-node-id="EZqAbJoGtEqa1GwCcqhDeH">模块</th><th data-page-node-id="ei4TVwrqFZQliCVgJJFVZR">功能明细</th><th style="width:130px" data-page-node-id="eIVGda1QOejGHqhL7Byvok">标记</th></tr>
+  <tr data-page-node-id="v6rVcjpjDgll7capVxtPOK"><td class="k" data-page-node-id="AmwPQhhKBvkxsFKoG8WquQ">平台 AI 供给</td><td data-page-node-id="fKi5UvpcEOnB5WuexfUmJB">应用中心 ai_supply 条目链路（凭据验签、开通即登记网关 provider、站点池充值）——社区版目录无官方上架条目，仅本地目录可测</td><td data-page-node-id="QeUgOaoiZNhHJmCP5PVDjv"><span class="tag tg-grey" data-page-node-id="jpVsaqBZLPVrw1ChpxxRju">默认关闭</span> <span class="tag tg-orange" data-page-node-id="qgy3oNC9MgWhPktlug0Ekv">收费</span></td></tr>
+  <tr data-page-node-id="o6NsVbj2hu4QL1qEoQRZpS"><td class="k" data-page-node-id="SuxOGckLh1EBa9GHKolrFg">高级能力底座</td><td data-page-node-id="nldvNEAbgQP36NkCwNMHvN">客服、IM（life_event）、工作流、技能包等 capability 级开关，默认 off</td><td data-page-node-id="2IoGLfCdn723ADsVE20g7t"><span class="tag tg-grey" data-page-node-id="j7RYClcwcONDAII346KA1Z">默认关闭</span></td></tr>
+</table>
+
+<h3 data-page-node-id="rQm23K37oTl9FDDr2OJmDX">8. 不进开源包（平台生命线，发布时清扫）</h3>
+<table data-page-node-id="aZYhEdCljlFCQXs0GA95cX">
+  <tr data-page-node-id="ESoUnMnmECxGM7Xqm6IUNd"><th style="width:170px" data-page-node-id="AJusX1fsJLbezATKmArgK0">模块</th><th data-page-node-id="VjpPCioOlssh2C8SloIhDu">明细</th><th style="width:130px" data-page-node-id="QrfRbi3tXGZ8H7nra5HxQu">标记</th></tr>
+  <tr data-page-node-id="p2JjP1gZR8zTj4ATNPxg09"><td class="k" data-page-node-id="qrrJCxHsCwPOIvdfRYHxq7">aikgw 网关</td><td data-page-node-id="qi01SnEwP2w31D9pVmTiCH">平台模型中转网关（计量、扣费、闸门、上游 key 保管）——独立二进制，仅平台机房运行</td><td data-page-node-id="lyFfuzK01eCdwep1plZ4DB"><span class="tag tg-red" data-page-node-id="vAHWsJwI8g3hvjJHHG6L0f">平台侧</span></td></tr>
+  <tr data-page-node-id="2GZuxDcQSltnbBDUjmHHDi"><td class="k" data-page-node-id="g6PZhZGUuOFePeQp8dPDIm">签发体系</td><td data-page-node-id="2DNDg3umAYWLV9c9zokKSv">licensegen 工具、签发私钥、license 双信任校验的私有 key</td><td data-page-node-id="eJx4Rxz3c8KeUX29bdLYRo"><span class="tag tg-red" data-page-node-id="05dSk0VySHyh4IWNnnHaR2">平台侧</span></td></tr>
+  <tr data-page-node-id="x6kmpiavOphzz01iPY8Lh6"><td class="k" data-page-node-id="VVfp047Yct3j9EwYz6r6ux">内置凭据</td><td data-page-node-id="k5Ny8AfHyU9WVoxja597IQ">providers.json 内置模型 key、admin key、生产域名/IP、部署脚本口令</td><td data-page-node-id="HZHuHfkQT2EOjf7UUHgPEb"><span class="tag tg-red" data-page-node-id="QsMAoVq1E84NkhU1cIofrs">平台侧</span></td></tr>
+  <tr data-page-node-id="PGzAKEKRiw3AUVJ0Mwy3hK"><td class="k" data-page-node-id="IT1LEakUOUh2Hwt8QSHUH4">付费商品源</td><td data-page-node-id="UdMKT1fSuA5JiLyb7Rgdls">官方市场付费商品文件、ai_supply 凭据生成与索引私钥</td><td data-page-node-id="Er9PZgmh3GPqLUkYITVUiD"><span class="tag tg-red" data-page-node-id="Ne6robe7SFqunvGAEU7Vkx">平台侧</span></td></tr>
+</table>
+
+<!-- ================= 收费版 ================= -->
+<h2 class="paid" data-page-node-id="mkwjN10SFkfRssBxn3qNDl">二、收费部分功能清单</h2>
+
+<h3 data-page-node-id="lLk46QzFujzYUfJABFFlPA">1. 云版订阅（平台代管）——持续性收费</h3>
+<table data-page-node-id="ILBygAhA0VqFPAz9ttSGmJ">
+  <tr data-page-node-id="f2LAGpF2yrAZ8AnVkbRD0V"><th style="width:170px" data-page-node-id="bNJDzR2SoGeqPich5pcyhj">项目</th><th data-page-node-id="L3PlpbocPFxV1X7CivY8Si">内容</th><th style="width:130px" data-page-node-id="SKcEweMqoKRC0AVJq2nUSs">收费形态</th></tr>
+  <tr data-page-node-id="9TxBCW25yjcEv6aC47iGXS"><td class="k" data-page-node-id="lH6ymkwLuTHSWU1ePhvf05">托管运维</td><td data-page-node-id="2WAGsjGT7a3dJsEYNmRksJ">免部署、自动升级、备份、TLS、监控（对照社区版：自己买 VPS 自己运维）</td><td data-page-node-id="iwNmdJGhS6AqkO8CD6KiSn"><span class="tag tg-orange" data-page-node-id="0Z8vyH3AY1UaNjbBK73u4P">收费</span> 月/年订阅</td></tr>
+  <tr data-page-node-id="HVjv3pgsthITDssRb9YxWQ"><td class="k" data-page-node-id="d9JWJOrYK1TyvfMYoRsCGt">官方 AI 供给</td><td data-page-node-id="7GMasNpfY0JI79vY00e43y">平台提供模型（用户零 key）：按天用量配额、购买增量 token、站点池共享额度</td><td data-page-node-id="1BEm7oFm8bjyRNtDmdJZcQ"><span class="tag tg-orange" data-page-node-id="EybsEAMtHz5TmlKQpy3Ygm">收费</span> 套餐 + 增量包</td></tr>
+  <tr data-page-node-id="DEnTOOFLcGr3DwgnWG2k8a"><td class="k" data-page-node-id="KLL5DMYGETcp4RrDqFmOSR">模型池运维</td><td data-page-node-id="FwzvWhOzS0sqLRHfMZGGtV">多上游 key 池轮替、失效换号、抖动吸收（用户无感）</td><td data-page-node-id="hfFpkl2OSJH2yu0RWkDXZX"><span class="tag tg-orange" data-page-node-id="qwMd2zGitsudpIVTu3WiBH">收费</span> 含在套餐</td></tr>
+</table>
+
+<h3 data-page-node-id="dPXHTrTnkGVvK593Ant9ar">2. 市场付费商品——按件收费</h3>
+<table data-page-node-id="paYUnTCVLCcvUhLH8cclub">
+  <tr data-page-node-id="hAFWebDJmQp921QjiFcgQ1"><th style="width:170px" data-page-node-id="HSMt0TILun229RfDtWwVbx">项目</th><th data-page-node-id="cw9jT074fO9Nbn5a1YoSdf">内容</th><th style="width:130px" data-page-node-id="ghkejSaVCdBNuGtBsIlteG">收费形态</th></tr>
+  <tr data-page-node-id="9qHT1ijHQNGg3R5Qyo9DuA"><td class="k" data-page-node-id="9f8pUYyr8712C0GQO4PR5E">付费主题 / 插件</td><td data-page-node-id="HxbgHmLnFoL8i4Fopq0pMW">市场目录 tier=paid 商品，pro 门禁 + 凭据分发</td><td data-page-node-id="Ja3lNSJyJl2VTGzKdCZjmN"><span class="tag tg-orange" data-page-node-id="rjqJRyaxUsE5DRPf6XooU9">收费</span> 买断/年</td></tr>
+  <tr data-page-node-id="JtQRp28MpHRzfredcyvhrG"><td class="k" data-page-node-id="gnvqq0Kkzrx64GH6U8eeLI">AI 供给套餐包</td><td data-page-node-id="EY2n01HCa8iT8zAJDS3ETp">ai_supply 条目（标准版/增量包）：开通即登记网关 provider + 站点池充值</td><td data-page-node-id="xEBbuCfLIXoTyA9vIRFYLQ"><span class="tag tg-orange" data-page-node-id="gVGkbYAPSIqdy0HOLqA1Sp">收费</span> 按包</td></tr>
+</table>
+
+<h3 data-page-node-id="hs05Jw02TWDTBOzeaTGnbE">3. 商业授权与组织协作——按授权层级收费</h3>
+<table data-page-node-id="UT9QUTxfg6xCIG59O8SrpX">
+  <tr data-page-node-id="ltUmgV689HL9UWVB1ACPVP"><th style="width:170px" data-page-node-id="l8ZyJDX5QD9dfkol8WkTUq">项目</th><th data-page-node-id="AzrBCufAV525wBAxgpzPO5">内容</th><th style="width:130px" data-page-node-id="IK6gJ0neiHkp9UsIelt3UF">收费形态</th></tr>
+  <tr data-page-node-id="8tFS7jOdHVPs8S6l7r8Yw2"><td class="k" data-page-node-id="OgaTxXlgfHpBitESfI2cuQ">Pro 站点授权</td><td data-page-node-id="jkaowEfnoVlO2LqKO33svp">license 解锁 feature:org 等 pro 能力（M0 免费基线之外）</td><td data-page-node-id="0N9NaOic9DOowIk9rtBKQ9"><span class="tag tg-orange" data-page-node-id="xbqtWDlRBg3xxyMqjRMcGA">收费</span> 授权费</td></tr>
+  <tr data-page-node-id="gf66J1i8Kg854v8jplnGFD"><td class="k" data-page-node-id="4Fevq6DwR9icEjhSE5wmOI">Org M1 部门空间</td><td data-page-node-id="YpXWo7BnQOXePpxx4DQIes">组织空间、成员与角色（orgPaidGate 门禁）</td><td data-page-node-id="qTdGve3fuQF5bE7AlOlzF0"><span class="tag tg-orange" data-page-node-id="N3e8aHhr2JJC1BfSEBp1mJ">收费</span> 订阅</td></tr>
+  <tr data-page-node-id="HS8iNCLz153wwdVtKwp99i"><td class="k" data-page-node-id="8laHbVrEsuoZlnQbHfEQGP">Org M2 移交流</td><td data-page-node-id="iWwFwD3eXUnKs7E3r2HFs1">内容移交 / 归属转移流程</td><td data-page-node-id="6UFRbOxq1pYnKy2ajVNGLA"><span class="tag tg-orange" data-page-node-id="T7A2IdHpX47PQiMnAJ1T5m">收费</span> 订阅/次</td></tr>
+  <tr data-page-node-id="tjPFmYUqnGsrgJCm8OIHLM"><td class="k" data-page-node-id="p8TC0otcfkfM4vytxbCAPr">技术支持</td><td data-page-node-id="EmxSvUw7f708f9oCkq0JO2">优先响应、专属通道（社区版仅 issue）</td><td data-page-node-id="NXnUGoLl8VJKC9WEufVrrk"><span class="tag tg-orange" data-page-node-id="CBe8PRUlVbEYBQjRPd7IIV">收费</span> 订阅</td></tr>
+</table>
+
+<!-- ================= 对比表 ================= -->
+<h2 class="tech" data-page-node-id="ONzqEjADvrYSbZPcCSnfpk">三、免费版 vs 云版（README 用对比表）</h2>
+<table data-page-node-id="ivEFhGqkjfg2mQ97QrOcpb">
+  <tr data-page-node-id="iHvZGCzExVfaTIgu6gSLzS"><th style="width:200px" data-page-node-id="DNnaJDpLTBBKqTjpoz6HQl">维度</th><th data-page-node-id="Yi1Q3s8EUcrSq6OWG8WTg8">免费版（自托管）</th><th data-page-node-id="A9IWn747NOL0g5IAGra0nE">云版（平台托管）</th></tr>
+  <tr data-page-node-id="csONFHteCWcbkGPqrULEZh"><td class="k" data-page-node-id="TOFLlpwyx3dPE28EgM1iWO">价格</td><td data-page-node-id="o5ht214PmZ5M33qhPBTRQA">0 元（开源）</td><td data-page-node-id="QfY9NLdAIPmHuDrq4HYYh0">订阅制 + AI 套餐</td></tr>
+  <tr data-page-node-id="fWA8lHLER7gVtOCeI1pmZ4"><td class="k" data-page-node-id="jvuxuCbOHrNEUlhzFPLI5A">博客全功能</td><td data-page-node-id="LbGghiFCjTDoGoxsGQMDJ5">✅ 全量</td><td data-page-node-id="tryObmrzpRFjrrXi9macAW">✅ 全量</td></tr>
+  <tr data-page-node-id="5Zua7Nq4DXFBKTYTeL7l0i"><td class="k" data-page-node-id="Is5mtN0U3kdjudmoNCJpzu">AI 能力</td><td data-page-node-id="bO9YwDcJmPztrgqCrG6t81">✅ 全量，但需自备模型 key</td><td data-page-node-id="KknYGQzLHYRMP7dM43HZNU">✅ 开箱即用，平台供模型</td></tr>
+  <tr data-page-node-id="cUxQqJ8byIqNXVpjkbORgf"><td class="k" data-page-node-id="A9fBlxK6EHMXMD6oGspu0d">模型用量</td><td data-page-node-id="TZgUMAo6g2Sam2VjOCKQCv">自备不限量；官方供给不可用</td><td data-page-node-id="2Qcnu9mf7a8c7hNNPG4FQg">按天配额，可买增量</td></tr>
+  <tr data-page-node-id="eQaTsb95DQSV9ickmLHuN3"><td class="k" data-page-node-id="WJBSGtQu6LIBGnxtWJ7HAX">主题 / 插件</td><td data-page-node-id="eCRnn3cxvjGaBnNgcAu3zq">免费商品全量</td><td data-page-node-id="TZc1ANW992yClIHfoYXepq">免费 + 付费商品</td></tr>
+  <tr data-page-node-id="1ATjBuEeNJXbVwvxOwvQDr"><td class="k" data-page-node-id="NbFtfykJr1DiAfwfDZVJiH">组织协作（Org）</td><td data-page-node-id="rFjklZUQ1N75GwqwNX3nGH">❌（pro 授权可解锁）</td><td data-page-node-id="WishSoESIdSvqS007prf6J">✅（M1/M2）</td></tr>
+  <tr data-page-node-id="g9WBxdczmnBjFLYQQKyhrP"><td class="k" data-page-node-id="kKT2XO0z46QYuOENqd36MD">运维 / 备份 / TLS</td><td data-page-node-id="adGCVtnMjDMW8PyXzpDS3y">自己来（install.sh 一键起）</td><td data-page-node-id="dz0QBONQ1HkxmM6NibWF9F">平台托管</td></tr>
+  <tr data-page-node-id="I7Ob7CsPT3toLoMvj1DCOT"><td class="k" data-page-node-id="3xL53pKiDB4qHPRAUNGLYF">数据归属</td><td data-page-node-id="tmQ7egOh3Q89s1rLtHw2MY">完全自有（SQLite + 文件目录）</td><td data-page-node-id="ClbSe3GaoYzf4PfRftmx8v">平台托管，可导出迁移</td></tr>
+</table>
+
+<!-- ================= 判定机制 ================= -->
+<h2 class="tech" data-page-node-id="bbnlw5psbp43vSZqx8RR3H">四、门禁与计费判定机制（技术实现位置，发布审查用）</h2>
+<table data-page-node-id="gTPQdtBzDgmIfx9wZduSRi">
+  <tr data-page-node-id="JZfnI8RObpCwmzpKDaxp6l"><th style="width:220px" data-page-node-id="eEm3izLd4SrwaVrDhDXBJB">机制</th><th data-page-node-id="8ya4OstraLhHhF0B54cTAQ">实现位置</th><th style="width:170px" data-page-node-id="mPPNjey0WkxSHWZLUoCdWi">性质</th></tr>
+  <tr data-page-node-id="8PHjFLTGdAYNTWcHtTUqoL"><td class="k" data-page-node-id="iYMBXSpyJDSnCXmx3Zjz9t">能力开关（capability）</td><td data-page-node-id="EIc1pqzWgo7LAYTbAueFPd"><code data-page-node-id="E4c1o04K6TStapw0xgZsSt">service/capabilities.go</code>；查询口径 <code data-page-node-id="V7FJpgE88GE7DkyOB3Rir4">ORDER BY enabled DESC LIMIT 1</code>（禁 enabled=1 过滤）</td><td data-page-node-id="DMjIACHc315q3n5CnQ7Z9e">免费版可配置</td></tr>
+  <tr data-page-node-id="dJAH6A6Ycpds4i0GkImMIR"><td class="k" data-page-node-id="bjCvyruW3nFGkScrsyeUf3">pro 授权判定</td><td data-page-node-id="m0o0mqyvuKqHaiSwFGfqf4">license edition = pro（站点级，users 无 tier 列）</td><td data-page-node-id="RRZt1iqEJeroCLn5yZugFv">收费</td></tr>
+  <tr data-page-node-id="uX0icdvoDlsH6CS4LfrchI"><td class="k" data-page-node-id="3RCzf528EVLSJWatr5OwtP">Org 付费门禁</td><td data-page-node-id="UtGSnDfgYuqw44WHeizRUY"><code data-page-node-id="YWmPQmhAw6YcZHPkOxDHE8">handler/org.go</code> orgPaidGate：isAdmin / feature:org / 站点 pro 三放行</td><td data-page-node-id="5qRah0fGRSMaD3pDOkT0GP">收费</td></tr>
+  <tr data-page-node-id="ySszRikGfqspIFpIWQNH7a"><td class="k" data-page-node-id="dlZGhcimvpEAdFH7Ehk9Aa">市场付费门禁</td><td data-page-node-id="Lmz3JvoZCEbeUIbjW9e0CX">tier=paid 且非 license/ai_supply 类 → 需 pro（避免"买授权需先买授权"死锁）</td><td data-page-node-id="QQAOtsd6K3IpNDtBmd9XVW">收费</td></tr>
+  <tr data-page-node-id="r3aGGyCFvMsKLcpf62uQB0"><td class="k" data-page-node-id="DPQ75UI4bGG9jazAlFrlGB">平台 AI 计量</td><td data-page-node-id="oq48KXWxUYwaiHk11auKIg">aikgw 闸门（429 限流 / 402 欠费 / 403 无效）；实例内 meter 仅站长自管（fail-open）</td><td data-page-node-id="toubCSw90StbCpIbf651lN">收费</td></tr>
+  <tr data-page-node-id="oU6uPf0FCVEvQkhcGQPYSR"><td class="k" data-page-node-id="FZx83OTGKt00YQWzcfVjno">站点池兜底</td><td data-page-node-id="5ML7ZQLXeJSHjb6VGpWrRY">meter 主体 site：主体优先、差额站点池兜底、双方下限 0</td><td data-page-node-id="nHIlfLhbOQn2JQRyO2myFM">收费</td></tr>
+</table>
+
+<p class="note" style="margin-top:18px" data-page-node-id="1hbyBrqsOaU6zdvls1Byx9">⚠️ 对外发布前硬门槛：① 全仓敏感串清扫（口令 / 生产 IP / 私钥 / 内置 key）；② 全新库首启向导与"无 provider 优雅提示"；③ 上游授权链确认；④ README Quick Start 引用 install.sh。措辞红线：产品口径为"多空间数据模型已就绪，协作/组织能力按付费分层开放"，禁写"已支持多人协作"。</p>
+
+</div>
+</body>
+</html>
