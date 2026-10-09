@@ -230,7 +230,8 @@ import { t as i18t } from '@/i18n'
 import { ref, onMounted } from 'vue'
 import AikIcon from '@/components/AikIcon.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import { listThemes } from '@/themes'
+import { listThemes, themeCatalog } from '@/themes'
+import { ensureThemeInstalled } from '@/utils/themeInstall.js'
 import * as api from '@/api'
 import { useToastStore } from '@/stores/toast'
 import { t } from '@/i18n'
@@ -296,13 +297,24 @@ async function loadThemeOptions() {
     const d = await api.requestJSON('/public/site')
     const opts = Array.isArray(d?.theme_options) ? d.theme_options : null
     if (opts && opts.length) {
-      themeOptions.value = opts.map((o) => ({ id: o.id, label: o.title ? `${o.title}（${o.id}）` : o.id }))
+      const out = opts.map((o) => ({ id: o.id, label: o.title ? `${o.title}（${o.id}）` : o.id }))
+      // 补齐 catalog 中未安装的懒主题（改版 2026-10-09：主题应用中心按需安装；保存/建站时自动装）
+      const seen = new Set(out.map((o) => o.id))
+      for (const c of themeCatalog()) {
+        if (!seen.has(c.id)) out.push({ id: c.id, label: `${c.title}（${t('未安装 · 保存时自动安装')}）` })
+      }
+      themeOptions.value = out
       return
     }
   } catch (_) {
     /* 离线兜底 */
   }
-  themeOptions.value = listThemes().map((t) => ({ id: t.id, label: t.title ? `${t.title}（${t.id}）` : t.id }))
+  const base = listThemes().map((t) => ({ id: t.id, label: t.title ? `${t.title}（${t.id}）` : t.id }))
+  const seen = new Set(base.map((o) => o.id))
+  for (const c of themeCatalog()) {
+    if (!seen.has(c.id)) base.push({ id: c.id, label: `${c.title}（${t('未安装 · 保存时自动安装')}）` })
+  }
+  themeOptions.value = base
 }
 
 async function selectSite(s) {
@@ -332,6 +344,11 @@ function normalizeSettings(ss, s) {
 
 async function saveSettings() {
   if (!cur.value || !settings.value) return
+  // 选中未安装主题 → 保存前自动走应用中心安装（内置源码主题免 zip，登记即生效）
+  if (!(await ensureThemeInstalled(settings.value.default_theme))) {
+    toast.push(t('主题自动安装失败，请到应用中心手动安装后再保存'))
+    return
+  }
   savingSettings.value = true
   try {
     await api.adminSiteSettingsUpdate(cur.value.id, { ...settings.value })
@@ -362,6 +379,12 @@ async function doCreate() {
   }
   creating.value = true
   try {
+    // 建站带未安装主题 → 先自动安装（登记失败则中止，避免站点指向不可用主题）
+    if (!(await ensureThemeInstalled(f.default_theme))) {
+      toast.push(t('主题自动安装失败，请到应用中心手动安装后再创建'))
+      creating.value = false
+      return
+    }
     await api.adminSiteCreate({
       slug: f.slug.trim(),
       domain: f.domain.trim(),

@@ -380,7 +380,8 @@ import AikIcon from '@/components/AikIcon.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useToastStore } from '@/stores/toast'
 import { requestJSON, mkdir, createDoc, uploadFiles, deleteFile, setFileStatus, blogPostsBatch } from '@/api'
-import { listThemes, applyServerTheme } from '@/themes' // 主题选项来自注册表（BlogView 已静态 import 全部主题）
+import { listThemes, applyServerTheme, themeCatalog } from '@/themes' // 主题选项：注册表 + catalog（含未安装懒主题）
+import { ensureThemeInstalled } from '@/utils/themeInstall.js'
 import { t } from '@/i18n'
 const tr = t // 别名：部分作用域用 t 作局部变量（theme 对象/类型键），避免遮蔽
 
@@ -417,20 +418,31 @@ const autoPublish = ref(false)
 
 // 主题下拉选项：由服务端 /public/site 的 theme_options 驱动
 // （内置白名单 ∪ data/themes 下已安装外置主题）——装主题包即出现，无需改前端或重新编译。
-// 交互版（SPA）主题须随主系统构建注册；外置主题仅作用于公网静态页 /blog。
+// 改版（2026-10-09）：SPA 主题改为应用中心按需安装，此处补齐 catalog 中未安装项（标注「未安装」），
+// 保存时经 ensureThemeInstalled 自动安装。
 const srvThemeOptions = ref(null)
 const themeOptions = computed(() => {
   const reg = listThemes()
   const list = srvThemeOptions.value
+  let out = []
   if (Array.isArray(list) && list.length) {
-    return list.map((o) => {
+    out = list.map((o) => {
       const t = reg.find((x) => x.id === o.id)
       const desc = t ? (t.desc || t.id) : tr(i18t('外置主题 · 仅静态页 /blog（交互版回退默认）'))
       return { id: o.id, label: `${o.title || o.id}（${desc}）` }
     })
+  } else {
+    // 兜底：服务端未返回候选时退回本地注册表
+    out = reg.map((t) => ({ id: t.id, label: `${t.title}（${t.desc || t.id}）` }))
   }
-  // 兜底：服务端未返回候选时退回本地注册表
-  return reg.map((t) => ({ id: t.id, label: `${t.title}（${t.desc || t.id}）` }))
+  // 补齐 catalog 中未安装的懒主题（保存时自动安装）
+  const seen = new Set(out.map((o) => o.id))
+  for (const c of themeCatalog()) {
+    if (!seen.has(c.id)) {
+      out.push({ id: c.id, label: `${c.title}（${i18t('未安装 · 保存时自动安装')}）` })
+    }
+  }
+  return out
 })
 
 async function loadSite() {
@@ -756,6 +768,11 @@ async function testHook(h) {
 }
 
 async function saveSite() {
+  // 主题改版（2026-10-09）：选中未安装主题 → 保存前自动走应用中心安装（内置源码主题免 zip）
+  if (!(await ensureThemeInstalled(site.value.theme || 'aiklog'))) {
+    toast.error(t('主题自动安装失败，请到应用中心手动安装后再保存'))
+    return
+  }
   const pairs = [
     ['blog.title', site.value.title],
     ['blog.description', site.value.description],

@@ -86,10 +86,40 @@ func (a *API) blogSiteGet(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
 		"site": out,
-		// 主题候选：内置 + data/themes 下已安装的外置主题（应用中心装 theme 包即出现，
-		// 无需改前端白名单 / 重新编译）。前端据此渲染下拉，静态页主题会标注"交互版回退默认"。
-		"theme_options": blogThemeOptions(out["theme"]),
+		// 主题候选：常驻内置 + 已登记主题 + data/themes 下已安装的外置主题（应用中心装 theme
+		// 包即出现，无需改前端白名单 / 重新编译）。前端据此渲染下拉，静态页主题会标注"交互版回退默认"。
+		"theme_options": a.blogThemeOptions(out["theme"]),
 	})
+}
+
+// publicBlogThemes GET /api/v1/public/blog/themes（公开）：已安装博客主题列表。
+// 来源 = blog_plugins kind=theme 且 enabled=1（应用中心「主题」类别装/卸 + 升级迁移自动登记驱动）。
+// 前端懒加载基座据此决定哪些主题注册进切换器（未安装不注册、不请求主题 chunk）。
+func (a *API) publicBlogThemes(w http.ResponseWriter, r *http.Request) {
+	type themeItem struct {
+		ID      string `json:"id"`
+		Title   string `json:"title"`
+		Version string `json:"version,omitempty"`
+	}
+	items := []themeItem{}
+	if a.db != nil {
+		rows, err := a.db.QueryContext(r.Context(),
+			`SELECT id, COALESCE(name,''), COALESCE(version,'') FROM blog_plugins
+			 WHERE kind='theme' AND enabled=1 ORDER BY created_at ASC`)
+		if err == nil {
+			for rows.Next() {
+				var it themeItem
+				if rows.Scan(&it.ID, &it.Title, &it.Version) == nil && validThemeID(it.ID) {
+					if it.Title == "" {
+						it.Title = it.ID
+					}
+					items = append(items, it)
+				}
+			}
+			rows.Close()
+		}
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
 // boolToStr 布尔转 "true"/"false"（与既有 ai_ask_open 字符串约定一致）。

@@ -226,10 +226,12 @@ const showDockSwitch = computed(() => !!activeTheme.value && !activeTheme.value.
 // ===== 取数 =====
 async function loadSite() {
   try {
-    const [siteRes, postsRes] = await Promise.all([
+    const [siteRes, postsRes, themesRes] = await Promise.all([
       publicSite().catch(() => null),
       publicPosts().catch(() => ({ items: [] })),
+      publicBlogThemes().catch(() => null), // 已安装主题列表（失败降级为全量可见）
     ])
+    if (themesRes) applyInstalledThemes((themesRes.items || []).map((x) => x.id))
     if (siteRes?.site) {
       if (siteRes.site.title) ctx.siteName = siteRes.site.title
       if (siteRes.site.description) ctx.siteDesc = siteRes.site.description
@@ -238,6 +240,17 @@ async function loadSite() {
       applyServerTheme(siteRes.site.theme || 'aiklog', {
         allowVisitorSwitch: siteRes.site.allow_visitor_theme_switch !== 'false' && siteRes.site.allow_visitor_theme_switch !== false,
       })
+    }
+    // 访客本地覆盖指向「未安装/已卸载」的主题 → 丢弃覆盖，回落站点设置
+    const ov = readOverride()
+    if (ov && !isThemeInstalled(ov)) {
+      try { localStorage.removeItem('aiklog.theme.override') } catch (e) { /* ignore */ }
+      activeThemeId.value = serverThemeId.value || 'default'
+    }
+    // 确保当前生效主题已加载（懒 chunk）；失败/未安装 → 归位（宿主默认文章版式）
+    if (activeThemeId.value && activeThemeId.value !== 'default') {
+      const ok = await ensureTheme(activeThemeId.value)
+      if (!ok) activeThemeId.value = serverThemeId.value && isThemeInstalled(serverThemeId.value) ? serverThemeId.value : 'default'
     }
     // 列表数据：主题在文章页可能用于「相关文章 / 上下篇」
     ctx.posts = postsRes.items || []

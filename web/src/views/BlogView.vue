@@ -68,8 +68,8 @@ import BlogManage from './BlogManage.vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
 import LangSwitch from '@/components/LangSwitch.vue'
 import GuestEntry from '@/components/GuestEntry.vue'
-import { listThemes, activeThemeId, applyServerTheme, pageEntry } from '@/themes'
-import { publicPosts, publicSite, publicTags, isAuthed } from '@/api'
+import { listThemes, activeThemeId, serverThemeId, applyServerTheme, pageEntry, ensureTheme, applyInstalledThemes, isThemeInstalled, readOverride } from '@/themes'
+import { publicPosts, publicSite, publicTags, publicBlogThemes, isAuthed } from '@/api'
 import { postCover } from '@/utils/postCover.js'
 import '@/themes/all' // 注册全部主题（与文章页 BlogPostView 共用同一份清单）
 import { t } from '@/i18n'
@@ -176,14 +176,17 @@ async function loadBlogContext() {
   ctx.value.loading = true
   ctx.value.error = ''
   try {
-    const [postsRes, siteRes, tagsRes] = await Promise.all([
+    const [postsRes, siteRes, tagsRes, themesRes] = await Promise.all([
       publicPosts().catch(() => ({ items: [] })),
       publicSite().catch(() => null),
       publicTags().catch(() => ({ items: [] })),
+      publicBlogThemes().catch(() => null), // 已安装主题列表（应用中心装/卸驱动；失败降级为全量可见）
     ])
     // 统一注入封面字段（单一来源）：各主题卡片直接读 post.cover 即可，无需各自计算
     ctx.value.posts = (postsRes.items || []).map((p) => ({ ...p, cover: postCover(p) }))
     ctx.value.tags = tagsRes?.items || []
+    // 懒加载主题基座：先登记「已安装」集合，再确保当前主题 chunk 已注册
+    if (themesRes) applyInstalledThemes((themesRes.items || []).map((x) => x.id))
     if (siteRes?.site) {
       if (siteRes.site.title) ctx.value.siteName = siteRes.site.title
       if (siteRes.site.description) ctx.value.siteDesc = siteRes.site.description
@@ -193,6 +196,17 @@ async function loadBlogContext() {
       applyServerTheme(siteRes.site.theme || 'aiklog', {
         allowVisitorSwitch: siteRes.site.allow_visitor_theme_switch !== 'false' && siteRes.site.allow_visitor_theme_switch !== false,
       })
+    }
+    // 访客本地覆盖指向「未安装/已卸载」的主题 → 丢弃覆盖，回落站点设置
+    const ov = readOverride()
+    if (ov && !isThemeInstalled(ov)) {
+      try { localStorage.removeItem('aiklog.theme.override') } catch (e) { /* ignore */ }
+      activeThemeId.value = serverThemeId.value || 'default'
+    }
+    // 确保当前生效主题已加载（懒 chunk）；失败/未安装 → 归位 default（宿主默认列表）
+    if (activeThemeId.value && activeThemeId.value !== 'default') {
+      const ok = await ensureTheme(activeThemeId.value)
+      if (!ok) activeThemeId.value = serverThemeId.value && isThemeInstalled(serverThemeId.value) ? serverThemeId.value : 'default'
     }
   } catch (e) {
     ctx.value.error = e.message || t('加载失败')

@@ -126,9 +126,64 @@ type marketTheme struct {
 	PurchaseURL string   `json:"purchase_url,omitempty"`   // 购买引导（上游暂未下发）
 	Cover       string   `json:"cover,omitempty"` // 市场卡片封面图 URL（可选）
 	Target      []string `json:"target,omitempty"`
+	// 内置源码主题（builtin=true）：SPA 组件随主系统构建分发，无安装包可下载——
+	// 「安装」= 登记 blog_plugins(kind=theme)（见 installBuiltinTheme），卸载即撤销登记。
+	Builtin bool `json:"builtin,omitempty"`
 	// 服务端补充
 	Installed  bool `json:"installed"`
 	Applicable bool `json:"applicable"`
+}
+
+// builtinSourceThemeEntries 内置源码主题条目（2026-10-09 主题改版：只常驻 aiklog，
+// 其余 17 个 SPA 主题进应用中心「主题」类别按需安装）。注入在远程索引 themes 之前。
+func builtinSourceThemeEntries() []marketTheme {
+	out := make([]marketTheme, 0, len(service.BuiltinSpaThemes))
+	for _, t := range service.BuiltinSpaThemes {
+		out = append(out, marketTheme{
+			ID:          t.ID,
+			Name:        t.Title,
+			Version:     coreVersion,
+			Description: "内置源码主题 · 随主系统构建分发，安装即启用（SPA 交互版 + 公开静态页令牌）",
+			Author:      "爱库录",
+			Tier:        "free",
+			Builtin:     true,
+			Applicable:  true,
+		})
+	}
+	return out
+}
+
+// installBuiltinTheme 内置源码主题安装：无 zip 可下载，「安装」= 登记 blog_plugins
+// (kind=theme, enabled=1)。SPA 组件已随主系统构建（懒 chunk），登记后前端
+// /public/blog/themes 立即可见 → 切换器出现、站点主题白名单放行，即时生效无需重启。
+func (a *API) installBuiltinTheme(w http.ResponseWriter, r *http.Request, entry *marketPlugin) {
+	if !service.IsBuiltinSpaTheme(entry.ID) {
+		writeErr(w, http.StatusUnprocessableEntity, "MARKET_BAD_REQ", "非内置源码主题，请提供主题包 zip")
+		return
+	}
+	if entry.Name == "" {
+		entry.Name = entry.ID
+	}
+	now := time.Now().UnixMilli()
+	ver := entry.Version
+	if ver == "" {
+		ver = coreVersion
+	}
+	if _, err := a.db.ExecContext(r.Context(),
+		`INSERT INTO blog_plugins (id, name, version, description, author, kind, enabled, created_at, updated_at)
+		 VALUES (?,?,?,?,?,'theme',1,?,?,?)
+		 ON CONFLICT(id) DO UPDATE SET name=excluded.name, version=excluded.version, description=excluded.description,
+		   author=excluded.author, kind='theme', enabled=1, updated_at=excluded.updated_at`,
+		entry.ID, entry.Name, ver, entry.Description, entry.Author, now, now); err != nil {
+		writeErr(w, http.StatusInternalServerError, "INTERNAL", err.Error())
+		return
+	}
+	log.Printf("应用中心：内置源码主题 %s 已登记（kind=theme，即时生效）", entry.ID)
+	writeJSON(w, http.StatusOK, map[string]any{
+		"ok": true, "id": entry.ID, "kind": "theme", "enabled": true, "builtin": true,
+		"apply": "immediate",
+		"message": "已安装：主题立即可用（博客设置/切换器中选择即可生效）",
+	})
 }
 
 // marketAiSupply 目录中的「平台 AI 供给」条目（B38）。
@@ -319,6 +374,7 @@ func (a *API) marketInstall(w http.ResponseWriter, r *http.Request) {
 					found = &marketPlugin{
 						ID: t.ID, Name: t.Name, Version: t.Version, Description: t.Description,
 						Author: t.Author, DownloadURL: t.DownloadURL, SHA256: t.SHA256, Target: t.Target,
+						Builtin: t.Builtin,
 					}
 					kind = "theme"
 					break
@@ -370,6 +426,10 @@ func (a *API) marketInstall(w http.ResponseWriter, r *http.Request) {
 		}
 		// 内置能力应用（builtin=true）：无安装包，安装=登记 blog_plugins capacity 记录（免下载免解包）。
 		// 生效时机遵循能力装配语义（restart）：重启主系统后路由挂载、侧栏出现入口。
+		if found.Builtin && kind == "theme" {
+			a.installBuiltinTheme(w, r, found)
+			return
+		}
 		if found.Builtin {
 			a.installBuiltinCapacity(w, r, found)
 			return

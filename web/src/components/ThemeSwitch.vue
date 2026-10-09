@@ -88,8 +88,8 @@
  * 站长登录时可一键「设为站点主题」（PUT /admin/settings）变成全站默认。
  */
 import { ref, computed, reactive, nextTick, onMounted, onBeforeUnmount } from 'vue'
-import { listThemes, setActiveTheme, activeThemeId, readOverride, allowVisitorSwitch } from '@/themes'
-import { isAuthed, requestJSON } from '@/api'
+import { listThemes, setActiveTheme, activeThemeId, readOverride, allowVisitorSwitch, ensureTheme, applyInstalledThemes, isThemeInstalled, themeCatalog } from '@/themes'
+import { isAuthed, requestJSON, publicBlogThemes } from '@/api'
 import { t } from '@/i18n'
 
 const props = defineProps({
@@ -118,7 +118,18 @@ function placeMenu() {
   menuPos.left = left
   menuPos.top = r.bottom + 6
 }
-const themes = computed(() => listThemes())
+// 主题列表 = 已注册（default/aiklog/已加载懒主题）+ 已安装但尚未加载的懒主题
+// （后者用 catalog 元数据补齐展示，点击时 ensureTheme 拉起 chunk 再激活）。
+const themes = computed(() => {
+  const arr = listThemes()
+  const seen = new Set(arr.map((x) => x.id))
+  for (const c of themeCatalog()) {
+    if (!seen.has(c.id) && isThemeInstalled(c.id)) {
+      arr.push({ id: c.id, title: c.title, desc: c.desc, version: c.version, entry: null, lazy: true })
+    }
+  }
+  return arr
+})
 const activeId = computed(() => activeThemeId.value)
 const overridden = computed(() => !!readOverride() && open.value)
 const isAdmin = computed(() => isAuthed())
@@ -161,6 +172,8 @@ onMounted(() => {
   document.addEventListener('click', onDocClick)
   document.addEventListener('keydown', onKey)
   window.addEventListener('resize', placeMenu)
+  // 兜底拉一次已安装主题列表（BlogView/BlogPostView 通常已拉；本组件独立挂载场景补齐）
+  publicBlogThemes().then((r) => applyInstalledThemes((r.items || []).map((x) => x.id))).catch(() => { /* 失败降级为全量可见 */ })
 })
 onBeforeUnmount(() => {
   document.removeEventListener('click', onDocClick)
@@ -168,9 +181,12 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', placeMenu)
 })
 
-function pick(id) {
-  setActiveTheme(id)
+async function pick(id) {
   open.value = false
+  if (!id) { setActiveTheme(''); return }
+  // 懒加载主题：先拉起 chunk（index.js 副作用完成注册），成功后再激活；失败回落站点默认
+  const ok = await ensureTheme(id)
+  setActiveTheme(ok ? id : '')
 }
 
 async function saveAsSite() {

@@ -638,6 +638,13 @@ export function publicTags() {
   return requestJSON('/public/tags')
 }
 
+// 已安装博客主题列表（公开读）：{ items: [{ id, title, version }] }
+// 来源 = blog_plugins kind=theme 且 enabled=1；应用中心「主题」类别装/卸驱动。
+// 前端懒加载基座据此决定哪些主题注册进切换器（未安装不注册不请求 chunk）。
+export function publicBlogThemes() {
+  return requestJSON('/public/blog/themes')
+}
+
 // 读者 AI 问答（公开；仅公开文章上下文，进程内限流）
 export function publicBlogAsk(question, path) {
   return requestJSON('/public/blog/ask', {

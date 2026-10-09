@@ -148,6 +148,10 @@ func run() error {
 	if err := service.EnsureBlogSpace(ctx, db); err != nil {
 		return err
 	}
+	// 主题改版升级兼容（2026-10-09「只内置 aiklog」）：站点正在使用的旧内置主题自动登记已安装
+	if err := service.MigrateLegacySpaThemes(ctx, db); err != nil {
+		return err
+	}
 	// 多站点：确保默认站 + 默认站配置存在（幂等；存量单站数据归默认站）
 	if err := service.NewSiteStore(db).EnsureDefaultSite(ctx); err != nil {
 		return err

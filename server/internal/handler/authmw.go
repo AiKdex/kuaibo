@@ -83,6 +83,8 @@ func publicPath(r *http.Request) bool {
 		return true // 博客文章语音朗读（仅已发布文章，复用 ai.tts；命中磁盘缓存；不读登录身份）
 	case p == "/api/v1/public/blog/related" && r.Method == http.MethodGet:
 		return true // 相关文章语义推荐（仅已发布文章；无向量时返回空 items，不读登录身份）
+	case p == "/api/v1/public/blog/themes" && r.Method == http.MethodGet:
+		return true // 已安装主题列表（公开；驱动前端懒加载注册与切换器口径，仅 id/标题/版本）
 	case p == "/api/v1/public/cs/start" && r.Method == http.MethodPost:
 		return true // 客服挂件初始化（匿名；按 visitor_id 归一联系人，受 cs.enabled 门控）
 	case p == "/api/v1/public/cs/send" && r.Method == http.MethodPost:

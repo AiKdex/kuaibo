@@ -300,7 +300,7 @@ var settableKeys = map[string]struct {
 		valid: validBool,
 	},
 	"blog.theme": {
-		desc: "博客主题 id：内置主题（default|aiklog|minimal|docs|paper|elevated|parchment|emforum|brutal|aiknav|chenxi|jaded|zhicang|zircon）" +
+		desc: "博客主题 id：常驻内置（aiklog|default）、应用中心已安装主题（blog_plugins kind=theme）" +
 			"或 data/themes 下已安装的外置主题（应用中心装 theme 包即出现，无需重新编译；" +
 			"外置主题作用于公网静态页 /blog，交互版 SPA 未注册时回退默认）",
 		valid: func(v string) (string, bool) {
@@ -320,7 +320,9 @@ var settableKeys = map[string]struct {
 			if st, err := os.Stat(filepath.Join(themesRoot(), v)); err == nil && st.IsDir() {
 				return v, true
 			}
-			return "", false
+			// 已登记主题（应用中心安装的源码轨 SPA 主题）：valid 无 DB 上下文，
+			// 由 updateSettings 用 a.isKnownThemeID 兜底放行
+			return v, false
 		},
 	},
 	"blog.custom_css": {
@@ -597,6 +599,13 @@ func (a *API) updateSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	val, ok := spec.valid(req.Value)
+	// blog.theme 兜底（2026-10-09 主题改版）：spec.valid 无 DB 上下文，无法识别
+	// 「应用中心已登记主题」；此处用 a.isKnownThemeID（含 blog_plugins 分支）二次放行。
+	if !ok && req.Key == "blog.theme" {
+		if v := strings.TrimSpace(req.Value); a.isKnownThemeID(v) {
+			val, ok = v, true
+		}
+	}
 	if !ok {
 		writeErr(w, http.StatusBadRequest, "SETTING_INVALID", spec.desc)
 		return

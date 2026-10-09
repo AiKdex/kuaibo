@@ -403,29 +403,61 @@ func blogPageTemplate(id string) *template.Template {
 	return blogHTMLTmpl
 }
 
-// builtinThemes 内置主题（内置 SSR 样式）；外置目录中的主题会追加在后面。
+// builtinThemes 常驻内置主题（2026-10-09 主题改版：只常驻 aiklog/default）。
+// 其余 SPA 主题改为应用中心按需安装（blog_plugins kind=theme 登记即出现，
+// 见 installedBlogThemeIDs）；data/themes 外置主题目录追加在后。
 var builtinThemes = []blogThemeOption{
 	{ID: "aiklog", Title: "爱库录"},
-	{ID: "minimal", Title: "极简阅读"},
-	{ID: "docs", Title: "技术文档"},
-	{ID: "paper", Title: "暖纸情报"},
-	{ID: "elevated", Title: "高端暗色"},
-	{ID: "parchment", Title: "暖纸杂志"},
-	{ID: "emforum", Title: "论坛社区"},
-	{ID: "brutal", Title: "新粗野"},
-	{ID: "aiknav", Title: "好站导航 AikNav"},
-	{ID: "chenxi", Title: "晨曦笔记 Chenxi"},
-	{ID: "jaded", Title: "翡翠 Jaded"},
-	{ID: "zhicang", Title: "知藏 Zhicang"},
-	{ID: "zircon", Title: "青璃 Zircon"},
 	{ID: "default", Title: "默认"},
 }
 
-// blogThemeOptions 下拉项：内置 + data/themes 下的外置主题。
-func blogThemeOptions(cur string) []blogThemeOption {
-	out := make([]blogThemeOption, 0, len(builtinThemes)+4)
+// installedBlogThemeIDs 已安装的博客主题 id 集（blog_plugins kind=theme 且 enabled=1）。
+// 应用中心「主题」类别安装/卸载（或升级迁移自动登记）驱动；源码轨 SPA 主题与
+// 声明式主题包同表登记，统一由此判定「已安装」。
+func (a *API) installedBlogThemeIDs() map[string]bool {
+	out := map[string]bool{}
+	if a == nil || a.db == nil {
+		return out
+	}
+	rows, err := a.db.Query(`SELECT id FROM blog_plugins WHERE kind='theme' AND enabled=1`)
+	if err != nil {
+		return out
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id string
+		if rows.Scan(&id) == nil && validThemeID(id) {
+			out[id] = true
+		}
+	}
+	return out
+}
+
+// blogThemeOptions 下拉项：常驻内置 + 已登记主题（blog_plugins）+ data/themes 下的外置主题。
+func (a *API) blogThemeOptions(cur string) []blogThemeOption {
+	out := make([]blogThemeOption, 0, len(builtinThemes)+8)
 	seen := map[string]bool{}
+	// 已登记主题（应用中心安装的源码轨/主题包）：标题取登记名（安装时写入主题标题）
+	if a.db != nil {
+		if nameRows, err := a.db.Query(`SELECT id, COALESCE(name,'') FROM blog_plugins WHERE kind='theme' AND enabled=1 ORDER BY created_at ASC`); err == nil {
+			for nameRows.Next() {
+				var id, name string
+				if nameRows.Scan(&id, &name) == nil && validThemeID(id) && !seen[id] {
+					seen[id] = true
+					title := name
+					if title == "" {
+						title = id
+					}
+					out = append(out, blogThemeOption{ID: id, Title: title})
+				}
+			}
+			nameRows.Close()
+		}
+	}
 	for _, t := range builtinThemes {
+		if seen[t.ID] {
+			continue
+		}
 		seen[t.ID] = true
 		out = append(out, t)
 	}
@@ -471,16 +503,25 @@ func blogThemeOptions(cur string) []blogThemeOption {
 	return out
 }
 
-// isKnownThemeID 判定主题 id 是否为「已知主题」：内置白名单（builtinThemes，含纯 SPA 轨主题）
+// isKnownThemeID 判定主题 id 是否为「已知主题」：常驻内置（builtinThemes）、
+// 已登记主题（blog_plugins kind=theme，应用中心安装驱动）、
 // 或 data/themes/<id>/ 下的外置主题（含只提供 page.html 版式的包）。
 // 用途：?theme= 只接受已知主题，避免任意合法字符串被回显进 data-theme、并被下拉的
 // 「补选中态」逻辑渲染成一个幽灵选项（如 ?theme=qiuzhi 曾出现在公开 SSR 页的下拉里）。
-func isKnownThemeID(id string) bool {
+func (a *API) isKnownThemeID(id string) bool {
 	if !validThemeID(id) {
 		return false
 	}
 	for _, t := range builtinThemes {
 		if t.ID == id {
+			return true
+		}
+	}
+	// 已登记主题（源码轨 SPA 主题或声明式主题包，应用中心安装/升级迁移自动登记）
+	if a != nil && a.db != nil {
+		var n int
+		if err := a.db.QueryRow(
+			`SELECT COUNT(*) FROM blog_plugins WHERE id=? AND kind='theme' AND enabled=1`, id).Scan(&n); err == nil && n > 0 {
 			return true
 		}
 	}
@@ -512,7 +553,7 @@ func (a *API) blogThemeIDFor(r *http.Request) string {
 		return base
 	}
 	if r != nil {
-		if q := strings.TrimSpace(r.URL.Query().Get("theme")); q != "" && isKnownThemeID(q) {
+		if q := strings.TrimSpace(r.URL.Query().Get("theme")); q != "" && a.isKnownThemeID(q) {
 			return q
 		}
 	}
@@ -807,7 +848,7 @@ func (a *API) blogHTMLIndex(w http.ResponseWriter, r *http.Request) {
 		JSONLD:      buildBlogJSONLD(true, a.blogSiteName(r), a.blogSiteDesc(r), base, base+"/api/v1/blog/feed.xml", "全部文章", "", "", items),
 		ThemeID:     tid,
 		ThemeCSS:    blogThemeCSS(tid),
-		Themes:      blogThemeOptions(tid),
+		Themes:      a.blogThemeOptions(tid),
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_ = blogPageTemplate(tid).Execute(w, data)
@@ -978,7 +1019,7 @@ func (a *API) blogHTMLPost(w http.ResponseWriter, r *http.Request) {
 		JSONLD:      buildBlogJSONLD(false, a.blogSiteName(r), desc, base+"/"+slug, base+"/api/v1/blog/feed.xml", title, fmtBlogISO(updatedAt), raw, nil),
 		ThemeID:     tid,
 		ThemeCSS:    blogThemeCSS(tid),
-		Themes:      blogThemeOptions(tid),
+		Themes:      a.blogThemeOptions(tid),
 		Head:        template.HTML(hb.String()),
 		Comments:    a.blogPostComments(r, hit.f.ID),
 	}
