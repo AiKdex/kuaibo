@@ -836,31 +836,43 @@ func (a *API) fetchMarketIndex(r *http.Request) (*marketIndex, error) {
 	// 官方侧由此把回源请求去重成「装机数」并统计版本分布（见 market_telemetry.go）。
 	// 用入参 r 的 context：调用方（marketList / marketIndexFile）都传了真实请求，
 	// 保留取消链路（客户端断开时立即中止 15s 的远端拉取，不空耗连接）。
-	req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, u, nil)
+	idx, err := func() (*marketIndex, error) {
+		req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, u, nil)
+		if err != nil {
+			return nil, fmt.Errorf("市场索引地址非法：%w", err)
+		}
+		a.attachMarketIdentity(req)
+		resp, err := marketHTTPClient.Do(req)
+		if err != nil {
+			return nil, fmt.Errorf("市场索引拉取失败：%w", err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("市场索引 HTTP %d", resp.StatusCode)
+		}
+		body, err := io.ReadAll(io.LimitReader(resp.Body, 4<<20))
+		if err != nil {
+			return nil, fmt.Errorf("市场索引读取不完整：%w", err)
+		}
+		var idx marketIndex
+		if err := json.Unmarshal(body, &idx); err != nil {
+			return nil, fmt.Errorf("市场索引格式非法")
+		}
+		if err := idx.verifySignature(); err != nil {
+			return nil, fmt.Errorf("市场索引验签失败：%w", err)
+		}
+		return &idx, nil
+	}()
 	if err != nil {
-		return nil, fmt.Errorf("市场索引地址非法：%w", err)
+		// 降级：远程不可达/未签名 → 内置官方目录（iss=aiklog-market 签名，随二进制分发）。
+		// 不是静默放过远程内容：未签名的远程字节一律不采信，降级的只是「改用哪份已签名目录」。
+		if emb := embeddedMarketIndex(); emb != nil {
+			log.Printf("[market] 远程目录不可用（%v），降级使用内置官方目录（iss=%s）", err, MarketSignIssuer)
+			return emb, nil
+		}
+		return nil, err
 	}
-	a.attachMarketIdentity(req)
-	resp, err := marketHTTPClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("市场索引拉取失败：%w", err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("市场索引 HTTP %d", resp.StatusCode)
-	}
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 4<<20))
-	if err != nil {
-		return nil, fmt.Errorf("市场索引读取不完整：%w", err)
-	}
-	var idx marketIndex
-	if err := json.Unmarshal(body, &idx); err != nil {
-		return nil, fmt.Errorf("市场索引格式非法")
-	}
-	if err := idx.verifySignature(); err != nil {
-		return nil, fmt.Errorf("市场索引验签失败：%w", err)
-	}
-	return &idx, nil
+	return idx, nil
 }
 
 // installPluginZip 解包应用 zip 并校验：manifest.json（zip slip 防护）+ 版本；返回 manifest。

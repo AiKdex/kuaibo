@@ -17,6 +17,11 @@ var embeddedKeys = map[string]string{
 	// 站点 license 自签发方（AiWebs 自签；iss=aiklog-license，私钥由运营侧本地保管）。
 	// 用途：fork 独立签发正式 license，不依赖上游签发；上游 key（iss=aikmap-license）到货仍可双信任并存。
 	"aiklog-license": "rUq7j0gQDRQiPqf+YQLQ7olyfqQDDJSwt+72vtvRjk4=",
+	// 官方市场目录签发方（AiWebs 自签；iss=aiklog-market，私钥由运营侧本地保管，
+	// 签发工具 cmd/marketgen）。用途：应用中心内置官方目录的 ed25519 签名——上游
+	// aikmap.cn 索引已不再内嵌 signature（2026-10-09 实测），实例侧强制验签必须有一个
+	// 可信签发方，故 fork 自签自验闭环。
+	"aiklog-market": "VPPmdvDNJGQKnFSbPuoimItGmpNLwU3ZhAprH3hgebE=",
 }
 
 // publicKeyFor 取签发方公钥。
