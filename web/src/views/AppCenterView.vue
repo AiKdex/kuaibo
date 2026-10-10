@@ -178,6 +178,9 @@
     <!-- AI 供给（B38）：平台供模型套餐，开通即登记平台网关 provider + 站点池充值 -->
     <div v-if="tab === 'ai'" class="ac-grid">
       <div v-for="s in aiSupplies" :key="s.id" class="ac-item">
+        <!-- 封面：市场 v0.4（同主题卡片） -->
+        <img v-if="s.cover" :src="s.cover" class="ac-cover" alt="" loading="lazy" />
+        <div v-else class="ac-cover ac-cover-fb" :style="coverStyle(s)"><span>{{ coverInitial(s) }}</span></div>
         <div class="ac-item-t">
           <span class="ac-name">{{  s.name  }}</span>
           <span v-if="!s.applicable" class="ac-badge ac-badge-muted">{{  t('本壳不可用')  }}</span>
@@ -443,6 +446,19 @@ onMounted(async () => {
 .ac-cover {
   width: 100%; height: 120px; object-fit: cover;
   border-radius: 8px; border: 1px solid var(--border);
+}
+.ac-cover-fb {
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 34px; font-weight: 700; letter-spacing: 1px;
+  user-select: none;
+}
+.ac-shots {
+  display: flex; gap: 6px;
+}
+.ac-shots img {
+  flex: 1; min-width: 0; height: 56px; object-fit: cover;
+  border-radius: 6px; border: 1px solid var(--border);
 }
 .ac-item-t { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .ac-name { font-weight: 600; font-size: 14px; color: var(--text); }

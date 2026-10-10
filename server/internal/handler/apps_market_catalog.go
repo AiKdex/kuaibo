@@ -102,9 +102,11 @@ type marketPlugin struct {
 	BillingPeriod   string   `json:"billing_period,omitempty"`  // yearly|monthly|once（可选）
 	PurchaseURL     string   `json:"purchase_url,omitempty"`    // 购买引导（上游暂未下发；下发后前端展示「去购买」）
 	Cover           string   `json:"cover,omitempty"` // 市场卡片封面图 URL（可选）
-	Target          []string `json:"target,omitempty"`
-	MinCoreVersion  string   `json:"min_core_version,omitempty"`
-	SettingsSchema  []any    `json:"settings_schema,omitempty"`
+	// Screenshots 详情截图（可选，多张；市场 v0.4 新增：介绍图随索引签名防篡改）
+	Screenshots    []string `json:"screenshots,omitempty"`
+	Target         []string `json:"target,omitempty"`
+	MinCoreVersion string   `json:"min_core_version,omitempty"`
+	SettingsSchema []any    `json:"settings_schema,omitempty"`
 	// 内置能力应用（builtin=true）：能力随主系统编译（如家族传承/组织架构），
 	// 无安装包可下载——"安装"=登记 blog_plugins capacity 记录（见 installBuiltinCapacity）。
 	Builtin     bool     `json:"builtin,omitempty"`
@@ -128,6 +130,8 @@ type marketTheme struct {
 	BillingPeriod string `json:"billing_period,omitempty"` // yearly|monthly|once（可选）
 	PurchaseURL string   `json:"purchase_url,omitempty"`   // 购买引导（上游暂未下发）
 	Cover       string   `json:"cover,omitempty"` // 市场卡片封面图 URL（可选）
+	// Screenshots 详情截图（可选，多张；市场 v0.4 新增：介绍图随索引签名防篡改）
+	Screenshots []string `json:"screenshots,omitempty"`
 	Target      []string `json:"target,omitempty"`
 	// 内置源码主题（builtin=true）：SPA 组件随主系统构建分发，无安装包可下载——
 	// 「安装」= 登记 blog_plugins(kind=theme)（见 installBuiltinTheme），卸载即撤销登记。
@@ -142,11 +146,17 @@ type marketTheme struct {
 func builtinSourceThemeEntries() []marketTheme {
 	out := make([]marketTheme, 0, len(service.BuiltinSpaThemes))
 	for _, t := range service.BuiltinSpaThemes {
+		desc := t.Desc
+		if desc == "" {
+			desc = "内置源码主题 · 随主系统构建分发，安装即启用（SPA 交互版 + 公开静态页令牌）"
+		} else {
+			desc += "（内置源码主题 · 随主系统构建分发，安装即启用）"
+		}
 		out = append(out, marketTheme{
 			ID:          t.ID,
 			Name:        t.Title,
 			Version:     coreVersion,
-			Description: "内置源码主题 · 随主系统构建分发，安装即启用（SPA 交互版 + 公开静态页令牌）",
+			Description: desc,
 			Author:      "爱库录",
 			Tier:        "free",
 			Builtin:     true,
@@ -474,6 +484,7 @@ func (a *API) marketInstall(w http.ResponseWriter, r *http.Request) {
 					found = &marketPlugin{
 						ID: t.ID, Name: t.Name, Version: t.Version, Description: t.Description,
 						Author: t.Author, DownloadURL: t.DownloadURL, SHA256: t.SHA256, Target: t.Target,
+						Cover: t.Cover, Screenshots: t.Screenshots,
 						Builtin: t.Builtin,
 					}
 					kind = "theme"

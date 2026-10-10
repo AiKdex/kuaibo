@@ -18,28 +18,30 @@ import (
 type BuiltinSpaTheme struct {
 	ID    string
 	Title string
+	// Desc 应用中心展示用的一句话介绍（与各主题 manifest.js 的 desc 同源维护）。
+	Desc string
 }
 
 // BuiltinSpaThemes 常驻内置（aiklog/default）之外的全部源码主题。
 // 顺序即应用中心「主题」类别展示顺序。
 var BuiltinSpaThemes = []BuiltinSpaTheme{
-	{"minimal", "极简阅读"},
-	{"docs", "技术文档"},
-	{"paper", "暖纸情报"},
-	{"elevated", "高端暗色"},
-	{"parchment", "暖纸杂志"},
-	{"emforum", "论坛社区"},
-	{"brutal", "新粗野"},
-	{"aurora", "极光 Aurora"},
-	{"verdant", "青野 Verdant"},
-	{"zircon", "青璃 Zircon"},
-	{"butterfly", "蝶语 Butterfly"},
-	{"chenxi", "晨曦笔记 Chenxi"},
-	{"jaded", "翡翠 Jaded"},
-	{"zhicang", "知藏 Zhicang"},
-	{"aiknav", "好站导航 AikNav"},
-	{"clawblog", "ClawBlog"},
-	{"huajian", "花笺 Huajian"},
+	{"minimal", "极简阅读", "单栏沉浸列表，衬线标题，少装饰"},
+	{"docs", "技术文档", "侧栏目录 + 正文栏，适合文档站与长文"},
+	{"paper", "暖纸情报", "暖纸底 + 青绿顶栏 + 珊瑚强调（对齐求智情报站视觉）"},
+	{"elevated", "高端暗色", "暗色高端博客主题：玉色点缀、衬线正文、AI 侧栏"},
+	{"parchment", "暖纸杂志", "暖纸杂志风格：衬线排版、琥珀色调、双列网格"},
+	{"emforum", "论坛社区", "深蓝鎏金论坛风：版块页签切换 + 帖子流列表 + 归档/搜索内页"},
+	{"brutal", "新粗野", "新粗野风：硬边框硬阴影 + 高饱和撞色 + 几何图案卡片，含分类/作者/归档/搜索内页"},
+	{"aurora", "极光 Aurora", "Bento Grid 卡片式 · Apple 风格：模块化栅格 + 玻璃页头，含分类/作者/归档/搜索内页"},
+	{"verdant", "青野 Verdant", "明亮清爽：暖白底 + 森林绿 + 有机圆角，适合生活/自然/产品类内容，含分类/作者/归档/搜索内页"},
+	{"zircon", "青璃 Zircon", "青绿胶囊 · 社区资讯式双栏布局：渐变头图 + 卡片流 + 信息侧栏，含分类/作者/归档/搜索内页"},
+	{"butterfly", "蝶语 Butterfly", "卡片式双栏：半透明毛玻璃顶栏 + 文章卡片 + 侧栏卡片组 + 右下悬浮按钮 + 夜间模式，含分类/作者/归档/搜索内页"},
+	{"chenxi", "晨曦笔记 Chenxi", "温暖渐变博客主题 — 玫粉主调、彩虹渐变 Hero、左图右文卡片、毛玻璃顶栏"},
+	{"jaded", "翡翠 Jaded", "暗色翡翠绿主题 — 毛玻璃顶栏、渐变文字、左图右文卡片、文章衬线体"},
+	{"zhicang", "知藏 Zhicang", "资源课程分享主题 — 靛蓝主调、学习路径追踪、课程进度条、资源卡片网格"},
+	{"aiknav", "好站导航 AikNav", "导航站风格 — 蓝色主调卡片网格，左侧分类树与热门榜单"},
+	{"clawblog", "ClawBlog", "现代渐变风格博客主题：玻璃拟态导航、混合布局卡片、极致阅读体验"},
+	{"huajian", "花笺 Huajian", "暖纸杂志风博客主题：衬线标题、琥珀强调、杂志式双栏版式"},
 }
 
 // builtinSpaThemeTitles id → 标题（登记 blog_plugins 时写 name）。
