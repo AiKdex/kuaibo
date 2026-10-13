@@ -2,10 +2,10 @@
   <!-- 公开页访客入口：未登录 → 登录 / 注册；已登录 → 控制台 -->
   <div class="ge" :class="`ge--${variant}`">
     <template v-if="!authed">
-      <a class="ge-btn" href="#/desk" :title="$t('登录爱库录控制台')">{{  $t('登录')  }}</a>
-      <a class="ge-btn ge-btn--primary" href="#/desk?mode=register" :title="$t('注册新账号')">{{  $t('注册')  }}</a>
+      <a class="ge-btn" href="#/desk" title="登录爱库录控制台">登录</a>
+      <a class="ge-btn ge-btn--primary" href="#/desk?mode=register" title="注册新账号">注册</a>
     </template>
-    <a v-else class="ge-btn" href="#/files" :title="$t('进入控制台')">{{ $t('控制台') }}</a>
+    <a v-else class="ge-btn" href="#/files" title="进入控制台">控制台</a>
   </div>
 </template>
 

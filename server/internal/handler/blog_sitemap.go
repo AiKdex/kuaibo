@@ -43,7 +43,7 @@ func (a *API) blogSitemap(w http.ResponseWriter, r *http.Request) {
 		   AND (expires_at IS NULL OR expires_at=0 OR expires_at>?)`,
 		a.homeOwnerID(), service.BlogToken, time.Now().UnixMilli()).Scan(&blogDirID)
 	if err == nil && blogDirID != "" {
-		if files, err := a.collectBlogArticles(r.Context(), blogDirID, currentSiteID(r)); err == nil {
+		if files, err := a.collectDirFiles(r.Context(), blogDirID); err == nil {
 			for _, it := range files {
 				p := dirPost(service.BlogToken, "read", 0, it)
 				u := sitemapURL{Loc: base + "/" + urlQueryEscape(slugOf(it.f, it.path))}

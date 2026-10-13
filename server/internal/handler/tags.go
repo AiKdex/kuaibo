@@ -65,10 +65,6 @@ func (a *API) tagsDelete(w http.ResponseWriter, r *http.Request) {
 
 // fileTagsSet: PUT /api/v1/files/{id}/tags {tag_ids: []string}
 func (a *API) fileTagsSet(w http.ResponseWriter, r *http.Request) {
-	// C3 修复：文件写操作仅 owner/admin/作者白名单
-	if !a.blogAuthorOnly(w, r) {
-		return
-	}
 	id := r.PathValue("id")
 	var req struct {
 		TagIDs []string `json:"tag_ids"`

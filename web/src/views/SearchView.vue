@@ -1,15 +1,15 @@
 <template>
   <div class="search-view">
     <div class="search-head">
-      <h1>{{  $t('智能检索')  }}</h1>
-      <p class="muted">{{  $t('全库语义检索：关键词 + 向量融合（RRF），支持文件名、内容与语义匹配。')  }}</p>
+      <h1>智能检索</h1>
+      <p class="muted">全库语义检索：关键词 + 向量融合（RRF），支持文件名、内容与语义匹配。</p>
     </div>
 
     <div class="search-input-row">
       <AikIcon name="search" :size="17" />
       <input
         v-model="q"
-        :placeholder="$t('输入关键词，检索整个空间（如：歌曲、合同、向量检索…）')"
+        placeholder="输入关键词，检索整个空间（如：歌曲、合同、向量检索…）"
         class="search-input"
         autofocus
         @input="onInput"
@@ -20,23 +20,23 @@
 
     <!-- 搜索范围（博客目录在存储层隐藏后的配套：文件/博客/全部） -->
     <div class="search-scope-row">
-      <span class="scope-label">{{  $t('范围')  }}</span>
+      <span class="scope-label">范围</span>
       <button
         v-for="s in scopes"
         :key="s.v"
         class="scope-btn"
         :class="{ active: scope === s.v }"
         @click="setScope(s.v)"
-      >{{  s.label  }}</button>
+      >{{ s.label }}</button>
     </div>
 
     <!-- 结果 -->
     <div v-if="searched" class="search-results">
-      <div v-if="loading" class="empty-hint">{{  $t('检索中…')  }}</div>
-      <div v-else-if="err" class="empty-hint">{{  err  }}</div>
-      <div v-else-if="!results.length" class="empty-hint">{{  $t('没有匹配的内容，换个关键词试试')  }}</div>
+      <div v-if="loading" class="empty-hint">检索中…</div>
+      <div v-else-if="err" class="empty-hint">{{ err }}</div>
+      <div v-else-if="!results.length" class="empty-hint">没有匹配的内容，换个关键词试试</div>
       <template v-else>
-        <div class="result-meta muted-3">{{  $t('共')  }} {{  results.length  }} {{  $t('条结果')  }}</div>
+        <div class="result-meta muted-3">共 {{ results.length }} 条结果</div>
         <div
           v-for="f in results"
           :key="f.id"
@@ -46,19 +46,19 @@
           <AikIcon :name="kindIcon(f)" :size="17" />
           <div class="result-main">
             <div class="result-line">
-              <span class="result-name" :title="f.name">{{  f.name  }}</span>
-              <span class="hit-tag" :class="'hit-' + f.hit_in">{{  hitLabel(f.hit_in)  }}</span>
-              <span class="result-path muted-3" :title="f.path">{{  f.path  }}</span>
-              <span class="result-size muted-3">{{  f.kind === 'dir' ? $t('文件夹') : formatSize(f.size)  }}</span>
+              <span class="result-name" :title="f.name">{{ f.name }}</span>
+              <span class="hit-tag" :class="'hit-' + f.hit_in">{{ hitLabel(f.hit_in) }}</span>
+              <span class="result-path muted-3" :title="f.path">{{ f.path }}</span>
+              <span class="result-size muted-3">{{ f.kind === 'dir' ? '文件夹' : formatSize(f.size) }}</span>
             </div>
             <!-- 溯源：命中块片段 + 定位原文 -->
             <div v-if="f.chunk" class="result-snippet">
-              <span class="snippet-text" :title="f.chunk.content">{{  f.chunk.content  }}</span>
+              <span class="snippet-text" :title="f.chunk.content">{{ f.chunk.content }}</span>
               <button
                 class="btn btn-sm locate-btn"
-                :title="$t('定位到原文段落')"
+                title="定位到原文段落"
                 @click.stop="locate(f)"
-              >{{  $t('定位原文')  }}</button>
+              >定位原文</button>
             </div>
           </div>
         </div>
@@ -73,7 +73,6 @@ import { useRouter, useRoute } from 'vue-router'
 import AikIcon from '@/components/AikIcon.vue'
 import { useFilesStore } from '@/stores/files'
 import { searchFiles } from '@/api'
-import { t } from '@/i18n'
 
 const router = useRouter()
 const route = useRoute()
@@ -82,9 +81,9 @@ const files = useFilesStore()
 const q = ref('')
 const scope = ref('all')
 const scopes = [
-  { v: 'all', label: t('全部') },
-  { v: 'file', label: t('文件') },
-  { v: 'blog', label: t('博客') },
+  { v: 'all', label: '全部' },
+  { v: 'file', label: '文件' },
+  { v: 'blog', label: '博客' },
 ]
 const results = ref([])
 const loading = ref(false)
@@ -129,7 +128,7 @@ async function doSearch() {
     results.value = await searchFiles(kw, 30, scope.value)
     searched.value = true
   } catch (e) {
-    err.value = t('检索失败：') + (e.message || e)
+    err.value = '检索失败：' + (e.message || e)
     results.value = []
     searched.value = true
   } finally {
@@ -138,10 +137,10 @@ async function doSearch() {
 }
 
 function hitLabel(hitIn) {
-  if (hitIn === 'name') return t('文件名')
-  if (hitIn === 'content') return t('内容')
-  if (hitIn === 'vector') return t('语义')
-  return t('匹配')
+  if (hitIn === 'name') return '文件名'
+  if (hitIn === 'content') return '内容'
+  if (hitIn === 'vector') return '语义'
+  return '匹配'
 }
 
 function ext(name) {
@@ -189,9 +188,9 @@ function locate(f) {
 
 <style scoped>
 .search-view {
-  max-width: 1200px;
+  max-width: 860px;
   margin: 0 auto;
-  padding: 20px 24px 40px;
+  padding: 32px 24px 60px;
 }
 
 .search-head h1 {

@@ -5,9 +5,9 @@
       <div class="og-head">
         <div class="og-title">
           <AikIcon name="sparkles" :size="18" />
-          <span>{{  $t('AI 整理')  }}</span>
+          <span>AI 整理</span>
         </div>
-        <button class="og-close icon-btn" @click="close" :title="$t('关闭')">
+        <button class="og-close icon-btn" @click="close" title="关闭">
           <AikIcon name="close" :size="16" />
         </button>
       </div>
@@ -15,8 +15,8 @@
       <!-- 加载态 -->
       <div v-if="loading" class="og-body og-center">
         <div class="spinner"></div>
-        <p>{{  $t('AI 正在阅读文件、检测冲突…')  }}</p>
-        <p class="og-sub">{{  $t('摘要与归类建议由 AI 生成，请核对后应用')  }}</p>
+        <p>AI 正在阅读文件、检测冲突…</p>
+        <p class="og-sub">摘要与归类建议由 AI 生成，请核对后应用</p>
       </div>
 
       <!-- 结果列表 -->
@@ -25,53 +25,53 @@
           <!-- 失败 -->
           <div v-if="it.error" class="og-fail">
             <AikIcon name="info" :size="14" />
-            <span>{{  it.name || it.file_id  }}：{{  it.error  }}</span>
+            <span>{{ it.name || it.file_id }}：{{ it.error }}</span>
           </div>
 
           <template v-else>
             <!-- 文件头 -->
             <div class="og-file">
               <AikIcon :name="it.kind === 'dir' ? 'folder' : 'fileText'" :size="15" />
-              <span class="og-name" :title="it.name">{{  it.name  }}</span>
-              <span v-if="!it.textable" class="og-nontext">{{  $t('非文本（仅冲突检测）')  }}</span>
-              <button class="btn-link og-apply" :disabled="applying" @click="applyOne(it)">{{  $t('应用建议')  }}</button>
+              <span class="og-name" :title="it.name">{{ it.name }}</span>
+              <span v-if="!it.textable" class="og-nontext">非文本（仅冲突检测）</span>
+              <button class="btn-link og-apply" :disabled="applying" @click="applyOne(it)">应用建议</button>
             </div>
 
             <!-- AI 摘要 -->
             <div v-if="it.summary" class="og-row">
-              <span class="og-label">{{  $t('摘要')  }}</span>
-              <p class="og-summary">{{  it.summary  }}</p>
+              <span class="og-label">摘要</span>
+              <p class="og-summary">{{ it.summary }}</p>
             </div>
 
             <!-- 建议目录 / 标签 -->
             <div class="og-row og-grid">
               <div class="og-cell">
-                <span class="og-label">{{  $t('建议目录')  }}</span>
+                <span class="og-label">建议目录</span>
                 <div class="og-dirline">
                   <AikIcon name="folder" :size="13" />
                   <input
                     v-model="it.dir_path"
                     class="og-input"
-                    :placeholder="$t('如 项目A/文档（不填不移动）')"
+                    placeholder="如 项目A/文档（不填不移动）"
                     spellcheck="false"
                   />
                 </div>
               </div>
               <div class="og-cell">
-                <span class="og-label">{{  $t('建议标签')  }}</span>
+                <span class="og-label">建议标签</span>
                 <div class="og-tags-edit">
                   <span
                     v-for="(t, ti) in it.tags"
                     :key="ti"
                     class="og-tag"
                   >
-                    {{  t  }}
+                    {{ t }}
                     <button class="og-tag-x" @click="removeTag(it, ti)">×</button>
                   </span>
                   <input
                     v-model="it.tagInput"
                     class="og-input og-tag-input"
-                    :placeholder="$t('+ 添加标签')"
+                    placeholder="+ 添加标签"
                     @keydown.enter.prevent="addTag(it)"
                     @blur="addTag(it)"
                   />
@@ -81,23 +81,23 @@
 
             <!-- 冲突列表 -->
             <div v-if="it.conflicts && it.conflicts.length" class="og-row">
-              <span class="og-label">{{  $t('相似 / 冲突')  }}</span>
+              <span class="og-label">相似 / 冲突</span>
               <div class="og-conflicts">
                 <button
                   v-for="c in it.conflicts"
                   :key="c.file_id"
                   class="og-conflict"
                   :class="c.reason"
-                  :title="$t('{path}（相似度 {score}）', { path: c.path, score: c.score })"
+                  :title="`${c.path}（相似度 ${c.score}）`"
                   @click="$emit('open', c.file_id)"
                 >
-                  <span v-if="c.reason === 'duplicate'" class="og-badge">{{  $t('疑似重复')  }}</span>
-                  <span v-else class="og-badge og-badge-sim">{{  $t('同主题')  }}</span>
-                  <span class="og-cname">{{  c.name  }}</span>
-                  <span class="og-cscore">{{  Math.round(c.score * 100)  }}%</span>
+                  <span v-if="c.reason === 'duplicate'" class="og-badge">疑似重复</span>
+                  <span v-else class="og-badge og-badge-sim">同主题</span>
+                  <span class="og-cname">{{ c.name }}</span>
+                  <span class="og-cscore">{{ Math.round(c.score * 100) }}%</span>
                 </button>
               </div>
-              <p class="og-tip">{{  $t('点击冲突项可打开对照，避免重复归档')  }}</p>
+              <p class="og-tip">点击冲突项可打开对照，避免重复归档</p>
             </div>
           </template>
         </div>
@@ -105,12 +105,12 @@
 
       <!-- 底部 -->
       <div class="og-foot">
-        <span class="og-foot-note">{{ $t('建议由 AI 生成，应用前可修改目录与标签') }}</span>
+        <span class="og-foot-note">建议由 AI 生成，应用前可修改目录与标签</span>
         <div class="og-foot-actions">
-          <button class="btn" @click="close">{{ $t('取消') }}</button>
+          <button class="btn" @click="close">取消</button>
           <button class="btn btn-primary" :disabled="!canApply" @click="applyAll">
             <AikIcon name="sparkles" :size="14" />
-            <span>{{ $t('应用全部（') }}{{  applyableCount  }}）</span>
+            <span>应用全部（{{ applyableCount }}）</span>
           </button>
         </div>
       </div>
@@ -122,7 +122,6 @@
 import { ref, computed, onMounted } from 'vue'
 import AikIcon from '@/components/AikIcon.vue'
 import * as api from '@/api'
-import { t } from '@/i18n'
 
 const props = defineProps({
   fileIds: { type: Array, required: true }
@@ -140,7 +139,7 @@ onMounted(async () => {
   try {
     items.value = (await api.organizeSuggest(props.fileIds)).map((it) => ({ ...it, tagInput: '' }))
   } catch (e) {
-    items.value = [{ file_id: 'x', name: t('请求失败'), error: e.message || String(e) }]
+    items.value = [{ file_id: 'x', name: '请求失败', error: e.message || String(e) }]
   } finally {
     loading.value = false
   }

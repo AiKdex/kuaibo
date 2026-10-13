@@ -300,7 +300,7 @@ func (a *API) findOrCreateDir(ctx context.Context, ownerID, parentID, name strin
 	if err == nil {
 		return id, nil
 	}
-	d, err := a.files.CreateDir(ctx, ownerID, a.homeSpaceID(), parentID, name, service.DefaultSiteID)
+	d, err := a.files.CreateDir(ctx, ownerID, a.homeSpaceID(), parentID, name)
 	if err != nil {
 		return "", err
 	}

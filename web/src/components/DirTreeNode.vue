@@ -16,7 +16,7 @@
         </svg>
       </button>
       <span v-else class="tree-tw-placeholder"></span>
-      <span class="tree-label" :title="node.name" @click="emit('open', node.id)">{{  node.name  }}</span>
+      <span class="tree-label" :title="node.name" @click="emit('open', node.id)">{{ node.name }}</span>
     </div>
     <template v-if="expanded.has(node.id)">
       <DirTreeNode
@@ -81,33 +81,22 @@ function onDrop(e) {
   white-space: nowrap;
 }
 
-/* 悬停：走 --sidebar-hover 令牌（light 下是浅灰、dark 下是深蓝），
-   不用 rgba(255,255,255,.06) —— 侧栏本身是白底，叠白几乎看不出变化。
-   文字同理用 --sidebar-text（浅色下白字=看不见）。 */
 .tree-row:hover {
-  background: var(--sidebar-hover);
-  color: var(--sidebar-text);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
 }
 
-/* 选中态：文字用 --sidebar-text（原为 #fff）。
-   --sidebar-active 在 light 主题下是浅色（#e0e7ff/#e0f2fe/#fdeee7），
-   白字白底对比度仅 1.1~1.2，几乎看不见；dark 主题下是深色（#312e81）才适合白字。
-   不用 --primary：它在 aurora/sunset/dark 上对 active 底只有 3.0~3.8，
-   而这是 12.5px 小字，须过 AA(4.5)；--sidebar-text 四主题均 9.5~14.2。 */
 .tree-row.active {
   background: var(--sidebar-active);
-  color: var(--sidebar-text);
-  font-weight: 600;
+  color: #fff;
 }
 
-/* 拖拽悬停目标：高亮。底色在半透明蓝上，白字对比度仅 ~2.4（拖拽态是瞬时的，
-   但仍看不清）；改用 --sidebar-text 保证四主题都可读。 */
+/* 拖拽悬停目标：高亮 */
 .tree-row.drop-over {
   background: rgba(79, 131, 255, 0.35);
   outline: 2px dashed rgba(129, 166, 255, 0.9);
   outline-offset: -2px;
-  color: var(--sidebar-text);
-  font-weight: 600;
+  color: #fff;
 }
 
 .tree-tw {
@@ -126,8 +115,8 @@ function onDrop(e) {
 }
 
 .tree-tw:hover {
-  color: var(--sidebar-text);
-  background: rgba(127, 127, 127, 0.16);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .tree-tw-placeholder {

@@ -2,9 +2,9 @@
   <!-- 顶部通栏 -->
   <div class="ef-topbar">
     <div class="ef-wrap ef-topbar-in">
-      <span>{{ siteDesc || $t("目录即站点，文件即文章") }}</span>
+      <span>{{ siteDesc || '目录即站点，文件即文章' }}</span>
       <span>
-        <a :href="blogUrl">{{ $t('文章') }}</a>
+        <a :href="blogUrl">文章</a>
         <a :href="rssHref">RSS</a>
       </span>
     </div>
@@ -22,7 +22,7 @@
         <div v-if="$slots.stats" class="ef-stats-mini"><slot name="stats" /></div>
         <nav class="ef-nav">
           <ThemeSwitch />
-          <a :href="blogUrl">{{ $t('文章') }}</a>
+          <a :href="blogUrl">文章</a>
           <a :href="rssHref">RSS</a>
         </nav>
       </div>

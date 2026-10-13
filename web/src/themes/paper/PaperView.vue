@@ -3,44 +3,44 @@
     <header class="pp-topbar">
       <div class="pp-container pp-topbar-inner">
         <a class="pp-brand" :href="publicHref">
-          <span class="pp-logo">{{ $t('爱') }}</span>
+          <span class="pp-logo">爱</span>
           <span class="pp-brand-text">
             <strong>{{ ctx.siteName || '爱库录' }}</strong>
-            <em>{{ $t('AI 知识库博客') }}</em>
+            <em>AI 知识库博客</em>
           </span>
         </a>
         <nav class="pp-nav">
           <ThemeSwitch />
-          <a :href="publicHref">{{ $t('情报板') }}</a>
+          <a :href="publicHref">情报板</a>
           <a :href="rssHref" target="_blank" rel="noopener">RSS</a>
-          <a href="/">{{ $t('官网') }}</a>
+          <a href="/">官网</a>
         </nav>
       </div>
     </header>
 
     <div class="pp-container pp-main">
       <section class="pp-hero">
-        <p class="pp-kicker">{{ $t('城市级 · 知识库 · 公开站') }}</p>
-        <h1>{{ $t('把散落在目录里的') }}<br />{{ $t('知识，拼成你能用的站') }}</h1>
+        <p class="pp-kicker">城市级 · 知识库 · 公开站</p>
+        <h1>把散落在目录里的<br />知识，拼成你能用的站</h1>
         <p class="pp-lead">
-          {{ ctx.siteDesc || $t("目录即站点，文件即文章。拖拽即发、语义检索、双链互文。") }}
+          {{ ctx.siteDesc || '目录即站点，文件即文章。拖拽即发、语义检索、双链互文。' }}
         </p>
         <div class="pp-stats">
           <div class="pp-stat">
             <div class="pp-stat-n">{{ posts.length }}</div>
-            <div class="pp-stat-l">{{ $t('已发布文章') }}</div>
+            <div class="pp-stat-l">已发布文章</div>
           </div>
           <div class="pp-stat">
             <div class="pp-stat-n">{{ catCount }}</div>
-            <div class="pp-stat-l">{{ $t('分类目录') }}</div>
+            <div class="pp-stat-l">分类目录</div>
           </div>
           <div class="pp-stat">
             <div class="pp-stat-n">SSR</div>
-            <div class="pp-stat-l">{{ $t('可收录静态页') }}</div>
+            <div class="pp-stat-l">可收录静态页</div>
           </div>
           <div class="pp-stat">
-            <div class="pp-stat-n">{{ $t('本地') }}</div>
-            <div class="pp-stat-l">{{ $t('数据主权') }}</div>
+            <div class="pp-stat-n">本地</div>
+            <div class="pp-stat-l">数据主权</div>
           </div>
         </div>
       </section>
@@ -48,29 +48,29 @@
       <section class="pp-grid">
         <div class="pp-features">
           <article class="pp-feat">
-            <h3>{{ $t('渠道差') }}</h3>
-            <p>{{ $t("知识不在聊天记录里，在可发布的目录里。一份 Markdown，就是一个可检索节点。") }}</p>
+            <h3>渠道差</h3>
+            <p>知识不在聊天记录里，在可发布的目录里。一份 Markdown，就是一个可检索节点。</p>
           </article>
           <article class="pp-feat">
-            <h3>{{ $t('拼图差') }}</h3>
-            <p>{{ $t("全文 + 语义检索，把碎片知识拼成可导航的公开站，而不是一堆附件。") }}</p>
+            <h3>拼图差</h3>
+            <p>全文 + 语义检索，把碎片知识拼成可导航的公开站，而不是一堆附件。</p>
           </article>
           <article class="pp-feat">
-            <h3>{{ $t('可行动') }}</h3>
-            <p>{{ $t("拖进博客目录即发布；slug 不碎链；RSS / sitemap 一并就绪。") }}</p>
+            <h3>可行动</h3>
+            <p>拖进博客目录即发布；slug 不碎链；RSS / sitemap 一并就绪。</p>
           </article>
           <article class="pp-feat">
-            <h3>{{ $t('溯源可信') }}</h3>
-            <p>{{ $t("每篇文章可点回原文路径；AI 不替代事实，发布权在站长手里。") }}</p>
+            <h3>溯源可信</h3>
+            <p>每篇文章可点回原文路径；AI 不替代事实，发布权在站长手里。</p>
           </article>
         </div>
 
         <aside class="pp-side">
           <div class="pp-panel">
-            <div class="pp-panel-h">{{ $t('本月情报流') }}</div>
-            <p class="pp-panel-tip">{{ $t('按分类浏览 · 点标题阅读') }}</p>
-            <div v-if="ctx.loading" class="pp-empty">{{ $t('加载中…') }}</div>
-            <div v-else-if="!posts.length" class="pp-empty">{{ $t('暂无公开文章') }}</div>
+            <div class="pp-panel-h">本月情报流</div>
+            <p class="pp-panel-tip">按分类浏览 · 点标题阅读</p>
+            <div v-if="ctx.loading" class="pp-empty">加载中…</div>
+            <div v-else-if="!posts.length" class="pp-empty">暂无公开文章</div>
             <ul v-else class="pp-feed">
               <li v-for="(p, i) in posts" :key="i">
                 <a :href="href(p)">{{ title(p) }}</a>
@@ -85,15 +85,14 @@
       </section>
 
       <section class="pp-list-wrap">
-        <h2 class="pp-h2">{{ $t('全部文章') }}</h2>
+        <h2 class="pp-h2">全部文章</h2>
         <a
           v-for="(p, i) in posts"
           :key="'c' + i"
           class="pp-card"
           :href="href(p)"
         >
-          <PostCover :post="p" round />
-          <div class="pp-card-badge" :class="badgeClass(p)">{{ cat(p) || $t("文") }}</div>
+          <div class="pp-card-badge" :class="badgeClass(p)">{{ cat(p) || '文' }}</div>
           <div class="pp-card-body">
             <h3>{{ title(p) }}</h3>
             <p v-if="p.preview" class="pp-card-ex">{{ clean(p.preview) }}</p>
@@ -108,24 +107,20 @@
 
     <footer class="pp-foot">
       <div class="pp-container">
-        <span>{{ ctx.siteName || '爱库录' }} {{ $t('· 目录即站点，文件即文章') }}</span>
+        <span>{{ ctx.siteName || '爱库录' }} · 目录即站点，文件即文章</span>
         <span>
           <a :href="rssHref">RSS</a>
           ·
-          <a href="/blog">{{ $t('静态页') }}</a>
+          <a href="/blog">静态页</a>
         </span>
       </div>
     </footer>
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import { t } from '@/i18n'
-import AskWidget from '../AskWidget.vue'
 import { computed, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
-import PostCover from '@/components/PostCover.vue'
 import './style.css'
 
 const raw = inject('themeContext')
@@ -145,7 +140,7 @@ const catCount = computed(() => {
 
 function title(p) {
   const n = p.file?.name || p.name || p.path || ''
-  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || t('common.unnamed')
+  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || '未命名'
 }
 function cat(p) {
   const path = p.path || ''

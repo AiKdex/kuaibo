@@ -94,7 +94,7 @@ func (a *API) blogMaterial(r *http.Request, q string, paths []string, limit int)
 	if blogDirID == "" {
 		return []map[string]any{}
 	}
-	files, err := a.collectBlogArticles(r.Context(), blogDirID, "")
+	files, err := a.collectDirFiles(r.Context(), blogDirID)
 	if err != nil {
 		return []map[string]any{}
 	}

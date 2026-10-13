@@ -7,9 +7,9 @@
         <div class="bf-bar">
           <div class="bf-bar-l">
             <h1 class="bf-bar-t">{{ author }}</h1>
-            <span class="bf-bar-s">{{ hasAuthorField ? $t("按作者字段归集") : $t("本站为单一作者站点，展示全部公开内容") }}</span>
+            <span class="bf-bar-s">{{ hasAuthorField ? '按作者字段归集' : '本站为单一作者站点，展示全部公开内容' }}</span>
           </div>
-          <div class="bf-bar-r"><span class="bf-bar-chip">{{ list.length }} {{ $t('篇') }}</span></div>
+          <div class="bf-bar-r"><span class="bf-bar-chip">{{ list.length }} 篇</span></div>
         </div>
 
         <!-- 作者卡（无头像字段 → 首字徽标，纯装饰） -->
@@ -17,21 +17,21 @@
           <span class="bf-authorcard-ava" aria-hidden="true">{{ author.slice(0, 1) }}</span>
           <span class="bf-authorcard-body">
             <span class="bf-authorcard-n">{{ author }}</span>
-            <span class="bf-authorcard-d">{{ siteDesc || $t("目录即站点，文件即文章") }}</span>
+            <span class="bf-authorcard-d">{{ siteDesc || '目录即站点，文件即文章' }}</span>
             <span class="bf-authorcard-s">
-              <span>{{ list.length }} {{ $t('篇公开内容') }}</span>
-              <span v-if="cats.length">· {{ cats.length }} {{ $t('个分类') }}</span>
+              <span>{{ list.length }} 篇公开内容</span>
+              <span v-if="cats.length">· {{ cats.length }} 个分类</span>
             </span>
           </span>
-          <a class="bf-authorcard-btn" :href="blogUrl">{{ $t('返回全部') }}</a>
+          <a class="bf-authorcard-btn" :href="blogUrl">返回全部</a>
         </section>
 
-        <div v-if="loading" class="bf-state"><span class="bf-state-ic">…</span><p class="bf-state-t">{{ $t('正在加载') }}</p></div>
+        <div v-if="loading" class="bf-state"><span class="bf-state-ic">…</span><p class="bf-state-t">正在加载</p></div>
         <div v-else-if="error" class="bf-state"><span class="bf-state-ic">!</span><p class="bf-state-t">{{ error }}</p></div>
         <div v-else-if="!list.length" class="bf-state">
           <span class="bf-state-ic">∅</span>
-          <p class="bf-state-t">{{ $t('该名下暂无文章') }}</p>
-          <a class="bf-state-btn" :href="blogUrl">{{ $t('查看全部文章') }}</a>
+          <p class="bf-state-t">该名下暂无文章</p>
+          <a class="bf-state-btn" :href="blogUrl">查看全部文章</a>
         </div>
         <template v-else>
           <ButterflyCard v-for="(p, i) in list" :key="p.token || p.path || i" :post="p" :index="i" :reversed="i % 2 === 1" />
@@ -44,11 +44,9 @@
     <ButterflyFoot :site-name="siteName" :blog-url="blogUrl" :count="posts.length" />
     <ButterflyRight :dark="dark" @toggle-dark="toggleDark" />
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import AskWidget from '../AskWidget.vue'
 import { computed, ref } from 'vue'
 import ButterflyHead from './ButterflyHead.vue'
 import ButterflyCard from './ButterflyCard.vue'

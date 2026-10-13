@@ -2,11 +2,11 @@
   <div class="blog-view">
     <!-- 管理态工具条：公开读者视图不显示（主题在控制台站点设置里改） -->
     <div v-if="!viewPublic" class="th-switchbar">
-      <span class="th-label">{{  $t('博客')  }}</span>
-      <span v-if="activeTheme" class="th-desc">{{  activeTheme.title  }} · {{  activeTheme.desc  }}</span>
-      <a class="th-ssr" href="/blog" :title="$t('服务端静态页（SEO）')">{{  $t('静态页')  }}</a>
+      <span class="th-label">博客</span>
+      <span v-if="activeTheme" class="th-desc">{{ activeTheme.title }} · {{ activeTheme.desc }}</span>
+      <a class="th-ssr" href="/blog" title="服务端静态页（SEO）">静态页</a>
       <button v-if="isAdmin" class="th-manage" :class="{ on: manageMode }" @click="manageMode = !manageMode">
-        {{  manageMode ? $t('返回预览') : $t('管理博客')  }}
+        {{ manageMode ? '返回预览' : '管理博客' }}
       </button>
     </div>
 
@@ -27,32 +27,30 @@
       <!-- 系统默认内页：主题未声明该 entries.* 时的兜底（套主题 .th-<id> 令牌，配色字体不割裂） -->
       <div v-else class="th-fallback">
         <header class="th-fb-head">
-          <a class="th-fb-brand" href="#/blog?view=public">{{  ctx.siteName  }}</a>
+          <a class="th-fb-brand" href="#/blog?view=public">{{ ctx.siteName }}</a>
           <nav class="th-fb-nav">
             <ThemeSwitch mode="inline" />
-            <a href="/blog">{{  $t('静态页')  }}</a>
+            <a href="/blog">静态页</a>
           </nav>
         </header>
         <main class="th-fb-main">
-          <h1 class="th-fb-title">{{  fallbackTitle  }}</h1>
-          <p class="th-fb-count">{{  fallbackPosts.length  }} {{  $t('篇')  }}</p>
+          <h1 class="th-fb-title">{{ fallbackTitle }}</h1>
+          <p class="th-fb-count">{{ fallbackPosts.length }} 篇</p>
           <ul class="th-fb-list">
             <li v-for="p in fallbackPosts" :key="p.token + (p.path || '')">
-              <a :href="ctx.postUrl(p)">{{  postTitle(p)  }}</a>
-              <span class="th-fb-date">{{  postDate(p)  }}</span>
+              <a :href="ctx.postUrl(p)">{{ postTitle(p) }}</a>
+              <span class="th-fb-date">{{ postDate(p) }}</span>
             </li>
           </ul>
-          <p v-if="!fallbackPosts.length && !ctx.loading" class="th-fb-empty">{{  fallbackEmpty  }}</p>
-          <p v-if="ctx.loading" class="th-fb-empty">{{  $t('加载中…')  }}</p>
+          <p v-if="!fallbackPosts.length && !ctx.loading" class="th-fb-empty">{{ fallbackEmpty }}</p>
+          <p v-if="ctx.loading" class="th-fb-empty">加载中…</p>
         </main>
-        <footer class="th-fb-foot">{{  ctx.siteName  }}</footer>
+        <footer class="th-fb-foot">{{ ctx.siteName }}</footer>
       </div>
     </div>
 
     <!-- 公开页主题切换：主题自带 inline 切换器时不重复渲染；否则宿主补右上角悬浮版 -->
     <ThemeSwitch v-if="showDockSwitch" mode="dock" />
-    <!-- 语言切换：公开页脱离应用外壳，顶栏那颗覆盖不到访客，故宿主补悬浮版 -->
-    <LangSwitch mode="dock" />
 
     <!-- 公开读者视图：右下角固定的登录 / 注册入口（已登录则显示控制台） -->
     <GuestEntry v-if="showGuestDock" variant="dock" />
@@ -60,19 +58,15 @@
 </template>
 
 <script setup>
-import { t as i18t } from '@/i18n'
 import { ref, computed, onMounted, watch, provide } from 'vue'
 import { useRoute } from 'vue-router'
 import PublicHome from './PublicHome.vue'
 import BlogManage from './BlogManage.vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
-import LangSwitch from '@/components/LangSwitch.vue'
 import GuestEntry from '@/components/GuestEntry.vue'
-import { listThemes, activeThemeId, serverThemeId, applyServerTheme, pageEntry, ensureTheme, applyInstalledThemes, isThemeInstalled, readOverride } from '@/themes'
-import { publicPosts, publicSite, publicTags, publicBlogThemes, isAuthed } from '@/api'
-import { postCover } from '@/utils/postCover.js'
+import { listThemes, activeThemeId, applyServerTheme, pageEntry } from '@/themes'
+import { publicPosts, publicSite, publicTags, isAuthed } from '@/api'
 import '@/themes/all' // 注册全部主题（与文章页 BlogPostView 共用同一份清单）
-import { t } from '@/i18n'
 
 const route = useRoute()
 
@@ -154,7 +148,7 @@ watch(isAdmin, syncView)
 // ===== 通用数据契约：博客公开内容（供 dataSources 含 'blog' 的主题使用） =====
 const ctx = ref({
   siteName: '爱库录',
-  siteDesc: t('爱库录 · AI 知识库博客：目录即站点，文件即文章'),
+  siteDesc: '爱库录 · AI 知识库博客：目录即站点，文件即文章',
   aiAskOpen: true, // 站长级 AI 问答开关（blog.ai_ask_open）；默认开，/public/site 下发后覆盖
   posts: [],
   tags: [],
@@ -176,40 +170,23 @@ async function loadBlogContext() {
   ctx.value.loading = true
   ctx.value.error = ''
   try {
-    const [postsRes, siteRes, tagsRes, themesRes] = await Promise.all([
+    const [postsRes, siteRes, tagsRes] = await Promise.all([
       publicPosts().catch(() => ({ items: [] })),
       publicSite().catch(() => null),
       publicTags().catch(() => ({ items: [] })),
-      publicBlogThemes().catch(() => null), // 已安装主题列表（应用中心装/卸驱动；失败降级为全量可见）
     ])
-    // 统一注入封面字段（单一来源）：各主题卡片直接读 post.cover 即可，无需各自计算
-    ctx.value.posts = (postsRes.items || []).map((p) => ({ ...p, cover: postCover(p) }))
+    ctx.value.posts = postsRes.items || []
     ctx.value.tags = tagsRes?.items || []
-    // 懒加载主题基座：先登记「已安装」集合，再确保当前主题 chunk 已注册
-    if (themesRes) applyInstalledThemes((themesRes.items || []).map((x) => x.id))
     if (siteRes?.site) {
       if (siteRes.site.title) ctx.value.siteName = siteRes.site.title
       if (siteRes.site.description) ctx.value.siteDesc = siteRes.site.description
       // AI 问答开关（缺省视为开；仅显式 "false" 关闭）
       ctx.value.aiAskOpen = siteRes.site.ai_ask_open !== 'false' && siteRes.site.ai_ask_open !== false
       // 站点设置里的主题 → 交互版公开视图；读者可在页头切换器覆盖（本地优先）
-      applyServerTheme(siteRes.site.theme || 'aiklog', {
-        allowVisitorSwitch: siteRes.site.allow_visitor_theme_switch !== 'false' && siteRes.site.allow_visitor_theme_switch !== false,
-      })
-    }
-    // 访客本地覆盖指向「未安装/已卸载」的主题 → 丢弃覆盖，回落站点设置
-    const ov = readOverride()
-    if (ov && !isThemeInstalled(ov)) {
-      try { localStorage.removeItem('aiklog.theme.override') } catch (e) { /* ignore */ }
-      activeThemeId.value = serverThemeId.value || 'default'
-    }
-    // 确保当前生效主题已加载（懒 chunk）；失败/未安装 → 归位 default（宿主默认列表）
-    if (activeThemeId.value && activeThemeId.value !== 'default') {
-      const ok = await ensureTheme(activeThemeId.value)
-      if (!ok) activeThemeId.value = serverThemeId.value && isThemeInstalled(serverThemeId.value) ? serverThemeId.value : 'default'
+      applyServerTheme(siteRes.site.theme || 'aiklog')
     }
   } catch (e) {
-    ctx.value.error = e.message || t('加载失败')
+    ctx.value.error = e.message || '加载失败'
   } finally {
     ctx.value.loading = false
   }
@@ -227,7 +204,7 @@ const isDefaultTheme = computed(() => !activeTheme.value || activeTheme.value.id
 function postTitle(post) {
   const p = String(post?.path || '')
   const name = post?.file?.name || (p ? p.split('/').pop() : '')
-  return String(name || '').replace(/\.(md|markdown|txt|html?)$/i, '') || t('无标题')
+  return String(name || '').replace(/\.(md|markdown|txt|html?)$/i, '') || '无标题'
 }
 function postDate(post) {
   let ms = post?.file?.updated_at || 0
@@ -265,12 +242,12 @@ const fallbackTitle = computed(() => {
 })
 const fallbackEmpty = computed(() => {
   const v = pageCtx.value
-  if (v.kind === 'search') return i18t('没有匹配的文章')
-  if (v.kind === 'tag') return i18t('该标签下暂无文章')
-  if (v.kind === 'archive') return i18t('该月份暂无文章')
-  if (v.kind === 'author') return i18t('该作者暂无文章')
-  if (v.kind === 'cat') return i18t('该分类下暂无文章')
-  return i18t('还没有公开文章')
+  if (v.kind === 'search') return '没有匹配的文章'
+  if (v.kind === 'tag') return '该标签下暂无文章'
+  if (v.kind === 'archive') return '该月份暂无文章'
+  if (v.kind === 'author') return '该作者暂无文章'
+  if (v.kind === 'cat') return '该分类下暂无文章'
+  return '还没有公开文章'
 })
 
 // 主题自己在页头渲染了切换器（manifest: ui.themeSwitcher）→ 宿主不再悬浮兜底

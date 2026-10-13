@@ -1,6 +1,6 @@
 <template>
   <aside v-if="groups.length" class="ar-card">
-    <h4 class="ar-title">{{ $t('归档') }}</h4>
+    <h4 class="ar-title">归档</h4>
     <ul class="ar-list">
       <li v-for="g in groups" :key="g.key">
         <span class="ar-month">{{ g.label }}</span>

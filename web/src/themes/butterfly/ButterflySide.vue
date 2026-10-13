@@ -5,16 +5,16 @@
       <div class="bf-wcard-top">
         <span class="bf-wcard-ava" aria-hidden="true">{{ avatarCh }}</span>
         <span class="bf-wcard-name">{{ siteName || '爱库录' }}</span>
-        <span class="bf-wcard-desc">{{ siteDesc || $t("目录即站点，文件即文章") }}</span>
+        <span class="bf-wcard-desc">{{ siteDesc || '目录即站点，文件即文章' }}</span>
       </div>
       <div class="bf-wcard-stats">
         <span class="bf-wcard-stat">
           <b>{{ posts.length }}</b>
-          <i>{{ $t('文章') }}</i>
+          <i>文章</i>
         </span>
         <span class="bf-wcard-stat">
           <b>{{ cats.length }}</b>
-          <i>{{ $t('分类') }}</i>
+          <i>分类</i>
         </span>
       </div>
     </section>
@@ -23,7 +23,7 @@
     <section v-if="siteDesc" class="bf-widget">
       <h3 class="bf-widget-h">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3l6 4V5.5l-6 4z" /><path d="M17 8.6a5 5 0 0 1 0 6.8" /></svg>
-        <span>{{ $t('站点公告') }}</span>
+        <span>站点公告</span>
       </h3>
       <p class="bf-notice">{{ siteDesc }}</p>
     </section>
@@ -32,7 +32,7 @@
     <section v-if="latest.length" class="bf-widget">
       <h3 class="bf-widget-h">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5" /><path d="M12 7.4V12l3.2 2" /></svg>
-        <span>{{ $t('最新更新') }}</span>
+        <span>最新更新</span>
       </h3>
       <ul class="bf-latest">
         <li v-for="(p, i) in latest" :key="p.token || p.path" class="bf-latest-i">
@@ -47,7 +47,7 @@
     <section v-if="cats.length" class="bf-widget">
       <h3 class="bf-widget-h">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.5h7v7h-7zM13.5 5.5h7v7h-7zM3.5 13.5h7v5h-7zM13.5 13.5h7v5h-7z" /></svg>
-        <span>{{ $t('分类') }}</span>
+        <span>分类</span>
       </h3>
       <ul class="bf-cats">
         <li v-for="c in shownCats" :key="c.name">
@@ -64,7 +64,7 @@
         </li>
       </ul>
       <button v-if="cats.length > 6" class="bf-widget-more" type="button" @click="expandAll = !expandAll">
-        {{ expandAll ? $t("收起") : $t("展开全部 {cats} 个分类", { cats: cats.length }) }}
+        {{ expandAll ? '收起' : `展开全部 ${cats.length} 个分类` }}
       </button>
     </section>
 
@@ -72,7 +72,7 @@
     <section v-if="tags.length" class="bf-widget">
       <h3 class="bf-widget-h">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11.4V4.5h6.9l9.1 9.1-6.9 6.9z" /><circle cx="7.6" cy="8.4" r="1.3" /></svg>
-        <span>{{ $t('标签云') }}</span>
+        <span>标签云</span>
       </h3>
       <div class="bf-tagcloud">
         <span v-for="t in tags" :key="t.name" class="bf-tag">{{ t.name }}<i v-if="t.count">{{ t.count }}</i></span>
@@ -83,17 +83,17 @@
     <section v-if="posts.length" class="bf-widget">
       <h3 class="bf-widget-h">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5" /><path d="M12 3.5v8.5h8.5" /></svg>
-        <span>{{ $t('站点信息') }}</span>
+        <span>站点信息</span>
       </h3>
       <ul class="bf-info">
-        <li><span>{{ $t('文章总数') }}</span><b>{{ posts.length }}</b></li>
-        <li><span>{{ $t('分类数量') }}</span><b>{{ cats.length }}</b></li>
-        <li><span>{{ $t('最近更新') }}</span><b>{{ lastUpdated || '—' }}</b></li>
+        <li><span>文章总数</span><b>{{ posts.length }}</b></li>
+        <li><span>分类数量</span><b>{{ cats.length }}</b></li>
+        <li><span>最近更新</span><b>{{ lastUpdated || '—' }}</b></li>
       </ul>
       <div class="bf-widget-links">
-        <button class="bf-widget-link" type="button" @click="$emit('go-archive')">{{ $t('全部归档') }}</button>
-        <button class="bf-widget-link" type="button" @click="$emit('go-search')">{{ $t('全文检索') }}</button>
-        <a class="bf-widget-link" :href="rssHref" target="_blank" rel="noopener">{{ $t('RSS 订阅') }}</a>
+        <button class="bf-widget-link" type="button" @click="$emit('go-archive')">全部归档</button>
+        <button class="bf-widget-link" type="button" @click="$emit('go-search')">全文检索</button>
+        <a class="bf-widget-link" :href="rssHref" target="_blank" rel="noopener">RSS 订阅</a>
       </div>
     </section>
   </aside>

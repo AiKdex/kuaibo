@@ -124,16 +124,7 @@ func (a *API) impexListExports(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) impexList(w http.ResponseWriter, r *http.Request, kind string) {
-	// M11 修复：普通用户仅能列出自己的任务；admin 列出全部
-	ownerID := ""
-	if !a.isAdmin(r) {
-		ownerID = a.curUserID(r)
-		if ownerID == "" {
-			writeErr(w, http.StatusUnauthorized, "LOGIN_REQUIRED", "请先登录")
-			return
-		}
-	}
-	items, err := a.impex.List(r.Context(), kind, ownerID, 100)
+	items, err := a.impex.List(r.Context(), kind, 100)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "IMPEX_LIST_FAILED", err.Error())
 		return
@@ -141,31 +132,8 @@ func (a *API) impexList(w http.ResponseWriter, r *http.Request, kind string) {
 	writeJSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
-// impexOwned M11 归属校验：仅任务 owner（系统任务由 admin 代管）可访问/操作。
-// 通过返回 true；失败已写响应并返回 false，调用方应立即 return。
-func (a *API) impexOwned(w http.ResponseWriter, r *http.Request, id string) bool {
-	uid := a.curUserID(r)
-	if uid == "" {
-		writeErr(w, http.StatusUnauthorized, "LOGIN_REQUIRED", "请先登录")
-		return false
-	}
-	owner, err := a.impex.OwnerOf(r.Context(), id)
-	if err != nil {
-		writeErr(w, http.StatusNotFound, "IMPEX_NOT_FOUND", "job not found")
-		return false
-	}
-	if owner != uid && owner != service.SystemOwnerID && !a.isAdmin(r) {
-		writeErr(w, http.StatusForbidden, "IMPEX_FORBIDDEN", "无权访问该任务")
-		return false
-	}
-	return true
-}
-
 // impexGet 任务详情：GET /api/v1/{imports|exports}/{id}
 func (a *API) impexGet(w http.ResponseWriter, r *http.Request) {
-	if !a.impexOwned(w, r, r.PathValue("id")) {
-		return
-	}
 	j, err := a.impex.Get(r.Context(), r.PathValue("id"))
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
@@ -180,9 +148,6 @@ func (a *API) impexGet(w http.ResponseWriter, r *http.Request) {
 
 // impexRetry 重试失败项：POST /api/v1/{imports|exports}/{id}/retry
 func (a *API) impexRetry(w http.ResponseWriter, r *http.Request) {
-	if !a.impexOwned(w, r, r.PathValue("id")) {
-		return
-	}
 	j, err := a.impex.Retry(r.Context(), r.PathValue("id"))
 	if err != nil {
 		writeErr(w, http.StatusBadRequest, "IMPEX_RETRY_FAILED", err.Error())
@@ -193,9 +158,6 @@ func (a *API) impexRetry(w http.ResponseWriter, r *http.Request) {
 
 // impexDownload 下载导出产物：GET /api/v1/exports/{id}/download
 func (a *API) impexDownload(w http.ResponseWriter, r *http.Request) {
-	if !a.impexOwned(w, r, r.PathValue("id")) {
-		return
-	}
 	rc, name, size, err := a.impex.ArtifactStream(r.Context(), r.PathValue("id"))
 	if err != nil {
 		writeErr(w, http.StatusBadRequest, "IMPEX_DOWNLOAD_FAILED", err.Error())

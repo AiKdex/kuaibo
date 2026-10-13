@@ -3,46 +3,43 @@
     <div class="login-card">
       <div class="login-brand">
         <div class="brand-mark">K</div>
-        <h1 class="brand-title">{{  $t('爱库录')  }}</h1>
-        <p class="brand-sub">{{  $t('AiKlog · AI 知识库博客')  }}</p>
-        <select class="login-lang" :value="locale" @change="onLangChange($event)">
-          <option v-for="l in LOCALES" :key="l.value" :value="l.value">{{  t(l.labelKey)  }}</option>
-        </select>
+        <h1 class="brand-title">爱库录</h1>
+        <p class="brand-sub">AiKlog · AI 知识库博客</p>
       </div>
 
       <form class="login-form" @submit.prevent="submit">
         <div v-if="mode === 'register'" class="field">
-          <label>{{  t('login.nickname')  }}</label>
+          <label>昵称（可选）</label>
           <input
             v-model="displayName"
             type="text"
-            :placeholder="t('login.nicknamePh')"
+            placeholder="怎么称呼你"
             spellcheck="false"
           />
         </div>
         <div class="field">
-          <label>{{  t('login.username')  }}</label>
+          <label>用户名</label>
           <input
             v-model="username"
             type="text"
             autocomplete="username"
-            :placeholder="mode === 'register' ? t('login.usernamePh') : 'admin'"
+            :placeholder="mode === 'register' ? '3-32 位，字母/数字/中文' : 'admin'"
             spellcheck="false"
             @keyup.enter="submit"
           />
         </div>
         <div class="field">
-          <label>{{  t('login.password')  }}</label>
+          <label>密码</label>
           <input
             v-model="password"
             type="password"
             :autocomplete="mode === 'register' ? 'new-password' : 'current-password'"
-            :placeholder="mode === 'register' ? t('login.passwordNew') : t('login.passwordPh')"
+            :placeholder="mode === 'register' ? '至少 8 位' : '请输入密码'"
             @keyup.enter="submit"
           />
         </div>
         <div v-if="mode === 'register' && emailEnabled" class="field">
-          <label>{{  emailRequired ? t('login.emailPlain') : t('login.email')  }}</label>
+          <label>邮箱{{ emailRequired ? '' : '（可选，需验证码）' }}</label>
           <input
             v-model="email"
             type="email"
@@ -57,7 +54,7 @@
               type="text"
               inputmode="numeric"
               maxlength="6"
-              :placeholder="t('login.code')"
+              placeholder="6 位验证码"
             />
             <button
               type="button"
@@ -65,20 +62,20 @@
               :disabled="codeBusy || !email.trim()"
               @click="sendCode"
             >
-              {{  codeBusy ? t('login.codeSending') : t('login.codeBtn')  }}
+              {{ codeBusy ? '发送中…' : '获取验证码' }}
             </button>
           </div>
         </div>
-        <p v-if="error" class="login-error">{{  error  }}</p>
+        <p v-if="error" class="login-error">{{ error }}</p>
         <button class="login-btn" type="submit" :disabled="busy">
-          {{  busy ? t('login.busy') : (mode === 'register' ? t('login.register') : t('login.submit'))  }}
+          {{ busy ? '处理中…' : (mode === 'register' ? '注 册' : '登 录') }}
         </button>
       </form>
 
       <p v-if="canRegister" class="login-switch" @click="toggleMode">
-        {{  mode === 'register' ? t('login.switchToLogin') : t('login.switchToRegister')  }}
+        {{ mode === 'register' ? '已有账号？去登录' : '没有账号？注册一个' }}
       </p>
-      <p v-if="mode === 'login'" class="login-hint">{{  t('login.firstHint')  }}</p>
+      <p v-if="mode === 'login'" class="login-hint">首次使用请在服务端启动日志中查看初始管理员密码</p>
     </div>
   </div>
 </template>
@@ -87,12 +84,6 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { authLogin, authRegister, authMe, authConfig, emailCode, setAuthFlag } from '@/api'
-import { t, locale, setLocale, LOCALES } from '@/i18n'
-
-// 登录页语言切换（B22）：即时生效并记忆
-function onLangChange(e) {
-  setLocale(e.target.value)
-}
 
 const router = useRouter()
 const route = useRoute()
@@ -154,12 +145,12 @@ async function sendCode() {
     const d = await emailCode(email.value.trim(), 'register')
     if (d && d.debug_code) {
       code.value = d.debug_code
-      error.value = t('login.debugCode', { code: d.debug_code })
+      error.value = '调试模式：已自动填入验证码 ' + d.debug_code
     } else {
-      error.value = t('login.codeSent', { email: email.value.trim() })
+      error.value = '验证码已发送到 ' + email.value.trim() + '，请查收'
     }
   } catch (e) {
-    error.value = e.message || t('login.codeFailed')
+    error.value = e.message || '验证码发送失败'
   } finally {
     codeBusy.value = false
   }
@@ -168,7 +159,7 @@ async function sendCode() {
 async function submit() {
   if (busy.value) return
   if (!username.value.trim() || !password.value) {
-    error.value = t('login.errRequired')
+    error.value = '请输入用户名和密码'
     return
   }
   busy.value = true
@@ -184,7 +175,7 @@ async function submit() {
     setAuthFlag()
     goNext()
   } catch (e) {
-    error.value = e.message || (mode.value === 'register' ? t('login.registerFailed') : t('login.loginFailed'))
+    error.value = e.message || (mode.value === 'register' ? '注册失败' : '登录失败')
   } finally {
     busy.value = false
   }
@@ -236,16 +227,6 @@ async function submit() {
   font-size: var(--fs-small);
   color: var(--text-3);
   margin: var(--sp-1) 0 0;
-}
-.login-lang {
-  margin-top: var(--sp-3);
-  padding: 4px 8px;
-  font-size: var(--fs-small);
-  color: var(--text-2);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
 }
 .field {
   margin-bottom: var(--sp-4);

@@ -1,9 +1,8 @@
 <template>
   <a class="au-card" :href="href">
-    <PostCover :post="post" round />
     <div class="au-card-top">
       <span v-if="hasCat" class="au-card-cat">{{ cat }}</span>
-      <span v-if="hero" class="au-card-badge">{{ $t('头条') }}</span>
+      <span v-if="hero" class="au-card-badge">头条</span>
     </div>
     <h2 class="au-card-title">{{ title }}</h2>
     <p class="au-card-ex">{{ excerpt }}</p>
@@ -23,7 +22,6 @@
  * 文案只用可证事实：位置用「头条」（就是列表第一条），日期用 file.updated_at。
  */
 import { computed } from 'vue'
-import PostCover from '@/components/PostCover.vue'
 import { useBlog, postTitle, catName, postCat, postDate, postExcerpt, postHref } from './helpers.js'
 
 const props = defineProps({

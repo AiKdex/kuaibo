@@ -8,8 +8,8 @@
         class="hj-ask-fab"
         :class="{ on: open }"
         type="button"
-        :title="open ? $t('收起 AI 助手') : $t('AI 问答')"
-        :aria-label="open ? $t('收起 AI 助手') : $t('AI 问答')"
+        :title="open ? '收起 AI 助手' : 'AI 问答'"
+        :aria-label="open ? '收起 AI 助手' : 'AI 问答'"
         @click="open = !open"
       >
         <svg v-if="!open" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
@@ -17,17 +17,17 @@
       </button>
 
       <!-- 对话面板 -->
-      <div v-if="open" class="hj-ask-panel" role="dialog" :aria-label="$t('AI 问答')">
+      <div v-if="open" class="hj-ask-panel" role="dialog" aria-label="AI 问答">
         <div class="hj-ask-head">
-          <span class="hj-ask-title">{{ $t('AI 助手') }}</span>
-          <span class="hj-ask-sub">{{ $t('基于本站文章回答') }}</span>
+          <span class="hj-ask-title">AI 助手</span>
+          <span class="hj-ask-sub">基于本站文章回答</span>
         </div>
 
         <div ref="listEl" class="hj-ask-body">
           <div class="hj-ask-msg hj-ask-ai">
             <span class="hj-ask-badge">AI</span>
             <div class="hj-ask-bubble">
-              <p>{{ $t("你好，我是这个博客的 AI 助手，可以围绕本站文章回答你的问题。") }}</p>
+              <p>你好，我是这个博客的 AI 助手，可以围绕本站文章回答你的问题。</p>
             </div>
           </div>
 
@@ -40,7 +40,7 @@
             <span v-if="m.role !== 'user'" class="hj-ask-badge">AI</span>
             <div class="hj-ask-bubble">
               <p v-if="m.text" class="hj-ask-text">{{ m.text }}</p>
-              <p v-else class="hj-ask-thinking">{{ $t('正在思考…') }}</p>
+              <p v-else class="hj-ask-thinking">正在思考…</p>
             </div>
           </div>
         </div>
@@ -51,11 +51,11 @@
             class="hj-ask-input"
             type="text"
             maxlength="800"
-            :placeholder="$t('输入问题，回车提问…')"
+            placeholder="输入问题，回车提问…"
             :disabled="loading"
           />
           <button class="hj-ask-send" type="submit" :disabled="!q.trim() || loading">
-            {{ loading ? $t("思考中") : $t("发送") }}
+            {{ loading ? '思考中' : '发送' }}
           </button>
         </form>
       </div>
@@ -64,7 +64,6 @@
 </template>
 
 <script setup>
-import { t } from '@/i18n'
 import { ref, computed, nextTick, inject } from 'vue'
 
 const ctx = inject('themeContext')
@@ -102,22 +101,22 @@ async function submit() {
     })
     if (res.status === 429) {
       const d = await res.json().catch(() => null)
-      pending.text = (d && d.error && d.error.message) || t('提问太频繁了，请稍等几分钟再试。')
+      pending.text = (d && d.error && d.error.message) || '提问太频繁了，请稍等几分钟再试。'
       return
     }
     if (!res.ok) {
       const d = await res.json().catch(() => null)
-      pending.text = (d && d.error && d.error.message) || t('AI 暂时没有响应，请稍后重试。')
+      pending.text = (d && d.error && d.error.message) || 'AI 暂时没有响应，请稍后重试。'
       return
     }
     const data = await res.json()
     if (data && data.degraded) {
-      pending.text = data.reply || t('AI 服务当前不可用，请稍后再来。')
+      pending.text = data.reply || 'AI 服务当前不可用，请稍后再来。'
       return
     }
-    pending.text = data?.reply || t('抱歉，我没有理解这个问题，换个说法试试？')
+    pending.text = data?.reply || '抱歉，我没有理解这个问题，换个说法试试？'
   } catch (e) {
-    pending.text = t('网络似乎出了点问题，请稍后重试。')
+    pending.text = '网络似乎出了点问题，请稍后重试。'
   } finally {
     loading.value = false
     scrollToBottom()

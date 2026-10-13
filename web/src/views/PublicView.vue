@@ -5,52 +5,25 @@
 
     <!-- 极简顶栏：品牌 + 入口 -->
     <header class="pub-bar">
-      <a class="pub-brand" href="/app#/blog?view=public" :title="$t('爱库录公开博客')">
-        <span class="pub-logo">{{  $t('录')  }}</span>
-        <span class="pub-name">{{  $t('爱库录')  }}</span>
+      <a class="pub-brand" href="/app#/blog?view=public" title="爱库录公开博客">
+        <span class="pub-logo">录</span>
+        <span class="pub-name">爱库录</span>
         <span class="pub-sub">AiKlog</span>
       </a>
-      <LangSwitch mode="inline" />
       <GuestEntry variant="bar" />
-      <a class="pub-home btn btn-sm" href="/app#/blog?view=public">{{  $t('返回列表')  }}</a>
+      <a class="pub-home btn btn-sm" href="/app#/blog?view=public">返回列表</a>
     </header>
 
     <!-- 加载/错误 -->
-    <div v-if="loading" class="pub-center"><div class="spinner"></div><span>{{  $t('加载中…')  }}</span></div>
+    <div v-if="loading" class="pub-center"><div class="spinner"></div><span>加载中…</span></div>
     <div v-else-if="error" class="pub-center">
       <AikIcon name="info" :size="20" />
-      <p>{{  error  }}</p>
+      <p>{{ error }}</p>
     </div>
 
     <!-- 正文：文本类 → 博客文章；媒体类 → 播放器/预览 -->
     <template v-else-if="!dirList">
-      <!-- 付费/加密闸门：密码保护(2.2) 或标记为付费内容（复用 article_access） -->
-      <div v-if="locked" class="pub-lock">
-        <AikIcon :name="'lock'" :size="30" />
-        <h2 class="pub-lock-title">{{  lockKind === 'paid' ? $t('付费内容') : $t('加密内容')  }}</h2>
-        <p v-if="paidPreview" class="pub-lock-preview">{{  paidPreview  }}</p>
-        <p class="pub-lock-desc">
-          {{  lockKind === 'paid' ? $t('该内容需购买/解锁后阅读') : $t('该内容已加密，请输入访问密码')  }}
-        </p>
-        <template v-if="lockKind === 'password'">
-          <div class="pub-lock-form">
-            <input
-              v-model="pwdInput"
-              type="password"
-              class="pub-lock-input"
-              :placeholder="$t('访问密码')"
-              @keyup.enter="submitUnlock"
-            />
-            <button class="btn btn-primary" :disabled="trying" @click="submitUnlock">
-              {{  trying ? $t('验证中…') : $t('解锁')  }}
-            </button>
-          </div>
-          <p v-if="unlockErr" class="pub-lock-err">{{  unlockErr  }}</p>
-        </template>
-        <p v-else class="pub-lock-note">{{ $t('在线支付通道待接入，请联系站长获取访问权限。') }}</p>
-      </div>
-
-      <div v-else class="pub-shell">
+      <div class="pub-shell">
         <MarkdownArticle
           v-if="isText"
           :title="file?.name || ''"
@@ -65,40 +38,32 @@
         <!-- 图片 -->
         <div v-else-if="isImage" class="pub-media">
           <img :src="contentUrl" :alt="file?.name" class="pub-img" />
-          <p class="pub-media-meta">{{  file?.name  }}</p>
+          <p class="pub-media-meta">{{ file?.name }}</p>
         </div>
 
         <!-- 视频 -->
         <div v-else-if="isVideo" class="pub-media">
           <video :src="contentUrl" controls class="pub-video"></video>
-          <p class="pub-media-meta">{{  file?.name  }}</p>
+          <p class="pub-media-meta">{{ file?.name }}</p>
         </div>
 
         <!-- 音频 -->
         <div v-else-if="isAudio" class="pub-media">
           <audio :src="contentUrl" controls class="pub-audio"></audio>
-          <p class="pub-media-meta">{{  file?.name  }}</p>
+          <p class="pub-media-meta">{{ file?.name }}</p>
         </div>
 
         <!-- PDF -->
         <div v-else-if="isPdf" class="pub-media">
-          <iframe :src="contentUrl" class="pub-pdf" :title="$t('PDF 预览')"></iframe>
+          <iframe :src="contentUrl" class="pub-pdf" title="PDF 预览"></iframe>
         </div>
 
         <!-- 其他：下载 -->
         <div v-else class="pub-center">
           <AikIcon name="file" :size="40" />
-          <p>{{  file?.name  }}</p>
-          <a class="btn btn-primary" :href="contentUrl + '&download=1'" download>{{ $t('下载文件') }}</a>
+          <p>{{ file?.name }}</p>
+          <a class="btn btn-primary" :href="contentUrl + '&download=1'" download>下载文件</a>
         </div>
-
-        <!-- 内容类型差异化渲染（node_type / fields）：资源下载区 / 外链卡 / 信息卡 -->
-        <ContentStatePanel
-          :file="file"
-          :token="route.params.token"
-          :path="route.query.path"
-          :download-url="downloadUrl"
-        />
       </div>
     </template>
 
@@ -106,13 +71,13 @@
     <div v-else class="pub-dir">
       <div class="pub-dir-head">
         <AikIcon name="folder" :size="22" />
-        <h1 class="pub-dir-title">{{  dirData?.dir?.name || $t('公开目录')  }}</h1>
-        <span class="pub-dir-count">{{  dirData?.files?.length || 0  }} {{ $t('个文件') }}</span>
+        <h1 class="pub-dir-title">{{ dirData?.dir?.name || '公开目录' }}</h1>
+        <span class="pub-dir-count">{{ dirData?.files?.length || 0 }} 个文件</span>
       </div>
-      <p class="pub-dir-desc">{{ $t('此目录由发布者整体公开（文件夹分享）。目录内新增文件会自动出现在这里。') }}</p>
+      <p class="pub-dir-desc">此目录由发布者整体公开（文件夹分享）。目录内新增文件会自动出现在这里。</p>
       <div v-if="!dirData?.files?.length" class="pub-center">
         <AikIcon name="folder" :size="40" />
-        <p>{{ $t('目录内还没有可公开的文件') }}</p>
+        <p>目录内还没有可公开的文件</p>
       </div>
       <div v-else class="pub-dir-list">
         <a
@@ -121,25 +86,16 @@
           class="pub-dir-row"
           :href="`#/p/${route.params.token}?path=${encodeURIComponent(f.path)}`"
         >
-          <span class="pub-dir-thumb">
-            <img
-              v-if="isThumbable(f) && !thumbFails[f.path]"
-              :src="thumbUrl(f)"
-              :alt="f.path"
-              loading="lazy"
-              @error="onThumbError(f.path)"
-            />
-            <AikIcon v-else :name="fileIcon(f)" :size="16" />
-          </span>
-          <span class="pub-dir-fname" :title="f.path">{{  f.path  }}</span>
-          <span class="pub-dir-fsize">{{  f.size ? formatSize(f.size) : '—'  }}</span>
+          <AikIcon :name="fileIcon(f)" :size="16" />
+          <span class="pub-dir-fname" :title="f.path">{{ f.path }}</span>
+          <span class="pub-dir-fsize">{{ f.size ? formatSize(f.size) : '—' }}</span>
         </a>
       </div>
     </div>
 
     <!-- 页脚 -->
     <footer class="pub-foot">
-      <span>{{ $t('爱库录 AiKlog · 数据主权在发布者 ·') }} <a href="/app#/blog?view=public">{{ $t('交互版') }}</a> · <a href="/blog">{{ $t('静态页') }}</a> · <a href="/api/v1/blog/sitemap.xml">{{ $t('站点地图') }}</a></span>
+      <span>爱库录 AiKlog · 数据主权在发布者 · <a href="/app#/blog?view=public">交互版</a> · <a href="/blog">静态页</a></span>
     </footer>
   </div>
 </template>
@@ -149,17 +105,12 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AikIcon from '@/components/AikIcon.vue'
 import MarkdownArticle from '@/components/MarkdownArticle.vue'
-import { getShare, shareContentUrl, dirShareContentUrl, fetchShareContentRaw, fetchDirShareContentRaw, publicUnlock, shareThumbUrl } from '@/api'
+import { getShare, fetchShareContent, shareContentUrl, fetchDirShareContent, dirShareContentUrl } from '@/api'
 import BlogPluginSlot from '@/components/BlogPluginSlot.vue'
 import GuestEntry from '@/components/GuestEntry.vue'
-import LangSwitch from '@/components/LangSwitch.vue'
 import '@/blogPlugins/builtin' // 注册内置博客插件
 import { loadEnabledPlugins } from '@/blogPlugins'
 import { renderMarkdown } from '@/utils/markdown'
-import DOMPurify from 'dompurify'
-import ContentStatePanel from '@/components/ContentStatePanel.vue'
-import { parseContentState } from '@/utils/contentState'
-import { t } from '@/i18n'
 
 const route = useRoute()
 const file = ref(null)
@@ -168,15 +119,6 @@ const loading = ref(true)
 const error = ref('')
 const dirData = ref(null)   // 目录分享：{ dir, files }
 const dirList = ref(false)  // 目录列表视图（无 ?path=）
-
-// 访问闸门（密码保护 2.2 / 付费标记）：401 进入解锁流程
-const locked = ref(false)
-const lockKind = ref('password') // 'password' | 'paid'
-const paidPreview = ref('')
-const pwdInput = ref('')
-const trying = ref(false)
-const unlockErr = ref('')
-const unlockToken = ref('')
 
 const EXT = {
   image: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'avif'],
@@ -207,21 +149,8 @@ const isPdf = computed(() => kind.value === 'pdf')
 
 const contentUrl = computed(() => {
   if (!file.value) return ''
-  let base
-  if (dirData.value && route.query.path) base = dirShareContentUrl(route.params.token, route.query.path)
-  else base = shareContentUrl(route.params.token)
-  if (unlockToken.value) base += (base.includes('?') ? '&' : '?') + 'unlock=' + encodeURIComponent(unlockToken.value)
-  return base
-})
-
-// 资源下载直链（带解锁令牌，受密码/付费闸门保护）
-const downloadUrl = computed(() => {
-  if (!file.value) return ''
-  let base
-  if (dirData.value && route.query.path) base = dirShareContentUrl(route.params.token, route.query.path, true)
-  else base = shareContentUrl(route.params.token, true)
-  if (unlockToken.value) base += (base.includes('?') ? '&' : '?') + 'unlock=' + encodeURIComponent(unlockToken.value)
-  return base
+  if (dirData.value && route.query.path) return dirShareContentUrl(route.params.token, route.query.path)
+  return shareContentUrl(route.params.token)
 })
 
 function fileIcon(f) {
@@ -231,26 +160,6 @@ function fileIcon(f) {
   if (['mp3', 'wav', 'm4a', 'flac', 'ogg'].includes(e)) return 'audio'
   if (['md', 'markdown', 'txt', 'log', 'json', 'html', 'htm', 'css', 'js', 'ts', 'py', 'go', 'vue', 'sql', 'sh'].includes(e)) return 'fileText'
   return 'file'
-}
-
-// B19：判断目录分享中的文件能否显示缩略图（与后端 thumbMimeOf 同口径：image/*|video/*，svg 排除）。
-function isThumbable(f) {
-  const m = (f.mime || '').toLowerCase()
-  if (m.startsWith('image/')) return m !== 'image/svg+xml'
-  if (m.startsWith('video/')) return true
-  const e = ext(f.name || '')
-  return EXT.image.includes(e) || EXT.video.includes(e)
-}
-
-// B19：目录分享缩略图地址（失败回退图标，见 onThumbError）。
-function thumbUrl(f) {
-  return shareThumbUrl(route.params.token, f.path)
-}
-
-// B19：缩略图加载失败时回退到文件图标（按 path 标记）。
-const thumbFails = ref({})
-function onThumbError(path) {
-  thumbFails.value[path] = true
 }
 
 function formatSize(n) {
@@ -273,15 +182,15 @@ const meta = computed(() => {
   if (!file.value) return []
   const arr = []
   if (file.value.size > 0) arr.push(formatSize(file.value.size))
-  if (file.value.updated_at) arr.push(formatTime(file.value.updated_at) + t(' 更新'))
-  arr.push(t('由爱库录 AiKlog 发布'))
+  if (file.value.updated_at) arr.push(formatTime(file.value.updated_at) + ' 更新')
+  arr.push('由爱库录 AiKlog 发布')
   return arr
 })
 
 async function load() {
   const token = route.params.token
   if (!token) {
-    error.value = t('分享链接无效')
+    error.value = '分享链接无效'
     loading.value = false
     return
   }
@@ -308,69 +217,30 @@ async function load() {
         return
       }
       if (!hit) {
-        error.value = t('目录中没有找到该文件（可能已被移除）')
+        error.value = '目录中没有找到该文件（可能已被移除）'
         loading.value = false
         return
       }
       dirList.value = false
       file.value = hit
-      await loadContent(token, hit.path, '')
+      if (kind.value === 'text' && ext(file.value.name) !== 'html') {
+        html.value = renderMarkdown(await fetchDirShareContent(token, hit.path))
+      } else if (ext(file.value.name) === 'html') {
+        html.value = await fetchDirShareContent(token, hit.path)
+      }
       loading.value = false
       return
     }
     file.value = data.file
-    await loadContent(token, '', '')
-  } catch (e) {
-    error.value = e.message || t('分享已失效或不存在')
-  } finally {
-    loading.value = false
-  }
-}
-
-// 加载分享正文；捕获 401 密码/付费闸门，进入解锁流程
-async function loadContent(token, path, unlock) {
-  unlockToken.value = unlock || ''
-  const r = path
-    ? await fetchDirShareContentRaw(token, path, unlock)
-    : await fetchShareContentRaw(token, { unlock })
-  if (r.status === 401) {
-    locked.value = true
-    const c = parseContentState(file.value)
-    lockKind.value = c.fields && c.fields.access === 'paid' ? 'paid' : 'password'
-    paidPreview.value = (c.fields && c.fields.paid_preview) || ''
-    html.value = ''
-    return
-  }
-  if (!r.ok) {
-    error.value = t('内容加载失败（HTTP ') + r.status + '）'
-    return
-  }
-  locked.value = false
-  const text = r.text
-  // H5b 修复：.html 文件此前把原文直接注入 v-html —— 上传一个含 <script> 的 .html
-  // 再分享出去，访客打开 /p/{token} 即执行。所有非 markdown 原文一律先 DOMPurify 消毒。
-  html.value = kind.value === 'text' && ext(file.value.name) !== 'html'
-    ? renderMarkdown(text)
-    : DOMPurify.sanitize(text)
-}
-
-// 提交访问密码 → 解锁（复用现有 article_access 密码闸门）
-async function submitUnlock() {
-  if (!pwdInput.value || trying.value) return
-  trying.value = true
-  unlockErr.value = ''
-  try {
-    const d = await publicUnlock(file.value.id, pwdInput.value)
-    if (d && d.ok && d.unlock_token) {
-      locked.value = false
-      await loadContent(route.params.token, route.query.path, d.unlock_token)
-    } else {
-      unlockErr.value = t('解锁失败，请重试')
+    if (kind.value === 'text' && ext(file.value.name) !== 'html') {
+      html.value = renderMarkdown(await fetchShareContent(token))
+    } else if (ext(file.value.name) === 'html') {
+      html.value = await fetchShareContent(token)
     }
   } catch (e) {
-    unlockErr.value = e.message || t('密码错误')
+    error.value = e.message || '分享已失效或不存在'
   } finally {
-    trying.value = false
+    loading.value = false
   }
 }
 
@@ -557,23 +427,6 @@ onMounted(loadEnabledPlugins)
 }
 .pub-dir-row:last-child { border-bottom: none; }
 .pub-dir-row:hover { background: color-mix(in srgb, var(--primary) 6%, transparent); }
-.pub-dir-thumb {
-  flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: color-mix(in srgb, var(--text) 6%, transparent);
-}
-.pub-dir-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
 .pub-dir-fname {
   flex: 1;
   min-width: 0;
@@ -642,70 +495,6 @@ onMounted(loadEnabledPlugins)
 
 .pub-sidebar:empty {
   display: none;
-}
-
-/* 付费/加密闸门 */
-.pub-lock {
-  width: min(100%, 560px);
-  margin: 80px auto;
-  padding: 36px 28px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  text-align: center;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius, 12px);
-  color: var(--text);
-}
-.pub-lock-title {
-  margin: 4px 0 0;
-  font-size: 20px;
-  font-weight: 700;
-}
-.pub-lock-preview {
-  margin: 0;
-  font-size: 14px;
-  color: var(--text-2, #555);
-  line-height: 1.7;
-  max-height: 9.6em;
-  overflow: hidden;
-  -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent);
-  mask-image: linear-gradient(180deg, #000 60%, transparent);
-}
-.pub-lock-desc {
-  margin: 0;
-  font-size: 13px;
-  color: var(--text-3, #888);
-}
-.pub-lock-form {
-  display: flex;
-  gap: 8px;
-  margin-top: 6px;
-}
-.pub-lock-input {
-  width: 220px;
-  padding: 9px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 14px;
-  background: var(--app-bg, #fff);
-  color: var(--text);
-}
-.pub-lock-input:focus {
-  outline: none;
-  border-color: var(--primary);
-}
-.pub-lock-err {
-  margin: 0;
-  font-size: 13px;
-  color: #dc2626;
-}
-.pub-lock-note {
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: var(--text-3, #888);
 }
 
 .pub-foot a {

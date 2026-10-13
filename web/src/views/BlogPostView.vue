@@ -5,13 +5,13 @@
 
     <!-- 极简顶栏：返回列表 + 站点名 + 静态页分享链接 + 主题切换 -->
     <header class="bp-bar">
-      <a class="bp-back" href="#/blog?view=public" :title="$t('返回博客列表')">
+      <a class="bp-back" href="#/blog?view=public" title="返回博客列表">
         <span class="bp-arrow">←</span>
-        <span class="bp-site">{{  ctx.siteName  }}</span>
+        <span class="bp-site">{{ ctx.siteName }}</span>
       </a>
       <span class="bp-spacer"></span>
-      <a v-if="ssrHref" class="bp-share" :href="ssrHref" :title="$t('静态页链接（适合复制分享、搜索引擎收录）')">
-        {{  $t('分享链接')  }}
+      <a v-if="ssrHref" class="bp-share" :href="ssrHref" title="静态页链接（适合复制分享、搜索引擎收录）">
+        分享链接
       </a>
       <GuestEntry variant="bar" />
       <ThemeSwitch v-if="showDockSwitch" mode="dock" />
@@ -19,13 +19,13 @@
 
     <div v-if="ctx.loading" class="bp-center">
       <div class="spinner"></div>
-      <span>{{  $t('加载中…')  }}</span>
+      <span>加载中…</span>
     </div>
 
     <div v-else-if="ctx.error" class="bp-center">
       <AikIcon name="info" :size="20" />
-      <p>{{  ctx.error  }}</p>
-      <a class="bp-home" href="#/blog?view=public">{{  $t('返回博客列表')  }}</a>
+      <p>{{ ctx.error }}</p>
+      <a class="bp-home" href="#/blog?view=public">返回博客列表</a>
     </div>
 
     <template v-else>
@@ -44,8 +44,8 @@
 
         <div v-else class="bp-center">
           <AikIcon name="file" :size="36" />
-          <p>{{  title  }}</p>
-          <a v-if="ssrHref" class="bp-home" :href="ssrHref">{{  $t('在静态页查看')  }}</a>
+          <p>{{ title }}</p>
+          <a v-if="ssrHref" class="bp-home" :href="ssrHref">在静态页查看</a>
         </div>
 
         <!-- 正文下方：相关推荐/评论/问答/统计（sidebar 类插件先挂 post_bottom） -->
@@ -55,9 +55,9 @@
 
     <footer class="bp-foot">
       <span>
-        {{  ctx.siteName  }} ·
-        <a href="#/blog?view=public">{{ $t('交互版列表') }}</a> ·
-        <a :href="ssrHref || '/blog'">{{ $t('静态页') }}</a>
+        {{ ctx.siteName }} ·
+        <a href="#/blog?view=public">交互版列表</a> ·
+        <a :href="ssrHref || '/blog'">静态页</a>
       </span>
     </footer>
   </div>
@@ -89,12 +89,10 @@ import ThemeSwitch from '@/components/ThemeSwitch.vue'
 import GuestEntry from '@/components/GuestEntry.vue'
 import { getShare, fetchShareContent, fetchDirShareContent, publicSite, publicPosts } from '@/api'
 import { renderMarkdown, enhanceMermaid } from '@/utils/markdown'
-import DOMPurify from 'dompurify'
 import '@/blogPlugins/builtin' // 注册内置博客插件（评论/相关/统计/AI 阅读…）
 import { loadEnabledPlugins } from '@/blogPlugins'
 import '@/themes/all' // 注册全部主题（与列表页同一套注册表）
 import { listThemes, activeThemeId, applyServerTheme, pageEntry } from '@/themes'
-import { t } from '@/i18n'
 
 const route = useRoute()
 
@@ -128,10 +126,7 @@ const pagePost = computed(() => {
     path: p,
     slug: String(route.query.slug || f.slug || ''),
     title: title.value,
-    // F7 修复：主题层（19 个 PostView.vue）一律 v-html="post.html"，此处是唯一入口 ——
-    // 在这一道统一消毒，等于给所有主题加了兜底（html.value 本已过 renderMarkdown 消毒，
-    // DOMPurify 对同一白名单是幂等的，二次消毒不改变 KaTeX/Mermaid 正常产出）。
-    html: DOMPurify.sanitize(html.value),
+    html: html.value,
     cat,
     category: cat,
     author: f.author || '',
@@ -154,8 +149,8 @@ function postUrl(post) {
 
 // 通用数据契约：与 BlogView 同构（多了 page，供文章页主题读取）
 const ctx = reactive({
-  siteName: t('爱库录'),
-  siteDesc: t('爱库录 · AI 知识库博客：目录即站点，文件即文章'),
+  siteName: '爱库录',
+  siteDesc: '爱库录 · AI 知识库博客：目录即站点，文件即文章',
   aiAskOpen: true, // 站长级 AI 问答开关（blog.ai_ask_open）；默认开，/public/site 下发后覆盖
   posts: [],
   tags: [],
@@ -226,36 +221,21 @@ const showDockSwitch = computed(() => !!activeTheme.value && !activeTheme.value.
 // ===== 取数 =====
 async function loadSite() {
   try {
-    const [siteRes, postsRes, themesRes] = await Promise.all([
+    const [siteRes, postsRes] = await Promise.all([
       publicSite().catch(() => null),
       publicPosts().catch(() => ({ items: [] })),
-      publicBlogThemes().catch(() => null), // 已安装主题列表（失败降级为全量可见）
     ])
-    if (themesRes) applyInstalledThemes((themesRes.items || []).map((x) => x.id))
     if (siteRes?.site) {
       if (siteRes.site.title) ctx.siteName = siteRes.site.title
       if (siteRes.site.description) ctx.siteDesc = siteRes.site.description
       // AI 问答开关（缺省视为开；仅显式 "false" 关闭）
       ctx.aiAskOpen = siteRes.site.ai_ask_open !== 'false' && siteRes.site.ai_ask_open !== false
-      applyServerTheme(siteRes.site.theme || 'aiklog', {
-        allowVisitorSwitch: siteRes.site.allow_visitor_theme_switch !== 'false' && siteRes.site.allow_visitor_theme_switch !== false,
-      })
-    }
-    // 访客本地覆盖指向「未安装/已卸载」的主题 → 丢弃覆盖，回落站点设置
-    const ov = readOverride()
-    if (ov && !isThemeInstalled(ov)) {
-      try { localStorage.removeItem('aiklog.theme.override') } catch (e) { /* ignore */ }
-      activeThemeId.value = serverThemeId.value || 'default'
-    }
-    // 确保当前生效主题已加载（懒 chunk）；失败/未安装 → 归位（宿主默认文章版式）
-    if (activeThemeId.value && activeThemeId.value !== 'default') {
-      const ok = await ensureTheme(activeThemeId.value)
-      if (!ok) activeThemeId.value = serverThemeId.value && isThemeInstalled(serverThemeId.value) ? serverThemeId.value : 'default'
+      applyServerTheme(siteRes.site.theme || 'aiklog')
     }
     // 列表数据：主题在文章页可能用于「相关文章 / 上下篇」
     ctx.posts = postsRes.items || []
   } catch (e) {
-    console.warn(t('[BlogPostView] 站点信息加载失败：'), e?.message || e)
+    console.warn('[BlogPostView] 站点信息加载失败：', e?.message || e)
   }
 }
 
@@ -268,7 +248,7 @@ async function load() {
   file.value = null
   html.value = ''
   if (!token) {
-    ctx.error = t('文章链接无效')
+    ctx.error = '文章链接无效'
     ctx.loading = false
     return
   }
@@ -279,7 +259,7 @@ async function load() {
       let hit = qslug ? files.find((f) => f.slug === qslug) : null
       if (!hit && qpath) hit = files.find((f) => f.path === qpath)
       if (!hit) {
-        ctx.error = t('文章不存在或已下线')
+        ctx.error = '文章不存在或已下线'
         return
       }
       file.value = hit
@@ -290,7 +270,7 @@ async function load() {
     }
     if (file.value?.name) document.title = `${title.value} · ${ctx.siteName}`
   } catch (e) {
-    ctx.error = e.message || t('文章加载失败')
+    ctx.error = e.message || '文章加载失败'
   } finally {
     ctx.loading = false
   }

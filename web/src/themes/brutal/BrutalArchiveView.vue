@@ -1,23 +1,23 @@
 <template>
   <div class="brutal-root">
-    <BrutalHead :site-name="siteName" :blog-url="blogUrl" :slogan="$t('ARCHIVE · 归档')" />
+    <BrutalHead :site-name="siteName" :blog-url="blogUrl" slogan="ARCHIVE · 归档" />
 
-    <div v-if="loading" class="bt-wrap"><div class="bt-state">{{ $t('正在加载文章…') }}</div></div>
+    <div v-if="loading" class="bt-wrap"><div class="bt-state">正在加载文章…</div></div>
     <div v-else-if="error" class="bt-wrap"><div class="bt-state bt-state-err">{{ error }}</div></div>
-    <div v-else-if="!posts.length" class="bt-wrap"><div class="bt-state">{{ $t('还没有公开文章') }}</div></div>
+    <div v-else-if="!posts.length" class="bt-wrap"><div class="bt-state">还没有公开文章</div></div>
 
     <template v-else>
       <section class="bt-posts">
         <div class="bt-wrap">
           <div class="bt-sect">
-            <h2>{{ $t('全部归档') }}</h2>
+            <h2>全部归档</h2>
             <span class="bt-rule"></span>
-            <span class="bt-sect-note">{{ posts.length }} {{ $t('篇 ·') }} {{ groups.length }} {{ $t('个年份') }}</span>
+            <span class="bt-sect-note">{{ posts.length }} 篇 · {{ groups.length }} 个年份</span>
           </div>
 
           <div class="bt-bar">
-            <span class="bt-bar-info">{{ $t('按更新时间倒序，年份由 file.updated_at 派生') }}</span>
-            <a class="bt-btn bt-btn-sm" :href="blogUrl">{{ $t('‹ 返回全部文章') }}</a>
+            <span class="bt-bar-info">按更新时间倒序，年份由 file.updated_at 派生</span>
+            <a class="bt-btn bt-btn-sm" :href="blogUrl">‹ 返回全部文章</a>
           </div>
 
           <div v-for="g in groups" :key="g.year" class="bt-arc-group">
@@ -47,11 +47,9 @@
 
     <BrutalFoot :site-name="siteName" :blog-url="blogUrl" />
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import AskWidget from '../AskWidget.vue'
 import { computed } from 'vue'
 import BrutalHead from './BrutalHead.vue'
 import BrutalSide from './BrutalSide.vue'

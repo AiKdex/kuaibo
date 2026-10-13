@@ -6,6 +6,7 @@
 package handler
 
 import (
+	"context"
 	_ "embed"
 	"encoding/json"
 	"html"
@@ -24,7 +25,7 @@ import (
 	"github.com/yuin/goldmark"
 )
 
-var mdGold = goldmark.New(goldmark.WithExtensions(mdMention{}))
+var mdGold = goldmark.New()
 
 //go:embed blog_home.html
 var blogHomeHTML string
@@ -67,7 +68,7 @@ func sortPostsForPublic(files []dirFile) {
 // 与 /blog 列表页区分：这里讲产品，/blog 才是文章列表。
 func (a *API) blogHTMLHome(w http.ResponseWriter, r *http.Request) {
 	tid := a.blogThemeIDFor(r)
-	files, _ := a.blogPostsHTML(r)
+	files, _ := a.blogPostsHTML(r.Context())
 	sortPostsForPublic(files)
 	items := make([]blogHTMLItem, 0, len(files))
 	for _, it := range files {
@@ -81,14 +82,14 @@ func (a *API) blogHTMLHome(w http.ResponseWriter, r *http.Request) {
 	}
 	base := a.publicBaseURL(r)
 	data := blogHTMLData{
-		SiteName:    a.blogSiteName(r),
-		Description: a.blogSiteDesc(r),
+		SiteName:    a.blogSiteName(),
+		Description: a.blogSiteDesc(),
 		Canonical:   base + "/",
 		RSS:         base + "/api/v1/blog/feed.xml",
-		JSONLD:      buildBlogJSONLD(true, a.blogSiteName(r), a.blogSiteDesc(r), base+"/", base+"/api/v1/blog/feed.xml", a.blogSiteName(r), "", "", items),
+		JSONLD:      buildBlogJSONLD(true, a.blogSiteName(), a.blogSiteDesc(), base+"/", base+"/api/v1/blog/feed.xml", a.blogSiteName(), "", "", items),
 		ThemeID:     tid,
 		ThemeCSS:    blogThemeCSS(tid),
-		Head:        template.HTML(`<meta property="og:site_name" content="` + html.EscapeString(a.blogSiteName(r)) + `">`),
+		Head:        template.HTML(`<meta property="og:site_name" content="` + html.EscapeString(a.blogSiteName()) + `">`),
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_ = blogHomeTmpl.Execute(w, data)
@@ -142,18 +143,6 @@ article h1{font-family:var(--font-d);font-size:28px;line-height:1.3;margin:28px 
 .lead a{color:var(--jade)}
 footer{max-width:720px;margin:0 auto;padding:0 20px 40px;font-size:12px;color:var(--ink3)}
 footer a{color:var(--jade)}
-.cmts{margin-top:36px;border-top:1px solid var(--line);padding-top:20px}
-.cmts-t{font-family:var(--font-d);font-size:18px;margin:0 0 14px}
-.cmts-n{margin-left:6px;font-size:12px;color:var(--ink3);font-weight:400;font-variant-numeric:tabular-nums}
-.cmts-l{list-style:none;margin:0;padding:0}
-.cmt{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:10px;scroll-margin-top:16px}
-.cmt:target{border-color:var(--jade);box-shadow:0 0 0 3px rgba(13,122,106,.14)}
-.cmt-m{display:flex;gap:10px;align-items:baseline;font-size:12px;color:var(--ink3);margin-bottom:6px}
-.cmt-m b{color:var(--ink);font-size:13px}
-.cmt-m time{margin-left:auto}
-.cmt-b{font-size:14px;color:var(--ink2);white-space:pre-wrap;word-break:break-word}
-.cmts-e{font-size:13px;color:var(--ink3)}
-.cmts-e a{color:var(--jade)}
 {{.ThemeCSS}}
 </style>
 </head>
@@ -192,15 +181,6 @@ footer a{color:var(--jade)}
     <div class="meta">{{.Date}}{{if .Cat}} · {{.Cat}}{{end}} · <a href="/blog">返回列表</a></div>
     <div class="body">{{.BodyHTML}}</div>
   </article>
-  <section class="cmts" id="comments">
-    <h2 class="cmts-t">评论{{if .Comments}}<span class="cmts-n">{{len .Comments}}</span>{{end}}</h2>
-    {{if .Comments}}<ol class="cmts-l">{{range .Comments}}
-      <li class="cmt" id="comment-{{.ID}}">
-        <div class="cmt-m"><b>{{.Author}}</b><time>{{.Date}}</time></div>
-        <div class="cmt-b">{{.Body}}</div>
-      </li>{{end}}
-    </ol>{{else}}<p class="cmts-e">还没有评论。到 <a href="/app#/blog?view=public">交互版</a> 留下第一条。</p>{{end}}
-  </section>
 {{end}}
 </div>
 <footer>
@@ -229,7 +209,6 @@ type blogHTMLData struct {
 	ThemeID     string
 	ThemeCSS    template.CSS
 	Themes      []blogThemeOption // SSR 页头主题下拉（可选）
-	Comments    []blogHTMLComment // 文章页评论项（仅文章页填充；B12 锚点闭合）
 }
 
 // blogThemeOption SSR 主题下拉项（同时也是 /public/site 的 theme_options 契约）。
@@ -246,16 +225,6 @@ type blogHTMLItem struct {
 	Cat     string
 }
 
-// blogHTMLComment SSR 文章页评论项（B12）。
-// Body 按**纯文本**输出：评论是访客可写内容，SSR 侧不再解析 Markdown ——
-// 多一层解析就多一层 XSS 面，换行交给 CSS white-space:pre-wrap 保留即可。
-type blogHTMLComment struct {
-	ID     string
-	Author string
-	Date   string
-	Body   string
-}
-
 func (a *API) blogOpen(r *http.Request) bool {
 	if v, ok := a.cfg.Get("blog.open"); ok {
 		if s, _ := v.(string); s == "false" {
@@ -265,10 +234,7 @@ func (a *API) blogOpen(r *http.Request) bool {
 	return true
 }
 
-func (a *API) blogSiteName(r *http.Request) string {
-	if ss := a.requestSiteSettings(r); ss != nil && ss.Title != "" {
-		return ss.Title
-	}
+func (a *API) blogSiteName() string {
 	if v, ok := a.cfg.Get("blog.title"); ok {
 		if s, _ := v.(string); s != "" {
 			return s
@@ -277,15 +243,7 @@ func (a *API) blogSiteName(r *http.Request) string {
 	return "爱库录"
 }
 
-func (a *API) blogSiteDesc(r *http.Request) string {
-	if ss := a.requestSiteSettings(r); ss != nil {
-		if ss.Subtitle != "" {
-			return ss.Subtitle
-		}
-		if ss.SEODescription != "" {
-			return ss.SEODescription
-		}
-	}
+func (a *API) blogSiteDesc() string {
 	if v, ok := a.cfg.Get("blog.description"); ok {
 		if s, _ := v.(string); s != "" {
 			return s
@@ -403,61 +361,24 @@ func blogPageTemplate(id string) *template.Template {
 	return blogHTMLTmpl
 }
 
-// builtinThemes 常驻内置主题（2026-10-09 主题改版：只常驻 aiklog/default）。
-// 其余 SPA 主题改为应用中心按需安装（blog_plugins kind=theme 登记即出现，
-// 见 installedBlogThemeIDs）；data/themes 外置主题目录追加在后。
+// builtinThemes 内置主题（内置 SSR 样式）；外置目录中的主题会追加在后面。
 var builtinThemes = []blogThemeOption{
 	{ID: "aiklog", Title: "爱库录"},
+	{ID: "minimal", Title: "极简阅读"},
+	{ID: "docs", Title: "技术文档"},
+	{ID: "paper", Title: "暖纸情报"},
+	{ID: "elevated", Title: "高端暗色"},
+	{ID: "parchment", Title: "暖纸杂志"},
+	{ID: "emforum", Title: "论坛社区"},
+	{ID: "brutal", Title: "新粗野"},
 	{ID: "default", Title: "默认"},
 }
 
-// installedBlogThemeIDs 已安装的博客主题 id 集（blog_plugins kind=theme 且 enabled=1）。
-// 应用中心「主题」类别安装/卸载（或升级迁移自动登记）驱动；源码轨 SPA 主题与
-// 声明式主题包同表登记，统一由此判定「已安装」。
-func (a *API) installedBlogThemeIDs() map[string]bool {
-	out := map[string]bool{}
-	if a == nil || a.db == nil {
-		return out
-	}
-	rows, err := a.db.Query(`SELECT id FROM blog_plugins WHERE kind='theme' AND enabled=1`)
-	if err != nil {
-		return out
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var id string
-		if rows.Scan(&id) == nil && validThemeID(id) {
-			out[id] = true
-		}
-	}
-	return out
-}
-
-// blogThemeOptions 下拉项：常驻内置 + 已登记主题（blog_plugins）+ data/themes 下的外置主题。
-func (a *API) blogThemeOptions(cur string) []blogThemeOption {
-	out := make([]blogThemeOption, 0, len(builtinThemes)+8)
+// blogThemeOptions 下拉项：内置 + data/themes 下的外置主题。
+func blogThemeOptions(cur string) []blogThemeOption {
+	out := make([]blogThemeOption, 0, len(builtinThemes)+4)
 	seen := map[string]bool{}
-	// 已登记主题（应用中心安装的源码轨/主题包）：标题取登记名（安装时写入主题标题）
-	if a.db != nil {
-		if nameRows, err := a.db.Query(`SELECT id, COALESCE(name,'') FROM blog_plugins WHERE kind='theme' AND enabled=1 ORDER BY created_at ASC`); err == nil {
-			for nameRows.Next() {
-				var id, name string
-				if nameRows.Scan(&id, &name) == nil && validThemeID(id) && !seen[id] {
-					seen[id] = true
-					title := name
-					if title == "" {
-						title = id
-					}
-					out = append(out, blogThemeOption{ID: id, Title: title})
-				}
-			}
-			nameRows.Close()
-		}
-	}
 	for _, t := range builtinThemes {
-		if seen[t.ID] {
-			continue
-		}
 		seen[t.ID] = true
 		out = append(out, t)
 	}
@@ -503,61 +424,15 @@ func (a *API) blogThemeOptions(cur string) []blogThemeOption {
 	return out
 }
 
-// isKnownThemeID 判定主题 id 是否为「已知主题」：常驻内置（builtinThemes）、
-// 已登记主题（blog_plugins kind=theme，应用中心安装驱动）、
-// 或 data/themes/<id>/ 下的外置主题（含只提供 page.html 版式的包）。
-// 用途：?theme= 只接受已知主题，避免任意合法字符串被回显进 data-theme、并被下拉的
-// 「补选中态」逻辑渲染成一个幽灵选项（如 ?theme=qiuzhi 曾出现在公开 SSR 页的下拉里）。
-func (a *API) isKnownThemeID(id string) bool {
-	if !validThemeID(id) {
-		return false
-	}
-	for _, t := range builtinThemes {
-		if t.ID == id {
-			return true
-		}
-	}
-	// 已登记主题（源码轨 SPA 主题或声明式主题包，应用中心安装/升级迁移自动登记）
-	if a != nil && a.db != nil {
-		var n int
-		if err := a.db.QueryRow(
-			`SELECT COUNT(*) FROM blog_plugins WHERE id=? AND kind='theme' AND enabled=1`, id).Scan(&n); err == nil && n > 0 {
-			return true
-		}
-	}
-	base := filepath.Join(themesRoot(), id)
-	if st, err := os.Stat(filepath.Join(base, "ssr.css")); err == nil && !st.IsDir() {
-		return true
-	}
-	if st, err := os.Stat(base); err == nil && st.IsDir() {
-		return true
-	}
-	return false
-}
-
-// blogThemeIDFor 解析当前请求使用的主题：?theme= 覆盖 > 站点设置 default_theme > 全局配置。
-// id 须「合法且已知」：字符合法（防注入/路径穿越）+ 命中 builtinThemes 或 data/themes/，否则回落站点默认（未知 id 不再被回显）。
-// 站点关闭访客切换（site_settings.allow_visitor_theme_switch=0）时强制站点默认主题。
+// blogThemeIDFor 解析当前请求使用的主题：?theme= 覆盖 > 站点设置 blog.theme。
+// 仅接受 [a-z0-9-] 主题 id，非法值忽略（防注入 / 路径穿越）。
 func (a *API) blogThemeIDFor(r *http.Request) string {
-	base := "aiklog"
-	allowSwitch := true
-	if ss := a.requestSiteSettings(r); ss != nil {
-		if ss.DefaultTheme != "" {
-			base = ss.DefaultTheme
-		}
-		allowSwitch = ss.AllowVisitorThemeSwitch
-	} else if t := a.blogThemeID(); t != "" {
-		base = t
-	}
-	if !allowSwitch {
-		return base
-	}
 	if r != nil {
-		if q := strings.TrimSpace(r.URL.Query().Get("theme")); q != "" && a.isKnownThemeID(q) {
+		if q := strings.TrimSpace(r.URL.Query().Get("theme")); q != "" && validThemeID(q) {
 			return q
 		}
 	}
-	return base
+	return a.blogThemeID()
 }
 
 // blogThemeCSS 按主题 id 注入 SSR 覆盖样式（与前端主题气质对齐）。
@@ -681,9 +556,9 @@ header.site a::after{content:'.';color:var(--jade)}
 	}
 }
 
-func (a *API) blogPostsHTML(r *http.Request) ([]dirFile, error) {
+func (a *API) blogPostsHTML(ctx context.Context) ([]dirFile, error) {
 	var blogDirID string
-	err := a.db.QueryRowContext(r.Context(),
+	err := a.db.QueryRowContext(ctx,
 		`SELECT COALESCE(dir_id,'') FROM shares
 		 WHERE owner_id=? AND token=? AND (revoked_at IS NULL OR revoked_at=0)
 		   AND (expires_at IS NULL OR expires_at=0 OR expires_at>?)`,
@@ -691,8 +566,7 @@ func (a *API) blogPostsHTML(r *http.Request) ([]dirFile, error) {
 	if err != nil || blogDirID == "" {
 		return nil, err
 	}
-	// 公开轨内容隔离：按解析出的站点过滤（currentSiteID 由 siteMiddleware 注入）。
-	return a.collectBlogArticles(r.Context(), blogDirID, currentSiteID(r))
+	return a.collectDirFiles(ctx, blogDirID)
 }
 
 // buildBlogJSONLD 列表=Blog+ItemList；文章=BlogPosting（schema.org）。
@@ -823,7 +697,7 @@ func (a *API) blogHTMLIndex(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	files, _ := a.blogPostsHTML(r)
+	files, _ := a.blogPostsHTML(r.Context())
 	sortPostsForPublic(files) // 置顶优先 + 更新时间倒序（与首页/RSS/公开 API 同源）
 	items := make([]blogHTMLItem, 0, len(files))
 	for _, it := range files {
@@ -837,65 +711,21 @@ func (a *API) blogHTMLIndex(w http.ResponseWriter, r *http.Request) {
 	}
 	base := a.publicBaseURL(r)
 	data := blogHTMLData{
-		SiteName:    a.blogSiteName(r),
+		SiteName:    a.blogSiteName(),
 		SiteTag:     "目录即站点，文件即文章",
 		Title:       "全部文章",
-		Description: a.blogSiteDesc(r),
+		Description: a.blogSiteDesc(),
 		Canonical:   base + "/blog",
 		RSS:         base + "/api/v1/blog/feed.xml",
 		IsList:      true,
 		Items:       items,
-		JSONLD:      buildBlogJSONLD(true, a.blogSiteName(r), a.blogSiteDesc(r), base, base+"/api/v1/blog/feed.xml", "全部文章", "", "", items),
+		JSONLD:      buildBlogJSONLD(true, a.blogSiteName(), a.blogSiteDesc(), base, base+"/api/v1/blog/feed.xml", "全部文章", "", "", items),
 		ThemeID:     tid,
 		ThemeCSS:    blogThemeCSS(tid),
-		Themes:      a.blogThemeOptions(tid),
+		Themes:      blogThemeOptions(tid),
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_ = blogPageTemplate(tid).Execute(w, data)
-}
-
-// blogPostComments 取文章「已通过」评论（SSR 用）。
-//
-// 存在的理由：归因区块（B3）的回指链接是 {origin}/{slug}#comment-{id}，
-// 而 SSR 文章页此前**完全不渲染评论** → 锚点在 SSR 侧无落点，点了停在页首。
-// 这里为每条评论输出 id="comment-{id}"，锚点即闭合；顺带让评论内容进入 SSR（SEO 收益）。
-//
-// 上限 200 条：文章页是首屏路径，不能为超长评论区把 TTFB 拖垮（SPA 侧仍有全量列表）。
-// 作者名解析与 commentsList 同序：访客昵称 > display_name > 角色兜底（管理员 / 读者）。
-func (a *API) blogPostComments(r *http.Request, fileID string) []blogHTMLComment {
-	if fileID == "" {
-		return nil
-	}
-	rows, err := a.db.QueryContext(r.Context(),
-		`SELECT c.id, COALESCE(c.guest_name,''), COALESCE(u.display_name,''), COALESCE(u.role,''), c.body, c.created_at
-		 FROM comments c LEFT JOIN users u ON u.id = c.user_id
-		 WHERE c.file_id=? AND c.status='approved'
-		 ORDER BY c.created_at ASC LIMIT 200`, fileID)
-	if err != nil {
-		return nil
-	}
-	defer rows.Close()
-	out := make([]blogHTMLComment, 0, 8)
-	for rows.Next() {
-		var id, guest, uname, urole, body string
-		var createdAt int64
-		if rows.Scan(&id, &guest, &uname, &urole, &body, &createdAt) != nil {
-			continue
-		}
-		author := strings.TrimSpace(guest)
-		if author == "" {
-			author = strings.TrimSpace(uname)
-		}
-		if author == "" {
-			if urole == "owner" || urole == "admin" {
-				author = "管理员"
-			} else {
-				author = "读者"
-			}
-		}
-		out = append(out, blogHTMLComment{ID: id, Author: author, Date: fmtBlogDate(createdAt), Body: body})
-	}
-	return out
 }
 
 // blogHTMLPost GET /blog/{slug} 与 GET /{slug}（中文根路径，对齐 emlog 等习惯）
@@ -919,7 +749,7 @@ func (a *API) blogHTMLPost(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	files, err := a.blogPostsHTML(r)
+	files, err := a.blogPostsHTML(r.Context())
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -940,51 +770,28 @@ func (a *API) blogHTMLPost(w http.ResponseWriter, r *http.Request) {
 	if t := strings.TrimSpace(hit.seoTitle); t != "" {
 		title = t
 	}
-	// C2 修复：付费/密码文章此前在 SSR 页被整页绕过 —— 闸门只在分享通道做了
-	// （shares.go requireArticleUnlock / requirePaidAccess），而这里（/blog/{slug} 与 /{slug}）
-	// 直接读全文并渲染，正文连同 JSON-LD 里的 raw 全文一并输出，密码保护与付费墙形同虚设。
-	// 改为：先用与分享轨同源的"纯判定探针"（不写响应）判锁定，锁定态绝不读正文。
-	locked := a.articleLocked(r, hit.f.ID) || a.paidLocked(r, hit.f.ID)
-	updatedAt := hit.f.UpdatedAt
-	raw := ""
+	// 读全文
+	rc, f, err := a.files.Content(r.Context(), hit.f.ID)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	defer rc.Close()
+	var sb strings.Builder
+	buf := make([]byte, 32*1024)
+	for {
+		n, er := rc.Read(buf)
+		if n > 0 {
+			sb.Write(buf[:n])
+		}
+		if er != nil {
+			break
+		}
+	}
+	raw := sb.String()
 	var htmlOut strings.Builder
-	if locked {
-		msg := "该文章已加密，请输入访问密码后阅读。"
-		if a.articleAccessMode(r, hit.f.ID) == "paid" {
-			msg = "该内容为付费内容，完成支付后即可阅读。"
-		}
-		hint := "正文已按作者设置对外隐藏，摘要之外的全文仅在解锁后可见。"
-		if pv := cleanPreviewHTML(hit.preview); pv != "" {
-			hint = "摘要预览：" + pv
-		}
-		htmlOut.WriteString(`<div class="post-locked" style="padding:24px;border:1px dashed rgba(128,128,128,.45);border-radius:10px">`)
-		htmlOut.WriteString(`<p style="margin:0 0 8px;font-weight:600">` + html.EscapeString(msg) + `</p>`)
-		htmlOut.WriteString(`<p style="margin:0;font-size:13px;opacity:.75">` + html.EscapeString(hint) + `</p>`)
-		htmlOut.WriteString(`</div>`)
-	} else {
-		// 读全文
-		rc, f, cerr := a.files.Content(r.Context(), hit.f.ID)
-		if cerr != nil {
-			http.NotFound(w, r)
-			return
-		}
-		defer rc.Close()
-		var sb strings.Builder
-		buf := make([]byte, 32*1024)
-		for {
-			n, er := rc.Read(buf)
-			if n > 0 {
-				sb.Write(buf[:n])
-			}
-			if er != nil {
-				break
-			}
-		}
-		raw = sb.String()
-		updatedAt = f.UpdatedAt
-		if err := mdGold.Convert([]byte(raw), &htmlOut); err != nil {
-			htmlOut.WriteString("<pre>" + html.EscapeString(raw) + "</pre>")
-		}
+	if err := mdGold.Convert([]byte(raw), &htmlOut); err != nil {
+		htmlOut.WriteString("<pre>" + html.EscapeString(raw) + "</pre>")
 	}
 	base := a.publicBaseURL(r)
 	desc := cleanPreviewHTML(hit.preview)
@@ -992,7 +799,7 @@ func (a *API) blogHTMLPost(w http.ResponseWriter, r *http.Request) {
 		desc = d
 	}
 	if desc == "" {
-		desc = a.blogSiteDesc(r)
+		desc = a.blogSiteDesc()
 	}
 	// OG 增强：og:image（封面，相对路径补全为绝对）+ article:published_time + og:site_name（2.4/2.7）
 	cover := strings.TrimSpace(hit.cover)
@@ -1000,13 +807,13 @@ func (a *API) blogHTMLPost(w http.ResponseWriter, r *http.Request) {
 		cover = base + cover
 	}
 	var hb strings.Builder
-	hb.WriteString(`<meta property="og:site_name" content="` + html.EscapeString(a.blogSiteName(r)) + `">`)
+	hb.WriteString(`<meta property="og:site_name" content="` + html.EscapeString(a.blogSiteName()) + `">`)
 	if cover != "" {
 		hb.WriteString("\n" + `<meta property="og:image" content="` + html.EscapeString(cover) + `">`)
 	}
-	hb.WriteString("\n" + `<meta property="article:published_time" content="` + fmtBlogISO(updatedAt) + `">`)
+	hb.WriteString("\n" + `<meta property="article:published_time" content="` + fmtBlogISO(f.UpdatedAt) + `">`)
 	data := blogHTMLData{
-		SiteName:    a.blogSiteName(r),
+		SiteName:    a.blogSiteName(),
 		SiteTag:     "目录即站点，文件即文章",
 		Title:       title,
 		Description: desc,
@@ -1014,14 +821,13 @@ func (a *API) blogHTMLPost(w http.ResponseWriter, r *http.Request) {
 		RSS:         base + "/api/v1/blog/feed.xml",
 		IsList:      false,
 		BodyHTML:    template.HTML(htmlOut.String()),
-		Date:        fmtBlogDate(updatedAt),
+		Date:        fmtBlogDate(f.UpdatedAt),
 		Cat:         catOfPath(hit.path),
-		JSONLD:      buildBlogJSONLD(false, a.blogSiteName(r), desc, base+"/"+slug, base+"/api/v1/blog/feed.xml", title, fmtBlogISO(updatedAt), raw, nil),
+		JSONLD:      buildBlogJSONLD(false, a.blogSiteName(), desc, base+"/"+slug, base+"/api/v1/blog/feed.xml", title, fmtBlogISO(f.UpdatedAt), raw, nil),
 		ThemeID:     tid,
 		ThemeCSS:    blogThemeCSS(tid),
-		Themes:      a.blogThemeOptions(tid),
+		Themes:      blogThemeOptions(tid),
 		Head:        template.HTML(hb.String()),
-		Comments:    a.blogPostComments(r, hit.f.ID),
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_ = blogPageTemplate(tid).Execute(w, data)

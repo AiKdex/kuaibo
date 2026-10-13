@@ -1,4 +1,3 @@
-import { t } from '@/i18n'
 import { defineAsyncComponent } from 'vue'
 
 /**
@@ -12,37 +11,36 @@ const CatView = defineAsyncComponent(() => import('./ZirconCatView.vue'))
 const AuthorView = defineAsyncComponent(() => import('./ZirconAuthorView.vue'))
 const ArchiveView = defineAsyncComponent(() => import('./ZirconArchiveView.vue'))
 const SearchView = defineAsyncComponent(() => import('./ZirconSearchView.vue'))
-const TagView = defineAsyncComponent(() => import('./ZirconTagView.vue'))
 
 export default {
   id: 'zircon',
-  title: t('青璃 Zircon'),
+  title: '青璃 Zircon',
   desc: '青绿胶囊 · 社区资讯式双栏布局：渐变头图 + 卡片流 + 信息侧栏，含分类/作者/归档/搜索内页',
   version: '1.0.0',
   pages: ['posts'],
   // 令牌台账：与 style.css 的 --th-* 定义逐项一致（theme-lint.sh 第 2 项会卡）
   tokens: {
-    '--th-ink': t('正文与标题主色'),
-    '--th-ink-2': t('次要文字'),
-    '--th-ink-3': t('弱化文字'),
-    '--th-paper': t('页面底色（浅灰）'),
-    '--th-card': t('卡片底色（纯白）'),
-    '--th-muted': t('次级底色（控件/标签底）'),
-    '--th-line': t('发丝线描边'),
-    '--th-primary': t('主色（青绿）'),
-    '--th-primary-deep': t('主色深阶（悬停）'),
-    '--th-primary-soft': t('主色极浅底'),
-    '--th-badge-top': t('置顶角标橙'),
-    '--th-badge-hot': t('强调角标红'),
-    '--th-g1': t('渐变起点（青蓝）'),
-    '--th-g2': t('渐变终点（青绿）'),
-    '--th-font-d': t('标题字体'),
-    '--th-font-b': t('正文字体'),
-    '--th-r-sm': t('小控件圆角'),
-    '--th-r-md': t('卡片圆角'),
-    '--th-r-pill': t('胶囊圆角'),
-    '--th-shadow': t('卡片常态阴影'),
-    '--th-shadow-lg': t('卡片悬停阴影'),
+    '--th-ink': '正文与标题主色',
+    '--th-ink-2': '次要文字',
+    '--th-ink-3': '弱化文字',
+    '--th-paper': '页面底色（浅灰）',
+    '--th-card': '卡片底色（纯白）',
+    '--th-muted': '次级底色（控件/标签底）',
+    '--th-line': '发丝线描边',
+    '--th-primary': '主色（青绿）',
+    '--th-primary-deep': '主色深阶（悬停）',
+    '--th-primary-soft': '主色极浅底',
+    '--th-badge-top': '置顶角标橙',
+    '--th-badge-hot': '强调角标红',
+    '--th-g1': '渐变起点（青蓝）',
+    '--th-g2': '渐变终点（青绿）',
+    '--th-font-d': '标题字体',
+    '--th-font-b': '正文字体',
+    '--th-r-sm': '小控件圆角',
+    '--th-r-md': '卡片圆角',
+    '--th-r-pill': '胶囊圆角',
+    '--th-shadow': '卡片常态阴影',
+    '--th-shadow-lg': '卡片悬停阴影',
   },
   ui: { themeSwitcher: true }, // 页头自带 <ThemeSwitch />，宿主不再补右上角悬浮版
   dataSources: ['blog'],
@@ -53,7 +51,7 @@ export default {
     author: AuthorView,
     archive: ArchiveView,
     search: SearchView,
-    tag: TagView, // 标签页（entries.tag）：按 file.tags 过滤
     // post 由 index.js 追加（避免 manifest 与入口组件互相引用）
+    // tag：系统层标签数据未实现（规范 §4.6），暂不接管
   },
 }

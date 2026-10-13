@@ -53,7 +53,7 @@
 
 /* ── Post Content ──────────────────────────────────────────── */
 .jdp-content { position: relative; z-index: 1; padding-bottom: 80px; }
-.jdp-wrapper { min-width: 0; }
+.jdp-wrapper { max-width: 800px; margin: 0 auto; padding: 0 24px; }
 
 /* ── Post Header ───────────────────────────────────────────── */
 .jdp-head { padding: 60px 0 40px; }
@@ -216,9 +216,3 @@
   .jdp-related-grid { grid-template-columns: 1fr; }
   .jdp-topbar-in { padding: 0 16px; }
 }
-
-/* ── 文章页两栏（正文 + 侧栏 SideWidget）── */
-.jd-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;max-width:1100px;margin:0 auto;align-items:start;padding:0 24px 80px}
-.jd-article{min-width:0}
-.jd-aside{position:sticky;top:20px}
-@media(max-width:860px){.jd-layout{grid-template-columns:1fr;padding:0 16px}.jd-aside{position:static;margin-top:20px}}

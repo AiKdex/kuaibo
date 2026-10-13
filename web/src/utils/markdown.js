@@ -62,47 +62,6 @@ marked.use({
   ]
 })
 
-// @提及渲染（B12）：两条规则与后端 service/mention.go 的 mentionExplicitRe / mentionPlainRe
-// **逐字一致** —— 「会发通知的 @」和「被高亮的 @」必须是同一批，两边各写一套迟早错配。
-// 顺带修掉一个真缺陷：`@[显示名](user_id)` 是合法 Markdown 链接语法，此前会被渲染成
-// `<a href="user_id">`，即一条指向 user_id 的死链（点了 404）。
-// 纯写法的前界检查只能放在 start()：marked 的 tokenizer 只拿到从 '@' 开始的剩余串，看不到前一个字符。
-marked.use({
-  extensions: [
-    {
-      name: 'mention',
-      level: 'inline',
-      start(src) {
-        for (let i = 0; i < src.length; i++) {
-          if (src[i] !== '@') continue
-          // 前一个字符是「词内字符」→ 跳过（否则 someone@example.com 里的域名会被高亮）
-          if (i > 0 && /[A-Za-z0-9_.+-]/.test(src[i - 1])) continue
-          return i
-        }
-        return undefined
-      },
-      tokenizer(src) {
-        let m = /^@\[([^\]\n]{1,64})\]\(([0-9a-zA-Z_-]{8,64})\)/.exec(src)
-        if (m) return { type: 'mention', raw: m[0], name: m[1], userId: m[2] }
-        m = /^@([\p{L}\p{N}_.-]{1,32})/u.exec(src)
-        if (m) return { type: 'mention', raw: m[0], name: m[1], userId: '' }
-        return undefined
-      },
-      renderer(token) {
-        const esc = (v) =>
-          String(v)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-        const id = token.userId ? ` data-mention-id="${esc(token.userId)}"` : ''
-        // 本壳没有公开用户主页 → 不做跳转（不造死链）；显式写法把 user_id 落到 data 属性。
-        return `<span class="mention"${id}>@${esc(token.name)}</span>`
-      }
-    }
-  ]
-})
-
 // 标题锚点 id：h- 前缀 + 纯文本（去内联 HTML）转安全串；重复标题追加序号保唯一。
 // 供 TOC 胶囊（MarkdownArticle）与检索 chunk 锚点跳转共用。
 const headingIdSeen = new Map()

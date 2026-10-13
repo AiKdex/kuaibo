@@ -1,19 +1,19 @@
 <template>
   <div class="eforum-root">
-    <EmforumHead :site-name="siteName" :site-desc="siteDesc" :blog-url="blogUrl" :slogan="$t('CATEGORY · 分类版块')" />
+    <EmforumHead :site-name="siteName" :site-desc="siteDesc" :blog-url="blogUrl" slogan="CATEGORY · 分类版块" />
 
-    <div v-if="loading" class="ef-state">{{ $t('正在加载文章…') }}</div>
+    <div v-if="loading" class="ef-state">正在加载文章…</div>
     <div v-else-if="error" class="ef-state ef-state-err">{{ error }}</div>
 
     <div v-else class="ef-wrap">
       <!-- 页面信息条 -->
       <div class="ef-board-info">
         <div>
-          <div class="ef-board-name">{{ icon }} {{ $t('分类：') }}{{ cat || $t("未分类") }}</div>
-          <div class="ef-board-desc">{{ $t('共') }} {{ list.length }} {{ $t('篇 · 分类 = 目录首段') }}</div>
+          <div class="ef-board-name">{{ icon }} 分类：{{ cat || '未分类' }}</div>
+          <div class="ef-board-desc">共 {{ list.length }} 篇 · 分类 = 目录首段</div>
         </div>
         <div class="ef-board-actions">
-          <a class="ef-ghost-btn" :href="blogUrl">{{ $t('‹ 返回全部版块') }}</a>
+          <a class="ef-ghost-btn" :href="blogUrl">‹ 返回全部版块</a>
         </div>
       </div>
 
@@ -24,7 +24,7 @@
           :key="c.name"
           type="button"
           class="ef-chip"
-          :class="{ on: c.name === (cat || $t('未分类')) }"
+          :class="{ on: c.name === (cat || '未分类') }"
           @click="pickCat(c.name)"
         >
           {{ c.icon }} {{ c.name }}<i>{{ c.count }}</i>
@@ -34,10 +34,10 @@
       <div class="ef-layout">
         <main class="ef-list">
           <div class="ef-list-head">
-            <span class="ef-feed">{{ $t('本版共') }} {{ list.length }} {{ $t('个主题') }}</span>
+            <span class="ef-feed">本版共 {{ list.length }} 个主题</span>
           </div>
           <EmforumThread v-for="p in list" :key="p.token || p.path" :post="p" :show-cat="false" />
-          <p v-if="!list.length" class="ef-empty">{{ $t('该分类下暂无文章') }}</p>
+          <p v-if="!list.length" class="ef-empty">该分类下暂无文章</p>
         </main>
 
         <EmforumSide />
@@ -45,7 +45,6 @@
     </div>
 
     <EmforumFoot :site-name="siteName" :blog-url="blogUrl" />
-    <EmforumAsk />
   </div>
 </template>
 
@@ -54,7 +53,6 @@ import { computed, ref } from 'vue'
 import EmforumHead from './EmforumHead.vue'
 import EmforumSide from './EmforumSide.vue'
 import EmforumFoot from './EmforumFoot.vue'
-import EmforumAsk from './EmforumAsk.vue'
 import EmforumThread from './EmforumThread.vue'
 import './style.css'
 import { boardCounts, postCat, readPageParam, useBlog, LIST_HREF } from './helpers.js'

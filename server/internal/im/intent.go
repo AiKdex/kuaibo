@@ -4,8 +4,7 @@
 // 设计要点：
 //   - 意图识别三层策略：前缀命令（确定性 100%）→ 正则模式（80%+）→ Agent 兜底；
 //   - 业务分发不在本包（由 handler 注入回调，避免包循环依赖）；
-//   - 身份映射：站内用户 ↔ IM 身份由 handler 侧 im_binding 服务解析（B7）；
-//     本包只负责"意图"，不认识用户。未绑定时 handler 回退到系统 owner（零破坏单用户部署）。
+//   - 单用户阶段：不引入绑定码/自助注册，chat_id 直接映射 owner（多用户阶段 3 再扩展）。
 package im
 
 import (
@@ -29,9 +28,6 @@ const (
 	IntentAgent    IntentType = "agent" // 开放请求 → Agent 层
 	IntentPost     IntentType = "blog_post"  // 发博客（发布）
 	IntentDraft    IntentType = "blog_draft" // 存为博客草稿
-	IntentWorkflow IntentType = "workflow"   // 内容工作流（/wf 命名空间）
-	IntentBind     IntentType = "im_bind"    // B7：/bind <码> 消费绑定码，把 IM 身份绑到站内账号
-	IntentUnbind   IntentType = "im_unbind"  // B7：/unbind 解除当前 IM 身份的绑定
 	IntentUnknown  IntentType = "unknown"
 )
 
@@ -70,8 +66,7 @@ func NewIntentRouter() *IntentRouter {
 			"/summary":  IntentSummary,
 			"/status":   IntentStatus,
 			"/start":    IntentStart,
-			"/bind":     IntentBind,   // B7：/bind <绑定码>（码由网页端「IM 绑定」页生成）
-			"/unbind":   IntentUnbind, // B7：解除当前 IM 身份与本账号的绑定
+			"/bind":     IntentStatus, // 单用户阶段占位：/bind 提示无需绑定
 			"/regist":   IntentHelp,   // 单用户阶段占位：/regist 提示
 			"/register": IntentHelp,
 		},
@@ -95,14 +90,8 @@ func (r *IntentRouter) Route(text string) IntentResult {
 	if text == "" {
 		return IntentResult{Type: IntentUnknown, Params: map[string]string{}, Raw: text}
 	}
-	// Layer 0：工作流命名空间 —— /wf <id> [正文] 或 /wf-<name> [正文]。
-	// 独立于下面的固定前缀表：workflow id 是开放的（站长自定义 / 应用中心安装），
-	// 塞进 prefix 表会与既有指令抢键（/post /draft 等已被占用），且市场装多个包必然互相撞车。
-	low := strings.ToLower(text)
-	if low == "/wf" || strings.HasPrefix(low, "/wf ") || strings.HasPrefix(low, "/wf-") {
-		return IntentResult{Type: IntentWorkflow, Params: map[string]string{"query": strings.TrimSpace(text[3:])}, Raw: text}
-	}
 	// Layer 1：前缀命令（精确/前缀匹配）
+	low := strings.ToLower(text)
 	for prefix, t := range r.prefix {
 		if low == prefix || strings.HasPrefix(low, prefix+" ") {
 			rest := strings.TrimSpace(text[len(prefix):])

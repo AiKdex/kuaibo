@@ -2,9 +2,9 @@
   <div class="brutal-root">
     <BrutalHead :site-name="siteName" :blog-url="blogUrl">
       <template #stats>
-        <span><b>{{ posts.length }}</b> {{ $t('篇文章') }}</span>
-        <span v-if="cats.length"><b>{{ cats.length }}</b> {{ $t('个分类') }}</span>
-        <span v-if="lastDate"><b>{{ lastDate }}</b> {{ $t('最近更新') }}</span>
+        <span><b>{{ posts.length }}</b> 篇文章</span>
+        <span v-if="cats.length"><b>{{ cats.length }}</b> 个分类</span>
+        <span v-if="lastDate"><b>{{ lastDate }}</b> 最近更新</span>
       </template>
     </BrutalHead>
 
@@ -12,13 +12,13 @@
     <section class="bt-hero">
       <div class="bt-wrap bt-hero-grid">
         <div class="bt-hero-main">
-          <span class="bt-tag">{{ $t('AIKLOG · 新粗野主题') }}</span>
+          <span class="bt-tag">AIKLOG · 新粗野主题</span>
           <h2 class="bt-hero-h">
-            {{ $t('把想法') }}<br>
-            <em>{{ $t('砸') }}</em>{{ $t('成') }}<br>
-            {{ $t('看得见的形状') }}
+            把想法<br>
+            <em>砸</em>成<br>
+            看得见的形状
           </h2>
-          <p class="bt-hero-lead">{{ siteDesc || $t('目录即站点，文件即文章。写下来，就有人看得见。') }}</p>
+          <p class="bt-hero-lead">{{ siteDesc || '目录即站点，文件即文章。写下来，就有人看得见。' }}</p>
 
           <form class="bt-search" @submit.prevent="scrollToList">
             <label class="bt-search-in">
@@ -26,15 +26,15 @@
                 <circle cx="10.5" cy="10.5" r="7" fill="none" stroke="currentColor" stroke-width="3" />
                 <path d="M16 16l5.5 5.5" fill="none" stroke="currentColor" stroke-width="3" />
               </svg>
-              <input v-model="keyword" type="search" :placeholder="$t('搜索标题或正文摘要…')">
+              <input v-model="keyword" type="search" placeholder="搜索标题或正文摘要…">
             </label>
-            <button class="bt-btn bt-btn-accent" type="submit">{{ $t('开始阅读') }}</button>
+            <button class="bt-btn bt-btn-accent" type="submit">开始阅读</button>
           </form>
 
           <div class="bt-hero-stats">
-            <div><b>{{ posts.length }}</b><small>{{ $t('篇文章') }}</small></div>
-            <div><b>{{ cats.length }}</b><small>{{ $t('个分类') }}</small></div>
-            <div><b>{{ lastDate || '—' }}</b><small>{{ $t('最近更新') }}</small></div>
+            <div><b>{{ posts.length }}</b><small>篇文章</small></div>
+            <div><b>{{ cats.length }}</b><small>个分类</small></div>
+            <div><b>{{ lastDate || '—' }}</b><small>最近更新</small></div>
           </div>
         </div>
 
@@ -46,24 +46,24 @@
           </div>
           <div class="bt-collage-sticker">RAW<br>&amp;<br>BOLD</div>
           <div class="bt-collage-note">
-            <b>{{ $t('最近更新') }}</b>
-            <span>{{ lastPost ? postTitle(lastPost) : $t('暂无文章') }}</span>
+            <b>最近更新</b>
+            <span>{{ lastPost ? postTitle(lastPost) : '暂无文章' }}</span>
           </div>
         </div>
       </div>
     </section>
 
     <!-- ══ 三态（规范 §4.1） ══ -->
-    <div v-if="loading" class="bt-wrap"><div class="bt-state">{{ $t('正在加载文章…') }}</div></div>
+    <div v-if="loading" class="bt-wrap"><div class="bt-state">正在加载文章…</div></div>
     <div v-else-if="error" class="bt-wrap"><div class="bt-state bt-state-err">{{ error }}</div></div>
-    <div v-else-if="!posts.length" class="bt-wrap"><div class="bt-state">{{ $t('还没有公开文章') }}</div></div>
+    <div v-else-if="!posts.length" class="bt-wrap"><div class="bt-state">还没有公开文章</div></div>
 
     <template v-else>
       <!-- ══ 精选（仅首页、默认排序、无筛选时展示第一篇，不与网格重复） ══ -->
       <section v-if="featured" class="bt-featured">
         <div class="bt-wrap">
           <div class="bt-sect">
-            <h2>{{ $t('头条') }}</h2>
+            <h2>头条</h2>
             <span class="bt-rule"></span>
             <span class="bt-sect-note">Top story</span>
           </div>
@@ -72,12 +72,12 @@
             <span class="bt-feat-body">
               <span class="bt-tag bt-tag-ink">{{ catName(featured) }}</span>
               <span class="bt-feat-title">{{ postTitle(featured) }}</span>
-              <span class="bt-feat-ex">{{ postSummary(featured, 150) || $t("点击阅读全文") }}</span>
+              <span class="bt-feat-ex">{{ postSummary(featured, 150) || '点击阅读全文' }}</span>
               <span class="bt-feat-meta">
                 <span class="bt-meta">{{ postDate(featured) }}</span>
                 <span v-if="postSize(featured)" class="bt-meta">{{ postSize(featured) }}</span>
                 <span v-if="daysAgo(featured)" class="bt-meta">{{ daysAgo(featured) }}</span>
-                <span class="bt-btn bt-btn-accent bt-btn-sm">{{ $t('阅读全文') }}</span>
+                <span class="bt-btn bt-btn-accent bt-btn-sm">阅读全文</span>
               </span>
             </span>
             <span class="bt-feat-visual">
@@ -95,7 +95,7 @@
             <div class="bt-sect">
               <h2>{{ activeCatName }}</h2>
               <span class="bt-rule"></span>
-              <span class="bt-sect-note">{{ sorted.length }} {{ $t('篇') }}</span>
+              <span class="bt-sect-note">{{ sorted.length }} 篇</span>
             </div>
 
             <!-- 分类 chips（path 首段派生，客户端过滤） -->
@@ -106,7 +106,7 @@
                 :class="{ on: activeCat === '__all__' }"
                 @click="activeCat = '__all__'"
               >
-                {{ $t('全部') }}<i>{{ posts.length }}</i>
+                全部<i>{{ posts.length }}</i>
               </button>
               <button
                 v-for="c in cats"
@@ -122,15 +122,15 @@
 
             <div class="bt-bar">
               <span class="bt-bar-info">
-                {{ keyword.trim() ? $t("关键词「{keyword}」命中 {sorted} 篇", { keyword: keyword.trim(), sorted: sorted.length }) : $t("共 {sorted} 篇文章", { sorted: sorted.length }) }}
+                {{ keyword.trim() ? `关键词「${keyword.trim()}」命中 ${sorted.length} 篇` : `共 ${sorted.length} 篇文章` }}
               </span>
               <label class="bt-bar-sort">
-                {{ $t('排序') }}
+                排序
                 <select v-model="sortBy">
-                  <option value="system">{{ $t('默认（置顶优先）') }}</option>
-                  <option value="newest">{{ $t('最新在前') }}</option>
-                  <option value="oldest">{{ $t('最早在前') }}</option>
-                  <option value="title">{{ $t('按标题') }}</option>
+                  <option value="system">默认（置顶优先）</option>
+                  <option value="newest">最新在前</option>
+                  <option value="oldest">最早在前</option>
+                  <option value="title">按标题</option>
                 </select>
               </label>
             </div>
@@ -144,11 +144,11 @@
                 :index="(page - 1) * PAGE_SIZE + i"
               />
             </div>
-            <div v-else class="bt-state">{{ $t("没有匹配的文章，换个分类或关键词试试") }}</div>
+            <div v-else class="bt-state">没有匹配的文章，换个分类或关键词试试</div>
 
             <!-- 分页 -->
             <div v-if="totalPages > 1" class="bt-pager">
-              <button type="button" :disabled="page === 1" @click="goto(page - 1)">{{ $t('‹ 上一页') }}</button>
+              <button type="button" :disabled="page === 1" @click="goto(page - 1)">‹ 上一页</button>
               <button
                 v-for="n in pageList"
                 :key="n"
@@ -159,7 +159,7 @@
               >
                 {{ n }}
               </button>
-              <button type="button" :disabled="page === totalPages" @click="goto(page + 1)">{{ $t('下一页 ›') }}</button>
+              <button type="button" :disabled="page === totalPages" @click="goto(page + 1)">下一页 ›</button>
             </div>
           </div>
 
@@ -174,10 +174,10 @@
         <div class="bt-wrap">
           <div class="bt-cta-box">
             <div>
-              <div class="bt-cta-h">{{ $t('新文章发出时，第一个告诉你') }}</div>
-              <p class="bt-cta-p">{{ $t("用 RSS 阅读器订阅，没有广告，也没有中间商。") }}</p>
+              <div class="bt-cta-h">新文章发出时，第一个告诉你</div>
+              <p class="bt-cta-p">用 RSS 阅读器订阅，没有广告，也没有中间商。</p>
             </div>
-            <a class="bt-btn bt-btn-ink bt-btn-lg" :href="rssHref">{{ $t('订阅 RSS') }}</a>
+            <a class="bt-btn bt-btn-ink bt-btn-lg" :href="rssHref">订阅 RSS</a>
           </div>
         </div>
       </section>
@@ -185,12 +185,9 @@
 
     <BrutalFoot :site-name="siteName" :blog-url="blogUrl" />
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import { t } from '@/i18n'
-import AskWidget from '../AskWidget.vue'
 import { computed, ref, watch } from 'vue'
 import BrutalHead from './BrutalHead.vue'
 import BrutalCard from './BrutalCard.vue'
@@ -235,7 +232,7 @@ const activeCat = ref('__all__')
 const keyword = ref('')
 const sortBy = ref('system')
 
-const activeCatName = computed(() => (activeCat.value === '__all__' ? t('全部文章') : activeCat.value))
+const activeCatName = computed(() => (activeCat.value === '__all__' ? '全部文章' : activeCat.value))
 
 const baseList = computed(() => {
   let arr = posts.value

@@ -8,8 +8,8 @@
           <span class="cl-logo-text">{{ siteName }}</span>
         </a>
         <nav class="cl-nav">
-          <a :href="homeHref" class="cl-nav-a">{{ $t('首页') }}</a>
-          <a :href="archiveHref" class="cl-nav-a">{{ $t('归档') }}</a>
+          <a :href="homeHref" class="cl-nav-a">首页</a>
+          <a :href="archiveHref" class="cl-nav-a">归档</a>
           <ThemeSwitch />
           <a :href="rssHref" class="cl-nav-a">RSS</a>
         </nav>
@@ -17,9 +17,8 @@
     </header>
 
     <!-- 文章内容 -->
-    <main v-if="post" class="cb-layout">
-      <div class="cb-article">
-      <article class="cl-post">
+    <main class="cl-post-main">
+      <article v-if="post" class="cl-post">
         <div class="cl-post-header">
           <div class="cl-post-tags" v-if="post.cat || post.category">
             <a :href="'#/blog/cat/' + encodeURIComponent(post.cat || post.category)" class="cl-post-cat">
@@ -32,16 +31,21 @@
             <span v-if="post.author" class="cl-meta-dot"></span>
             <span class="cl-meta-date">{{ dateOf(post) }}</span>
             <span class="cl-meta-dot"></span>
-            <a :href="shareHref" class="cl-post-share" target="_blank" rel="noopener">{{ $t('查看静态页') }}</a>
-            <BlogPluginSlot mount="post_meta" :ctx="{ slug: post.slug }" />
+            <a :href="shareHref" class="cl-post-share" target="_blank" rel="noopener">查看静态页</a>
           </div>
         </div>
         <div class="cl-post-body" v-html="post.html"></div>
       </article>
 
+      <!-- 加载 / 空态 -->
+      <div v-else class="cl-state">
+        <div class="cl-state-icon">📄</div>
+        <p>正在加载文章…</p>
+      </div>
+
       <!-- 相关文章 -->
       <section v-if="related.length" class="cl-related">
-        <h2 class="cl-section-title">{{ $t('📖 更多文章') }}</h2>
+        <h2 class="cl-section-title">📖 更多文章</h2>
         <div class="cl-related-list">
           <a v-for="r in related" :key="r.token" :href="hrefOf(r)" class="cl-related-item">
             <span class="cl-related-title">{{ titleOf(r) }}</span>
@@ -49,13 +53,7 @@
           </a>
         </div>
       </section>
-      </div>
-      <aside class="cb-aside"><SideWidget /></aside>
     </main>
-    <div v-else class="cl-state">
-      <div class="cl-state-icon">📄</div>
-      <p>{{ $t('正在加载文章…') }}</p>
-    </div>
 
     <!-- 页脚 -->
     <footer class="cl-footer">
@@ -64,16 +62,11 @@
       </div>
     </footer>
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import { t } from '@/i18n'
-import AskWidget from '../AskWidget.vue'
-import SideWidget from '../SideWidget.vue'
 import { computed, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
-import BlogPluginSlot from '@/components/BlogPluginSlot.vue'
 import './style.css'
 
 const raw = inject('themeContext')
@@ -107,7 +100,7 @@ const related = computed(() => {
 
 function titleOf(p) {
   const n = p.file?.name || p.path || ''
-  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || t('common.unnamed')
+  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || '无标题'
 }
 function dateOf(p) {
   const v = p.file?.updated_at

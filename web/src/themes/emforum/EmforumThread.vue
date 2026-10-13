@@ -1,7 +1,7 @@
 <template>
   <!-- 帖子行（列表页 / 分类页 / 作者页 / 搜索页共用） -->
   <a class="ef-thread" :href="postHref(ctx, post)">
-    <span class="ef-avatar" :class="boardColor(postCat(post) || $t('未分类'))">{{ avaText }}</span>
+    <span class="ef-avatar" :class="boardColor(postCat(post) || '未分类')">{{ avaText }}</span>
     <span class="ef-thread-main">
       <span class="ef-row1">
         <span v-if="showCat && postCat(post)" class="ef-tagline">{{ postCat(post) }}</span>

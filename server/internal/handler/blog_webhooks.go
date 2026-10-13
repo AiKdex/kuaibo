@@ -28,7 +28,6 @@ import (
 	"time"
 
 	"github.com/AiKMAP/AiKmap/server/internal/engine/bus"
-	"github.com/AiKMAP/AiKmap/server/internal/service"
 )
 
 // webhookHub 投递器：单 worker 串行消费（低频事件足够；天然限流不打爆目标）。
@@ -45,11 +44,7 @@ type hubJob struct {
 	data  map[string]any
 }
 
-// hubHTTPClient 投递客户端；H6 修复：禁止跟随重定向到内网/保留地址（webhook 目标为站长可配 URL，
-// 目标机可用 302 把投递引向内网服务/元数据端点，禁用重定向后此类跳板失效）。
-var hubHTTPClient = &http.Client{Timeout: 5 * time.Second,
-	Transport:     &http.Transport{DialContext: service.SafeDialContext}, // H6 收尾：建连前复验最终 IP
-	CheckRedirect: service.SafeCheckRedirect}
+var hubHTTPClient = &http.Client{Timeout: 5 * time.Second}
 
 // newWebhookHub 创建投递器（chan 容量 256；溢出时丢弃并记日志，不阻塞事件总线）。
 func newWebhookHub(db *sql.DB) *webhookHub {

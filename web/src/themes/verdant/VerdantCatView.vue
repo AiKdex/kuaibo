@@ -1,27 +1,27 @@
 <template>
   <div class="vd-root">
-    <VerdantHead :site-name="siteName" :blog-url="blogUrl" :slogan="$t('CATEGORY · 分类')" />
+    <VerdantHead :site-name="siteName" :blog-url="blogUrl" slogan="CATEGORY · 分类" />
 
-    <div v-if="loading" class="vd-wrap"><div class="vd-state">{{ $t('正在加载文章…') }}</div></div>
+    <div v-if="loading" class="vd-wrap"><div class="vd-state">正在加载文章…</div></div>
     <div v-else-if="error" class="vd-wrap"><div class="vd-state vd-state-err">{{ error }}</div></div>
 
     <template v-else>
       <section class="vd-sub-hero">
         <div class="vd-wrap">
           <div class="vd-sect">
-            <h2 class="vd-sect-t">{{ cat || $t("未分类") }}</h2>
+            <h2 class="vd-sect-t">{{ cat || '未分类' }}</h2>
             <span class="vd-rule"></span>
-            <span class="vd-sect-note">{{ list.length }} {{ $t('篇') }}</span>
+            <span class="vd-sect-note">{{ list.length }} 篇</span>
           </div>
-          <p class="vd-sub-d">{{ $t('分类由文件路径首段决定：') }}<code>{{ cat || $t("（根目录）") }}</code></p>
+          <p class="vd-sub-d">分类由文件路径首段决定：<code>{{ cat || '（根目录）' }}</code></p>
           <div class="vd-filters">
-            <button type="button" class="vd-chipbtn" @click="pickCat('')">{{ $t('全部') }}</button>
+            <button type="button" class="vd-chipbtn" @click="pickCat('')">全部</button>
             <button
               v-for="c in cats"
               :key="c.name"
               type="button"
               class="vd-chipbtn"
-              :class="{ on: c.name === (cat || $t('未分类')) }"
+              :class="{ on: c.name === (cat || '未分类') }"
               @click="pickCat(c.name)"
             >
               {{ c.name }}<i>{{ c.count }}</i>
@@ -33,25 +33,23 @@
       <section class="vd-body">
         <div class="vd-wrap">
           <div class="vd-bar">
-            <span class="vd-bar-info">{{ $t('共') }} {{ list.length }} {{ $t('篇文章') }}</span>
-            <a class="vd-btn vd-btn-g vd-btn-sm" :href="blogUrl">{{ $t('‹ 返回全部文章') }}</a>
+            <span class="vd-bar-info">共 {{ list.length }} 篇文章</span>
+            <a class="vd-btn vd-btn-g vd-btn-sm" :href="blogUrl">‹ 返回全部文章</a>
           </div>
 
           <div v-if="list.length" class="vd-grid">
             <VerdantCard v-for="(p, i) in list" :key="p.token || p.path" :post="p" :index="i" :show-cat="false" />
           </div>
-          <div v-else class="vd-state">{{ $t('该分类下暂无文章') }}</div>
+          <div v-else class="vd-state">该分类下暂无文章</div>
         </div>
       </section>
     </template>
 
     <VerdantFoot :site-name="siteName" :blog-url="blogUrl" :posts="posts" />
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import AskWidget from '../AskWidget.vue'
 import { computed, ref } from 'vue'
 import VerdantHead from './VerdantHead.vue'
 import VerdantCard from './VerdantCard.vue'

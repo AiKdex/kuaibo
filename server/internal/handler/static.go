@@ -46,17 +46,3 @@ func serveIndex(w http.ResponseWriter, r *http.Request, sub fs.FS) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_, _ = w.Write(data)
 }
-
-// serveFavicon 显式服务根级 favicon。若不单独注册，单段带点路径 /favicon.svg 会被
-// 博客通配路由 GET /{slug} 抢走而返回 404（见 routes.go）；此处直接交给 StaticHandler，
-// 由 http.FileServer 按扩展名给出正确 Content-Type（image/svg+xml）。
-func (a *API) serveFavicon(w http.ResponseWriter, r *http.Request) {
-	StaticHandler().ServeHTTP(w, r)
-}
-
-// serveCsWidget 显式服务客服挂件脚本（webdist 根级 cs-widget.js）。
-// 与 serveFavicon 同理：单段带点路径会被博客通配路由 GET /{slug} 抢走返回 404，
-// 故必须显式注册；由 http.FileServer 按 .js 出 application/javascript。
-func (a *API) serveCsWidget(w http.ResponseWriter, r *http.Request) {
-	StaticHandler().ServeHTTP(w, r)
-}

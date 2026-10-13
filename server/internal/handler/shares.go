@@ -79,11 +79,6 @@ func (a *API) sharesCreate(w http.ResponseWriter, r *http.Request) {
 			writeErr(w, http.StatusBadRequest, "SHARE_NOT_DIR", "dir_id 必须指向文件夹")
 			return
 		}
-		// 越权守卫（审计#1，对齐上游 bd33d97）：创建公开分享=写操作，目录必须归属当前主空间
-		if d.SpaceID != a.curHomeSpaceID(r) {
-			writeErr(w, http.StatusForbidden, "SHARE_FORBIDDEN", "无权分享该目录：不属于当前空间")
-			return
-		}
 		token, err := newShareToken()
 		if err != nil {
 			writeErr(w, http.StatusInternalServerError, "SHARE_TOKEN_FAILED", err.Error())
@@ -97,7 +92,7 @@ func (a *API) sharesCreate(w http.ResponseWriter, r *http.Request) {
 			writeErr(w, http.StatusInternalServerError, "SHARE_CREATE_FAILED", err.Error())
 			return
 		}
-		files, err := a.collectDirFiles(r.Context(), in.DirID, "")
+		files, err := a.collectDirFiles(r.Context(), in.DirID)
 		if err != nil {
 			writeErr(w, http.StatusInternalServerError, "SHARE_DIR_SCAN_FAILED", err.Error())
 			return
@@ -124,11 +119,6 @@ func (a *API) sharesCreate(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		writeErr(w, http.StatusInternalServerError, "SHARE_CHECK_FILE_FAILED", err.Error())
-		return
-	}
-	// 越权守卫（审计#1，对齐上游 bd33d97）：文件必须归属当前主空间
-	if f.SpaceID != a.curHomeSpaceID(r) {
-		writeErr(w, http.StatusForbidden, "SHARE_FORBIDDEN", "无权分享该文件：不属于当前空间")
 		return
 	}
 	if f.Kind == "dir" {
@@ -273,30 +263,6 @@ func (a *API) summaryPreview(ctx context.Context, fileID string) string {
 
 // postPreview 博客列表预览：优先 AI 摘要缓存，回退读内容前 280B（P1-6：避免逐文件读全文）。
 func (a *API) postPreview(ctx context.Context, fileID, mime, name string) string {
-	// M8 修复：付费文章（access_mode=paid）公开列表只出 paid_preview——绝不回退读正文。
-	// 否则"列表预览"会绕过付费闸门，把正文开头（默认前 280B）白送给未付费访客。
-	// paid_preview 为空（'none'，即站长选择不预览）时返回空串，连摘要缓存也不出。
-	// M8b 补强（本地增量，非上游）：密码保护文章同理 —— 见下方分支。
-	var mode, pp, pwd, excerpt string
-	if err := a.db.QueryRowContext(ctx,
-		`SELECT COALESCE(access_mode,'none'), COALESCE(paid_preview,''),
-		        COALESCE(access_pwd,''), COALESCE(excerpt,'')
-		   FROM files WHERE id=?`, fileID).
-		Scan(&mode, &pp, &pwd, &excerpt); err == nil {
-		if mode == "paid" {
-			if strings.TrimSpace(pp) != "" {
-				return clipPreview(pp)
-			}
-			return ""
-		}
-		// M8b：密码保护文章此前未被 M8 覆盖 —— 其 preview 会回退到 readContentPreview
-		// （读正文前 280B），于是「受保护正文的开头」随公开列表、SSR 列表卡与 SSR
-		// description 一起公开，密码墙只挡住了后半篇。与付费分支同口径收口：
-		// 只认作者显式填写的摘要（files.excerpt），未填则不出预览。
-		if strings.TrimSpace(pwd) != "" {
-			return clipPreview(excerpt)
-		}
-	}
 	if pv := a.summaryPreview(ctx, fileID); pv != "" {
 		return pv
 	}
@@ -320,7 +286,7 @@ func (a *API) publicPosts(w http.ResponseWriter, r *http.Request) {
 		   AND (expires_at IS NULL OR expires_at=0 OR expires_at>?)`,
 		a.homeOwnerID(), service.BlogToken, time.Now().UnixMilli()).Scan(&blogDirID)
 	if err == nil && blogDirID != "" {
-		files, err := a.collectBlogArticles(r.Context(), blogDirID, currentSiteID(r))
+		files, err := a.collectDirFiles(r.Context(), blogDirID)
 		if err == nil {
 			out := []post{}
 			for _, it := range files {
@@ -357,43 +323,27 @@ sortPostsByUpdatedAt(out)
 	}
 	rows, err := a.db.QueryContext(r.Context(),
 		`SELECT s.token, s.permission, s.created_at, s.scope, COALESCE(s.dir_id,''),
-		        f.id, f.name, f.kind, COALESCE(f.mime,''), f.size, f.updated_at, COALESCE(f.content_state,''),
-		        COALESCE(f.publish_at,0)
+		        f.id, f.name, f.kind, COALESCE(f.mime,''), f.size, f.updated_at
 		 FROM shares s JOIN files f ON f.id = s.file_id
 		 WHERE s.owner_id = ? AND (s.revoked_at IS NULL OR s.revoked_at = 0)
 		   AND (s.expires_at IS NULL OR s.expires_at = 0 OR s.expires_at > ?)
-		   AND f.site_id = ?
-		 ORDER BY s.created_at DESC LIMIT 100`, a.homeOwnerID(), time.Now().UnixMilli(), currentSiteID(r))
+		 ORDER BY s.created_at DESC LIMIT 100`, a.homeOwnerID(), time.Now().UnixMilli())
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "PUBLIC_POSTS_FAILED", err.Error())
 		return
 	}
 	defer rows.Close()
 	out := []post{}
-	nowMs := time.Now().UnixMilli()
 	for rows.Next() {
-		var token, perm, scope, dirID, fileID, name, kind, mime, cs string
-		var createdAt, size, updatedAt, publishAt int64
-		if err := rows.Scan(&token, &perm, &createdAt, &scope, &dirID, &fileID, &name, &kind, &mime, &size, &updatedAt, &cs, &publishAt); err != nil {
+		var token, perm, scope, dirID, fileID, name, kind, mime string
+		var createdAt, size, updatedAt int64
+		if err := rows.Scan(&token, &perm, &createdAt, &scope, &dirID, &fileID, &name, &kind, &mime, &size, &updatedAt); err != nil {
 			writeErr(w, http.StatusInternalServerError, "PUBLIC_POSTS_FAILED", err.Error())
 			return
 		}
-		// M7 修复：单文件分享回退分支此前不滤草稿/定时未到，改回草稿的文章仍进公开列表。
-		// 口径与目录分支（collectDirFilesOpt）对齐：草稿不公开 + publish_at 未到不公开。
-		if cs != "" {
-			var st struct {
-				Status string `json:"status"`
-			}
-			if json.Unmarshal([]byte(cs), &st) == nil && st.Status == "draft" {
-				continue
-			}
-		}
-		if publishAt > 0 && publishAt > nowMs {
-			continue
-		}
 		if scope == "dir" {
 			// 文件夹整体分享：展开目录及子目录全部非草稿文件为文章
-			files, err := a.collectDirFiles(r.Context(), dirID, currentSiteID(r))
+			files, err := a.collectDirFiles(r.Context(), dirID)
 			if err != nil {
 				continue
 			}
@@ -407,7 +357,7 @@ sortPostsByUpdatedAt(out)
 		_ = a.db.QueryRowContext(r.Context(), `SELECT COALESCE(slug,'') FROM files WHERE id=?`, fileID).Scan(&slug)
 		out = append(out, post{
 			Token: token, Permission: perm, Scope: "file", CreatedAt: createdAt, Preview: pv,
-			File: map[string]any{"id": fileID, "name": name, "kind": kind, "mime": mime, "size": size, "updated_at": updatedAt, "slug": slug, "author": a.postAuthorName(r.Context(), fileID), "tags": stringList(a.postTagNames(r.Context(), fileID)), "content_state": cs},
+			File: map[string]any{"id": fileID, "name": name, "kind": kind, "mime": mime, "size": size, "updated_at": updatedAt, "slug": slug, "author": a.postAuthorName(r.Context(), fileID), "tags": stringList(a.postTagNames(r.Context(), fileID))},
 		})
 	}
 	sortPostsByUpdatedAt(out)
@@ -434,7 +384,7 @@ func (a *API) publicTags(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]any{"items": []any{}})
 		return
 	}
-	files, err := a.collectBlogArticles(r.Context(), blogDirID, currentSiteID(r))
+	files, err := a.collectDirFiles(r.Context(), blogDirID)
 	if err != nil {
 		writeJSON(w, http.StatusOK, map[string]any{"items": []any{}})
 		return
@@ -477,7 +427,7 @@ func (a *API) postAuthorName(ctx context.Context, fileID string) string {
 func dirPost(token, perm string, createdAt int64, it dirFile) post {
 	return post{
 		Token: token, Permission: perm, Scope: "dir", Path: it.path, CreatedAt: createdAt, Preview: it.preview,
-		File: map[string]any{"id": it.f.ID, "name": it.f.Name, "kind": it.f.Kind, "mime": it.f.Mime, "size": it.f.Size, "updated_at": it.f.UpdatedAt, "slug": it.f.Slug, "author": it.author, "tags": stringList(it.tags), "pin_scope": it.f.PinScope, "pin_order": it.f.PinOrder, "cover": it.cover, "excerpt": it.excerpt, "content_state": it.f.ContentState},
+		File: map[string]any{"id": it.f.ID, "name": it.f.Name, "kind": it.f.Kind, "mime": it.f.Mime, "size": it.f.Size, "updated_at": it.f.UpdatedAt, "slug": it.f.Slug, "author": it.author, "tags": stringList(it.tags), "pin_scope": it.f.PinScope, "pin_order": it.f.PinOrder, "cover": it.cover, "excerpt": it.excerpt},
 	}
 }
 
@@ -650,70 +600,18 @@ func (a *API) fillDirFileTags(ctx context.Context, items []dirFile) {
 // collectDirFiles 递归收集目录（及子目录）下全部非草稿文件，返回相对路径 + 文本摘要。
 // 公开轨：定时未到（publish_at>now）的文章不公开。分层 BFS 查询（按 parent_id 逐层拉取；
 // modernc 驱动对递归 CTE 支持不稳，不用 CTE）。
-// collectBlogArticles 博客公开轨收集（B10）：在公开轨既有过滤（草稿 / 定时未到 / 站点隔离）之上
-// 追加内容类型过滤——只返回文章，附件不进列表。供公开列表、热门榜、RSS、sitemap 使用。
-//
-// 为什么不直接在 collectDirFiles 里过滤：分享任意目录（含博客目录整体分享的文件夹视图）时，
-// 附件本身就是被分享的内容，不该被静默隐藏。是否"只列文章"因此由调用点显式决定。
-func (a *API) collectBlogArticles(ctx context.Context, dirID, siteID string) ([]dirFile, error) {
-	return a.collectDirFilesOpt(ctx, dirID, siteID, false, true)
-}
-
-// nodeTypeOf 从 content_state（JSON 对象）取 node_type；无该键或 JSON 非法时返回空串。
-func nodeTypeOf(contentState string) string {
-	s := strings.TrimSpace(contentState)
-	if s == "" || s[0] != '{' {
-		return ""
-	}
-	var st struct {
-		NodeType string `json:"node_type"`
-	}
-	if json.Unmarshal([]byte(s), &st) != nil {
-		return ""
-	}
-	return st.NodeType
-}
-
-// articleVisibleInPublic 判定一个文件是否应作为「文章」出现在博客公开轨（B10）。
-//
-// 背景：博客目录同时承载文章与附件（图片/音视频/压缩包）。此前公开轨只过滤草稿与定时未到，
-// 于是 assets/*.png 这类上传件也进公开列表、热门榜、RSS 与 sitemap —— 对读者是噪声、
-// 对搜索引擎是低质 URL（附件既无正文也不该被收录）。
-//
-// 判定顺序（显式声明优先，mime 推断兜底）：
-//  1. content_state.node_type 显式声明为文章型（post/article/page）→ 是文章，不再看 mime；
-//     显式声明为附件型（attachment/asset/media/image）→ 非文章，不再看 mime；
-//  2. 未声明（或 JSON 非法）：按 mime 推断，复用收录侧 isTextContent ——
-//     「能当正文读的才算文章」，与评论收录机制同一判据，避免两套语义漂移；
-//  3. 站长开启 blog.list_attachments=true 时一律放行（恢复旧行为）。
-func articleVisibleInPublic(mime, contentState string, listAttachments bool) bool {
-	if listAttachments {
-		return true
-	}
-	switch strings.ToLower(strings.TrimSpace(nodeTypeOf(contentState))) {
-	case "post", "article", "page":
-		return true
-	case "attachment", "asset", "media", "image":
-		return false
-	}
-	return isTextContent(mime)
-}
-
-func (a *API) collectDirFiles(ctx context.Context, dirID, siteID string) ([]dirFile, error) {
-	return a.collectDirFilesOpt(ctx, dirID, siteID, false, false)
+func (a *API) collectDirFiles(ctx context.Context, dirID string) ([]dirFile, error) {
+	return a.collectDirFilesOpt(ctx, dirID, false)
 }
 
 // collectDirFilesAdmin 管理轨收集：与公开轨同源，但保留"定时中"文章
 // （站长在管理列表可见并可取消定时，否则定时文章会从管理界面消失）。
-// 管理/分享查看场景传 siteID="" 表示不按站点过滤（站长后台可见全站共享内容）。
-func (a *API) collectDirFilesAdmin(ctx context.Context, dirID, siteID string) ([]dirFile, error) {
-	return a.collectDirFilesOpt(ctx, dirID, siteID, true, false)
+func (a *API) collectDirFilesAdmin(ctx context.Context, dirID string) ([]dirFile, error) {
+	return a.collectDirFilesOpt(ctx, dirID, true)
 }
 
 // collectDirFilesOpt 收集实现；includeScheduled=false 时过滤定时未到文章。
-// siteID="" 表示不按站点过滤（管理/分享查看）；非空则仅返回该站点内容（公开轨内容隔离）。
-// articlesOnly=true（B10）时追加内容类型过滤：只保留文章，附件不进结果（见 collectBlogArticles）。
-func (a *API) collectDirFilesOpt(ctx context.Context, dirID, siteID string, includeScheduled, articlesOnly bool) ([]dirFile, error) {
+func (a *API) collectDirFilesOpt(ctx context.Context, dirID string, includeScheduled bool) ([]dirFile, error) {
 	// 校验目录存在
 	var cnt int
 	if err := a.db.QueryRowContext(ctx,
@@ -735,19 +633,13 @@ func (a *API) collectDirFilesOpt(ctx context.Context, dirID, siteID string, incl
 	level := []string{dirID}
 	for len(level) > 0 {
 		ph := strings.TrimSuffix(strings.Repeat("?,", len(level)), ",")
-		args := make([]any, 0, len(level)+1)
-		for _, p := range level {
-			args = append(args, p)
-		}
-		// 内容隔离：非空 siteID 时仅返回该站点文件（M1 公开轨按解析站点过滤）。
-		siteClause := ""
-		if siteID != "" {
-			siteClause = " AND site_id=?"
-			args = append(args, siteID)
+		args := make([]any, len(level))
+		for i, p := range level {
+			args[i] = p
 		}
 		q := `SELECT id, parent_id, name, kind, COALESCE(mime,''), size, updated_at, COALESCE(content_state,''), COALESCE(slug,''), COALESCE(author_id,''), pin_scope, pin_order, publish_at,
 		      COALESCE(cover,''), COALESCE(excerpt,''), COALESCE(seo_title,''), COALESCE(seo_desc,'')
-		      FROM files WHERE parent_id IN (` + ph + `)` + siteClause + ` AND deleted_at IS NULL`
+		      FROM files WHERE parent_id IN (` + ph + `) AND deleted_at IS NULL`
 		rows, err := a.db.QueryContext(ctx, q, args...)
 		if err != nil {
 			return nil, err
@@ -787,12 +679,6 @@ func (a *API) collectDirFilesOpt(ctx context.Context, dirID, siteID string, incl
 				if json.Unmarshal([]byte(r.state), &st) == nil && st.Status == "draft" {
 					continue // 草稿不随目录公开
 				}
-			}
-			// B10 内容类型过滤（仅公开轨、仅 collectBlogArticles 场景）：附件不进公开列表，
-			// 避免 assets/*.png 这类上传件混进公开列表/热门榜/RSS/sitemap。
-			// 显式声明优先：node_type 为 post/article/page 的文件始终视为文章。
-			if articlesOnly && !articleVisibleInPublic(r.mime, r.state, a.cfg.GetBool("blog.list_attachments")) {
-				continue
 			}
 			// 2.3 定时发布：publish_at 未到不公开（等同未发布；到点由常驻调度置 NULL）。
 			// 管理轨（includeScheduled）不过滤，定时中文章在管理列表可见。
@@ -839,44 +725,6 @@ func (a *API) collectDirFilesOpt(ctx context.Context, dirID, siteID string, incl
 				}
 			}
 		}
-		// M8 延伸修复：付费文章一律只出 paid_preview，绝不回退读正文。
-		// 本处是三条下游轨的共用汇聚点——SSR 列表卡、SSR 文章页 desc、公开 JSON 目录分支，
-		// 在此收口可一次覆盖（付费文章若走 summaryPreview/readContentPreview，正文开头会
-		// 出现在列表卡与页面的 description 里，付费墙就白设了）。
-		// M8b 补强（本地增量，非上游）：密码保护文章同属"锁定态"，此前不在本收口范围内，
-		// 其 preview 仍回退读正文前 280B → 受保护正文开头公开。改为只认作者填写的 excerpt。
-		if prows, perr := a.db.QueryContext(ctx,
-			`SELECT id, COALESCE(access_mode,'none'), COALESCE(paid_preview,''),
-			        COALESCE(access_pwd,''), COALESCE(excerpt,'')
-			   FROM files WHERE id IN (`+ph+`)`, ids...); perr == nil {
-			type lockPrev struct{ mode, paidPrev, pwd, excerpt string }
-			lockPrevBy := map[string]lockPrev{}
-			for prows.Next() {
-				var fid string
-				var lp lockPrev
-				if prows.Scan(&fid, &lp.mode, &lp.paidPrev, &lp.pwd, &lp.excerpt) == nil {
-					lockPrevBy[fid] = lp
-				}
-			}
-			prows.Close()
-			for i := range out {
-				lp, ok := lockPrevBy[out[i].f.ID]
-				if !ok {
-					continue
-				}
-				switch {
-				case lp.mode == "paid":
-					if strings.TrimSpace(lp.paidPrev) == "" {
-						out[i].preview = "" // paid_preview=''（none）→ 不出预览
-					} else {
-						out[i].preview = clipPreview(lp.paidPrev)
-					}
-				case strings.TrimSpace(lp.pwd) != "":
-					// 密码保护：只出作者显式填写的摘要，无则不出（不读正文）。
-					out[i].preview = clipPreview(lp.excerpt)
-				}
-			}
-		}
 	}
 	return out, nil
 }
@@ -918,7 +766,7 @@ func (a *API) sharesGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if row.Scope == "dir" {
-		files, err := a.collectDirFiles(r.Context(), row.DirID, "")
+		files, err := a.collectDirFiles(r.Context(), row.DirID)
 		if err != nil {
 			writeErr(w, http.StatusNotFound, "SHARE_FILE_GONE", "shared directory not found")
 			return
@@ -929,7 +777,6 @@ func (a *API) sharesGet(w http.ResponseWriter, r *http.Request) {
 			fileList = append(fileList, map[string]any{
 				"path": it.path, "name": it.f.Name, "kind": it.f.Kind, "mime": it.f.Mime,
 				"size": it.f.Size, "updated_at": it.f.UpdatedAt, "preview": it.preview, "slug": it.f.Slug,
-				"author": it.author, // 作者展示名（collectDirFiles 已批量补齐；文章页标题下元信息行用）
 			})
 		}
 		var dirMeta any
@@ -948,14 +795,9 @@ func (a *API) sharesGet(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusNotFound, "SHARE_FILE_GONE", "shared file not found")
 		return
 	}
-	// 单文件分享也带作者展示名（前端文章页元信息行 page.post.author 读取）
-	fileView := struct {
-		*service.File
-		Author string `json:"author"`
-	}{File: f, Author: a.postAuthorName(r.Context(), row.FileID)}
 	writeJSON(w, http.StatusOK, map[string]any{
 		"share": row,
-		"file":  fileView,
+		"file":  f,
 	})
 }
 
@@ -974,7 +816,7 @@ func (a *API) sharesContent(w http.ResponseWriter, r *http.Request) {
 			writeErr(w, http.StatusBadRequest, "SHARE_PATH_REQUIRED", "directory share requires ?path=")
 			return
 		}
-		files, err := a.collectDirFiles(r.Context(), row.DirID, "")
+		files, err := a.collectDirFiles(r.Context(), row.DirID)
 		if err != nil {
 			writeErr(w, http.StatusNotFound, "SHARE_FILE_GONE", "shared directory not found")
 			return
@@ -1002,14 +844,6 @@ func (a *API) sharesContent(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInternalServerError, "SHARE_CONTENT_FAILED", err.Error())
 		return
 	}
-	// B 项内容付费闸门：密码通过后再查付费（access_mode='paid' 且无有效 grant → 402 PAYMENT_REQUIRED）
-	if err := a.requirePaidAccess(w, r, fileID); err != nil {
-		if errors.Is(err, errPaidRequired) {
-			return
-		}
-		writeErr(w, http.StatusInternalServerError, "SHARE_CONTENT_FAILED", err.Error())
-		return
-	}
 	rc, f, err := a.files.Content(r.Context(), fileID)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
@@ -1031,100 +865,12 @@ func (a *API) sharesContent(w http.ResponseWriter, r *http.Request) {
 	_, _ = io.Copy(w, rc)
 }
 
-// GET /api/v1/shares/{token}/thumb 公开分享缩略图（按 token 鉴权，不强制博客子树）。
-//
-// 与 publicMediaThumb 的区别：publicMediaThumb 强制「必须位于博客子树」（isBlogPostFile），
-// 而分享目录不一定在博客子树里，因此分享通道需要专属端点——凭分享 token 可达即视为已授权，
-// 仅对 image/*|video/* 生成缩略图（thumbMimeOf 同口径，svg 排除），复用 serveThumb 懒生成。
-// 鉴权口径与 sharesContent 一致：file 分享取 row.FileID；dir 分享需 ?path= 经 collectDirFiles 解析。
-// 安全边界：token 可达 + 仅 image|video + thumb 能力门控；私密文件不经过此通道（无合法 token 即 404）。
-func (a *API) sharesThumb(w http.ResponseWriter, r *http.Request) {
-	row, err := a.loadShare(r.Context(), r.PathValue("token"))
-	if err != nil {
-		writeErr(w, http.StatusNotFound, "SHARE_NOT_FOUND", "share not found or revoked")
-		return
-	}
-	var fileID string
-	if row.Scope == "dir" {
-		name := r.URL.Query().Get("path")
-		if name == "" {
-			writeErr(w, http.StatusBadRequest, "SHARE_PATH_REQUIRED", "directory share requires ?path=")
-			return
-		}
-		files, err := a.collectDirFiles(r.Context(), row.DirID, "")
-		if err != nil {
-			writeErr(w, http.StatusNotFound, "SHARE_FILE_GONE", "shared directory not found")
-			return
-		}
-		found := false
-		for _, it := range files {
-			if it.path == name {
-				fileID = it.f.ID
-				found = true
-				break
-			}
-		}
-		if !found {
-			writeErr(w, http.StatusNotFound, "SHARE_PATH_NOT_FOUND", "file not found in shared directory")
-			return
-		}
-	} else {
-		fileID = row.FileID
-	}
-	if a.media == nil {
-		writeErr(w, http.StatusServiceUnavailable, "MEDIA_DISABLED", "媒体模块未启用")
-		return
-	}
-	f, err := a.files.Get(r.Context(), fileID)
-	if err != nil || f == nil || f.Kind != "file" {
-		writeErr(w, http.StatusNotFound, "FILE_NOT_FOUND", "file not found")
-		return
-	}
-	if _, ok := thumbMimeOf(f.Mime); !ok {
-		writeErr(w, http.StatusNotFound, "THUMB_UNAVAILABLE", "该媒体类型无缩略图")
-		return
-	}
-	// 与 sharesContent 一致的文件级闸门（密码/付费），防缩略图泄漏受保护内容。
-	if err := a.requireArticleUnlock(w, r, fileID); err != nil {
-		if errors.Is(err, errPasswordRequired) {
-			return
-		}
-		writeErr(w, http.StatusInternalServerError, "SHARE_THUMB_FAILED", err.Error())
-		return
-	}
-	if err := a.requirePaidAccess(w, r, fileID); err != nil {
-		if errors.Is(err, errPaidRequired) {
-			return
-		}
-		writeErr(w, http.StatusInternalServerError, "SHARE_THUMB_FAILED", err.Error())
-		return
-	}
-	a.serveThumb(w, r, f, "public, max-age=86400")
-}
-
 // DELETE /api/v1/shares/{token} 撤销分享
 func (a *API) sharesRevoke(w http.ResponseWriter, r *http.Request) {
 	// 博客分享为系统内置（token=blog）：不参与普通撤销，关闭博客请走 blog.open 开关
 	// （否则管理员以为"撤销=关博客"，重启后 EnsureBlogSpace 不再自动复活会永久关闭；锁定避免歧义）
 	if r.PathValue("token") == service.BlogToken {
 		writeErr(w, http.StatusForbidden, "BLOG_SHARE_LOCKED", "博客分享为系统内置，关闭/开启博客请到博客管理页使用博客开关（blog.open）")
-		return
-	}
-	// M6 修复：仅分享所有者（或 admin）可撤销。此前只按 token 撤销——token 一旦出现在
-	// 公开页面/分享链接里（本就是给访客看的），任何登录用户都能拿它把站长的分享撤掉。
-	uid := a.curUserID(r)
-	if uid == "" {
-		writeErr(w, http.StatusUnauthorized, "LOGIN_REQUIRED", "请先登录")
-		return
-	}
-	var ownID string
-	if err := a.db.QueryRowContext(r.Context(),
-		`SELECT owner_id FROM shares WHERE token=?`, r.PathValue("token")).Scan(&ownID); err != nil {
-		writeErr(w, http.StatusNotFound, "SHARE_NOT_FOUND", "share not found")
-		return
-	}
-	if ownID != uid && !a.isAdmin(r) {
-		writeErr(w, http.StatusForbidden, "SHARE_FORBIDDEN", "无权撤销该分享")
 		return
 	}
 	now := time.Now().UnixMilli()

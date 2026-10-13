@@ -38,54 +38,22 @@ type Payload struct {
 	Exp     int64    `json:"exp"`                // 到期时间（unix 秒；0=永不过期）
 	Jti     string   `json:"jti,omitempty"`      // key 唯一 id
 	Tid     string   `json:"tid,omitempty"`      // 交易/订单 id（预留）
-	Seats   int      `json:"seats,omitempty"`   // 站点数授权额度（多站点 license 用）
 }
 
 // 验签错误（分类判定用 errors.Is）。
 var (
-	ErrBadFormat    = errors.New("entitle: key 格式无效（应为 payload.signature 两段 base64url）")
-	ErrBadPayload   = errors.New("entitle: payload 解析失败")
-	ErrBadSignature = errors.New("entitle: 签名无效")
-	ErrUnknownIss   = errors.New("entitle: 未知签发方（无对应内嵌公钥）")
-	ErrExpired      = errors.New("entitle: license 已过期")
-	ErrNotYetValid  = errors.New("entitle: license 尚未生效")
-	ErrShellDenied  = errors.New("entitle: license 不含本壳授权（scopes 无 all/shell:aiklog）")
-	// ErrFeatureDenied license 不含所需功能授权（scopes 无 all/feature:<name>）。
-	ErrFeatureDenied = errors.New("entitle: license 不含所需功能授权")
+	ErrBadFormat   = errors.New("entitle: key 格式无效（应为 payload.signature 两段 base64url）")
+	ErrBadPayload  = errors.New("entitle: payload 解析失败")
+	ErrBadSignature= errors.New("entitle: 签名无效")
+	ErrUnknownIss  = errors.New("entitle: 未知签发方（无对应内嵌公钥）")
+	ErrExpired     = errors.New("entitle: license 已过期")
+	ErrNotYetValid = errors.New("entitle: license 尚未生效")
+	ErrShellDenied = errors.New("entitle: license 不含本壳授权（scopes 无 all/shell:aiklog）")
 )
 
-// MultisiteFeature 站点数授权功能名（scope feature:multisite）。
-const MultisiteFeature = "multisite"
-
-
-// Validate 校验实例 license key：格式 → 验签 → iss → 时间窗 → 本壳 scope。
+// Validate 校验 license key：格式 → 验签 → iss → 时间窗 → 本壳 scope。
 // 通过返回载荷；任何一步失败返回错误（错误可 errors.Is 分类）。
 func Validate(key string) (*Payload, error) {
-	p, err := bareValidate(key)
-	if err != nil {
-		return nil, err
-	}
-	if !p.HasShell(ShellID) {
-		return nil, ErrShellDenied
-	}
-	return p, nil
-}
-
-// ValidateProduct 校验「功能/能力」类许可证（如站点数授权）：格式 → 验签 → iss → 时间窗，
-// 但不要求本壳 scope（scope 含 all 或 feature:<name> 即可）。调用方用 HasFeature 判定具体功能。
-func ValidateProduct(key string, feature string) (*Payload, error) {
-	p, err := bareValidate(key)
-	if err != nil {
-		return nil, err
-	}
-	if !p.HasScope("all") && !p.HasFeature(feature) {
-		return nil, ErrFeatureDenied
-	}
-	return p, nil
-}
-
-// bareValidate 完成格式/验签/iss/时间窗校验（不含 scope 判定），供 Validate/ValidateProduct 复用。
-func bareValidate(key string) (*Payload, error) {
 	key = strings.TrimSpace(key)
 	dot := strings.LastIndexByte(key, '.')
 	if dot <= 0 || dot == len(key)-1 {
@@ -122,6 +90,9 @@ func bareValidate(key string) (*Payload, error) {
 	}
 	if p.Iat > 0 && now < p.Iat {
 		return nil, ErrNotYetValid
+	}
+	if !p.HasShell(ShellID) {
+		return nil, ErrShellDenied
 	}
 	return &p, nil
 }

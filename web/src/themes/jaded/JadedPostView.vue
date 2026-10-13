@@ -12,7 +12,7 @@
           <span>{{ ctx.siteName || 'AiKlog' }}</span>
         </a>
         <nav class="jdp-nav">
-          <a :href="homeHref" class="jdp-nav-a">{{ $t('← 返回列表') }}</a>
+          <a :href="homeHref" class="jdp-nav-a">← 返回列表</a>
         </nav>
         <div class="jdp-nav-right">
           <ThemeSwitch />
@@ -21,12 +21,12 @@
     </header>
 
     <!-- Loading / Error -->
-    <div v-if="loading" class="jdp-status"><p>{{ $t('⏳ 加载中...') }}</p></div>
+    <div v-if="loading" class="jdp-status"><p>⏳ 加载中...</p></div>
     <div v-else-if="error" class="jdp-status"><p>❌ {{ error }}</p></div>
 
     <!-- Article -->
-    <div v-else class="jd-layout">
-      <article class="jd-article jdp-wrapper">
+    <div v-else class="jdp-content">
+      <div class="jdp-wrapper">
 
         <!-- Article Header -->
         <header class="jdp-head">
@@ -40,23 +40,22 @@
               <span class="jdp-author-name">{{ ctx.siteName || '爱库录' }}</span>
             </div>
             <span v-if="date" class="jdp-meta-item">📅 {{ date }}</span>
-            <span v-if="size" class="jdp-meta-item">📊 {{ size }} {{ $t('字') }}</span>
-            <BlogPluginSlot mount="post_meta" :ctx="{ slug: post.slug }" />
+            <span v-if="size" class="jdp-meta-item">📊 {{ size }} 字</span>
           </div>
         </header>
 
         <!-- AI Summary (from preview) -->
         <div v-if="post.preview" class="jdp-ai-summary">
-          <div class="jdp-ai-label">{{ $t('🤖 AI 摘要') }}</div>
+          <div class="jdp-ai-label">🤖 AI 摘要</div>
           <p>{{ post.preview }}</p>
         </div>
 
         <!-- Article Body -->
-        <div class="jdp-body" v-html="postHtml"></div>
+        <article class="jdp-body" v-html="postHtml"></article>
 
         <!-- Share Link -->
         <div v-if="shareHref" class="jdp-share">
-          <a :href="shareHref" target="_blank" rel="noopener">{{ $t('🔗 查看静态页面 / 分享链接') }}</a>
+          <a :href="shareHref" target="_blank" rel="noopener">🔗 查看静态页面 / 分享链接</a>
         </div>
 
         <!-- Tags -->
@@ -66,7 +65,7 @@
 
         <!-- Related Posts -->
         <div v-if="related.length" class="jdp-related">
-          <h3 class="jdp-related-title">{{ $t('📎 相关文章') }}</h3>
+          <h3 class="jdp-related-title">📎 相关文章</h3>
           <div class="jdp-related-grid">
             <a
               v-for="p in related"
@@ -80,8 +79,7 @@
           </div>
         </div>
 
-      </article>
-      <aside class="jd-aside"><SideWidget /></aside>
+      </div>
     </div>
 
     <!-- Footer -->
@@ -92,16 +90,11 @@
       <p class="jdp-footer-copy">© {{ year }} · Powered by AiKlog</p>
     </footer>
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import { t } from '@/i18n'
-import AskWidget from '../AskWidget.vue'
-import SideWidget from '../SideWidget.vue'
 import { computed, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
-import BlogPluginSlot from '@/components/BlogPluginSlot.vue'
 import './style.css'
 import './post.css'
 
@@ -115,7 +108,7 @@ const post = computed(() => page.value.post || {})
 const year = new Date().getFullYear()
 const homeHref = '/app#/blog?view=public'
 
-const title = computed(() => post.value.title || t('common.unnamed'))
+const title = computed(() => post.value.title || '无标题')
 const cat = computed(() => post.value.cat || post.value.category || '')
 const date = computed(() => {
   const v = post.value.updatedAt
@@ -146,7 +139,7 @@ const related = computed(() => {
 
 function relatedTitle(p) {
   const n = p.file?.name || p.path || ''
-  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || t('common.unnamed')
+  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || '无标题'
 }
 function relatedDate(p) {
   const v = p.file?.updated_at

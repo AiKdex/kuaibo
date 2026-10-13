@@ -158,29 +158,10 @@ func shortTitle(s string) string {
 	return strings.ReplaceAll(string(runes), "\n", " ")
 }
 
-// injectContext 组装 system 注入层（插在消息序列之前），顺序：角色提示词 → 站点身份 → 浏览上下文。
-// 角色提示词须在此显式前置：agent.Chat 见到任何 system 消息即跳过自身默认提示词（覆盖语义），
-// 原实现"有浏览上下文才注入 system"会连带丢掉角色设定——此处统一兜住。
-// 站点身份始终注入：AI 助手须知道自己挂在哪个站点，才能直接回答「介绍一下这个站点」类问题，
-// 而不是反问用户"您指的是哪个站点"。
+// injectContext 把当前浏览文件/目录信息作为 system 消息注入对话（插在消息序列之前）。
 func injectContext(ctx context.Context, a *API, msgs []ai.Msg, c *chatCtx) []ai.Msg {
-	head := []ai.Msg{{Role: "system", Content: ai.SystemPrompt}}
-	var site []string
-	if v := strings.TrimSpace(a.cfg.GetString("blog.title")); v != "" {
-		site = append(site, "站点名称："+v)
-	}
-	if v := strings.TrimSpace(a.cfg.GetString("blog.description")); v != "" {
-		site = append(site, "站点简介："+v)
-	}
-	if v := strings.TrimSpace(a.cfg.GetString("blog.base_url")); v != "" {
-		site = append(site, "站点地址："+v)
-	}
-	if len(site) > 0 {
-		head = append(head, ai.Msg{Role: "system", Content:
-			"你所在的站点信息（回答「这是什么网站 / 介绍一下这个站点」时据此作答，不要反问用户）：" + strings.Join(site, "；")})
-	}
 	if c == nil || (c.FileID == "" && c.DirID == "") {
-		return append(head, msgs...)
+		return msgs
 	}
 	var parts []string
 	if c.FileID != "" {
@@ -193,8 +174,12 @@ func injectContext(ctx context.Context, a *API, msgs []ai.Msg, c *chatCtx) []ai.
 			parts = append(parts, fmt.Sprintf("当前所在的目录：%s", d.Name))
 		}
 	}
-	if len(parts) > 0 {
-		head = append(head, ai.Msg{Role: "system", Content: "用户当前的操作上下文：" + strings.Join(parts, "；")})
+	if len(parts) == 0 {
+		return msgs
 	}
-	return append(head, msgs...)
+	ctxMsg := ai.Msg{Role: "system", Content: "用户当前的操作上下文：" + strings.Join(parts, "；")}
+	out := make([]ai.Msg, 0, len(msgs)+1)
+	out = append(out, ctxMsg)
+	out = append(out, msgs...)
+	return out
 }

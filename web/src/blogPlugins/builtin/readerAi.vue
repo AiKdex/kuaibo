@@ -1,17 +1,17 @@
 <template>
   <aside class="rai-card">
-    <h4 class="rai-title">{{ $t('读者问答') }}</h4>
-    <p class="rai-tip">{{ $t("基于本站公开文章回答，不知道会直说。") }}</p>
+    <h4 class="rai-title">读者问答</h4>
+    <p class="rai-tip">基于本站公开文章回答，不知道会直说。</p>
     <form class="rai-form" @submit.prevent="ask">
       <input
         v-model="q"
         class="rai-input"
         type="text"
         maxlength="400"
-        :placeholder="$t('例如：目录即站点是什么意思？')"
+        placeholder="例如：目录即站点是什么意思？"
         :disabled="busy"
       />
-      <button class="rai-btn" type="submit" :disabled="busy || !q.trim()">{{ busy ? $t("思考中…") : $t("提问") }}</button>
+      <button class="rai-btn" type="submit" :disabled="busy || !q.trim()">{{ busy ? '思考中…' : '提问' }}</button>
     </form>
     <div v-if="answer" class="rai-answer">{{ answer }}</div>
     <div v-if="error" class="rai-error">{{ error }}</div>
@@ -19,7 +19,6 @@
 </template>
 
 <script setup>
-import { t } from '@/i18n'
 import { ref } from 'vue'
 import { publicBlogAsk } from '@/api'
 
@@ -40,9 +39,9 @@ async function ask() {
   answer.value = ''
   try {
     const d = await publicBlogAsk(question, props.ctx?.path || '')
-    answer.value = d.reply || t('（空回答）')
+    answer.value = d.reply || '（空回答）'
   } catch (e) {
-    error.value = e.message || t('提问失败')
+    error.value = e.message || '提问失败'
   } finally {
     busy.value = false
   }

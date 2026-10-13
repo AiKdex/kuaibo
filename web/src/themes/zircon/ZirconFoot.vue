@@ -6,18 +6,18 @@
         <p class="zc-foot-p">{{ siteDesc }}</p>
       </div>
       <div class="zc-foot-col">
-        <div class="zc-foot-t">{{ $t('订阅') }}</div>
-        <a class="zc-foot-link" :href="rssHref">{{ $t('RSS 订阅') }}</a>
+        <div class="zc-foot-t">订阅</div>
+        <a class="zc-foot-link" :href="rssHref">RSS 订阅</a>
       </div>
       <div class="zc-foot-col">
-        <div class="zc-foot-t">{{ $t('版本') }}</div>
-        <a class="zc-foot-link" :href="listHref">{{ $t('交互版列表') }}</a>
-        <a class="zc-foot-link" :href="ssrHref">{{ $t('静态页列表') }}</a>
+        <div class="zc-foot-t">版本</div>
+        <a class="zc-foot-link" :href="listHref">交互版列表</a>
+        <a class="zc-foot-link" :href="ssrHref">静态页列表</a>
       </div>
     </div>
     <div class="zc-foot-bar">
-      <span class="zc-foot-note">{{ $t('青璃 Zircon 主题 · 青绿胶囊') }}</span>
-      <span class="zc-foot-note">{{ $t('目录即站点，文件即文章') }}</span>
+      <span class="zc-foot-note">青璃 Zircon 主题 · 青绿胶囊</span>
+      <span class="zc-foot-note">目录即站点，文件即文章</span>
     </div>
   </footer>
 </template>

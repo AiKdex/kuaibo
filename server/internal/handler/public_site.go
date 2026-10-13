@@ -1,12 +1,9 @@
 // public_site.go 博客站点设置公开读取：GET /api/v1/public/site（无需登录）。
-// 数据源优先级（SPEC-MS-001 M1）：per-site 配置 site_settings > 全局 blog.* 默认值。
+// 数据源 = settings 表 blog.* 白名单键（博客管理页可改）；供公开页/主题/RSS/OG 同源使用。
 // 默认值：爱库录品牌（可被 DB 设置覆盖）。
 package handler
 
-import (
-	"encoding/json"
-	"net/http"
-)
+import "net/http"
 
 // blogSiteDefaults 博客站点设置默认值（与前端 PublicHome 静态文案对齐）。
 func (a *API) blogSiteDefaults() map[string]string {
@@ -25,142 +22,35 @@ func (a *API) blogSiteDefaults() map[string]string {
 }
 
 // blogSiteGet 读取博客站点设置（公开；RSS/OG/公开页同源）。
-// 优先 per-site 配置（site_settings），未命中回退全局 blog.* 配置；最终回退默认值。
 func (a *API) blogSiteGet(w http.ResponseWriter, r *http.Request) {
+	keys := []string{"blog.title", "blog.description", "blog.logo", "blog.footer", "blog.seo_default", "blog.theme",
+		"blog.custom_css", "blog.custom_js", "blog.base_url", "blog.locale", "blog.ai_ask_open"}
 	def := a.blogSiteDefaults()
 	out := map[string]string{
-		"title":                  def["title"],
-		"description":            def["description"],
-		"logo":                   def["logo"],
-		"footer":                 def["footer"],
-		"seo_default":            def["seo_default"],
-		"theme":                  def["theme"],
-		"custom_css":             def["custom_css"],
-		"custom_js":              def["custom_js"],
-		"base_url":               def["base_url"],
-		"locale":                 def["locale"],
-		"ai_ask_open":            "true",
-		"allow_visitor_theme_switch": "true",
+		"title":       def["title"],
+		"description": def["description"],
+		"logo":        def["logo"],
+		"footer":      def["footer"],
+		"seo_default": def["seo_default"],
+		"theme":       def["theme"],
+		"custom_css":  def["custom_css"],
+		"custom_js":   def["custom_js"],
+		"base_url":    def["base_url"],
+		"locale":      def["locale"],
+		"ai_ask_open": "true", // 默认开；settings 有显式 false 时被下方循环覆盖，主题据此隐藏 AI 对话窗
 	}
-	if ss := a.requestSiteSettings(r); ss != nil {
-		// per-site 配置覆盖默认值
-		if ss.Title != "" {
-			out["title"] = ss.Title
-		}
-		if ss.Subtitle != "" {
-			out["description"] = ss.Subtitle
-		} else if ss.SEODescription != "" {
-			out["description"] = ss.SEODescription
-		}
-		if ss.DefaultTheme != "" {
-			out["theme"] = ss.DefaultTheme
-		}
-		if ss.Locale != "" {
-			out["locale"] = ss.Locale
-		}
-		out["allow_visitor_theme_switch"] = boolToStr(ss.AllowVisitorThemeSwitch)
-		// 兜底字段（logo/favicon/footer/seo_default/custom_css/custom_js/icp 等）从 Ext 读取
-		var ext map[string]any
-		if len(ss.Ext) > 0 {
-			_ = json.Unmarshal(ss.Ext, &ext)
-		}
-		if ext != nil {
-			for _, k := range []string{"logo", "footer", "seo_default", "custom_css", "custom_js", "base_url", "favicon", "icp"} {
-				if v, ok := ext[k].(string); ok && v != "" {
-					out[k] = v
-				}
-			}
-		}
-	} else {
-		// 回退：全局 blog.* 配置（站点配置表未建/未命中时）
-		keys := []string{"blog.title", "blog.description", "blog.logo", "blog.footer", "blog.seo_default", "blog.theme",
-			"blog.custom_css", "blog.custom_js", "blog.base_url", "blog.locale", "blog.ai_ask_open"}
-		for _, k := range keys {
-			if v, ok := a.cfg.Get(k); ok {
-				if s, _ := v.(string); s != "" {
-					key := k[len("blog."):]
-					out[key] = s
-				}
+	for _, k := range keys {
+		if v, ok := a.cfg.Get(k); ok {
+			if s, _ := v.(string); s != "" {
+				key := k[len("blog."):]
+				out[key] = s
 			}
 		}
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
 		"site": out,
-		// 主题候选：常驻内置 + 已登记主题 + data/themes 下已安装的外置主题（应用中心装 theme
-		// 包即出现，无需改前端白名单 / 重新编译）。前端据此渲染下拉，静态页主题会标注"交互版回退默认"。
-		"theme_options": a.blogThemeOptions(out["theme"]),
+		// 主题候选：内置 + data/themes 下已安装的外置主题（应用中心装 theme 包即出现，
+		// 无需改前端白名单 / 重新编译）。前端据此渲染下拉，静态页主题会标注"交互版回退默认"。
+		"theme_options": blogThemeOptions(out["theme"]),
 	})
-}
-
-// publicBlogThemes GET /api/v1/public/blog/themes（公开）：已安装博客主题列表。
-// 来源 = blog_plugins kind=theme 且 enabled=1（应用中心「主题」类别装/卸 + 升级迁移自动登记驱动）。
-// 前端懒加载基座据此决定哪些主题注册进切换器（未安装不注册、不请求主题 chunk）。
-func (a *API) publicBlogThemes(w http.ResponseWriter, r *http.Request) {
-	type themeItem struct {
-		ID      string `json:"id"`
-		Title   string `json:"title"`
-		Version string `json:"version,omitempty"`
-	}
-	items := []themeItem{}
-	if a.db != nil {
-		rows, err := a.db.QueryContext(r.Context(),
-			`SELECT id, COALESCE(name,''), COALESCE(version,'') FROM blog_plugins
-			 WHERE kind='theme' AND enabled=1 ORDER BY created_at ASC`)
-		if err == nil {
-			for rows.Next() {
-				var it themeItem
-				if rows.Scan(&it.ID, &it.Title, &it.Version) == nil && validThemeID(it.ID) {
-					if it.Title == "" {
-						it.Title = it.ID
-					}
-					items = append(items, it)
-				}
-			}
-			rows.Close()
-		}
-	}
-	writeJSON(w, http.StatusOK, map[string]any{"items": items})
-}
-
-// publicBlogEditors GET /api/v1/public/blog/editors（公开）：可选文章编辑器列表。
-// 来源 = 常驻兜底 plain + blog_plugins kind=editor 且 enabled=1（应用中心「编辑器」类别装/卸驱动）。
-// 写作轨与阅读页快编轨共用此列表渲染「编辑器」下拉（两轨一致）；plain 恒在列。
-func (a *API) publicBlogEditors(w http.ResponseWriter, r *http.Request) {
-	type editorItem struct {
-		ID          string `json:"id"`
-		Title       string `json:"title"`
-		Description string `json:"description,omitempty"`
-		Version     string `json:"version,omitempty"`
-	}
-	items := []editorItem{{
-		ID:          "plain",
-		Title:       "极简 Markdown",
-		Description: "分栏编辑 + 实时预览（常驻兜底，不可卸载）",
-	}}
-	if a.db != nil {
-		rows, err := a.db.QueryContext(r.Context(),
-			`SELECT id, COALESCE(name,''), COALESCE(description,''), COALESCE(version,'') FROM blog_plugins
-			 WHERE kind='editor' AND enabled=1 ORDER BY created_at ASC`)
-		if err == nil {
-			for rows.Next() {
-				var it editorItem
-				if rows.Scan(&it.ID, &it.Title, &it.Description, &it.Version) == nil && it.ID != "plain" {
-					if it.Title == "" {
-						it.Title = it.ID
-					}
-					items = append(items, it)
-				}
-			}
-			rows.Close()
-		}
-	}
-	writeJSON(w, http.StatusOK, map[string]any{"items": items})
-}
-
-// boolToStr 布尔转 "true"/"false"（与既有 ai_ask_open 字符串约定一致）。
-func boolToStr(b bool) string {
-	if b {
-		return "true"
-	}
-	return "false"
 }

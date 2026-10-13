@@ -12,7 +12,6 @@
   "dependencies": {
     "chart.js": "^4.5.1",
     "dompurify": "^3.4.15",
-    "echarts": "^5.5.0",
     "highlight.js": "^11.11.1",
     "katex": "^0.18.7",
     "marked": "^15.0.4",

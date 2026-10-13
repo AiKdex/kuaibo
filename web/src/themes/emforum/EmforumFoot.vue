@@ -3,7 +3,7 @@
   <footer class="ef-footer">
     <div class="ef-wrap">
       <div class="ef-foot-links">
-        <a :href="blogUrl">{{ $t('文章') }}</a>
+        <a :href="blogUrl">文章</a>
         <a :href="rssHref">RSS</a>
         <a href="/api/v1/blog/sitemap.xml">Sitemap</a>
       </div>

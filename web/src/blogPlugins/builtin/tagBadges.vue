@@ -1,8 +1,8 @@
 <template>
   <!-- list_item 挂载点示例：文章列表项内显示分类徽章（协议演示，第三方可替换/删除） -->
   <span v-if="ctx.post" class="li-badges">
-    <span v-if="cat" class="li-badge" :title="$t('分类：') + cat">{{ cat }}</span>
-    <span class="li-badge src" :title="$t('来源：爱库录知识库')">{{ $t('知识库') }}</span>
+    <span v-if="cat" class="li-badge" :title="'分类：' + cat">{{ cat }}</span>
+    <span class="li-badge src" title="来源：爱库录知识库">知识库</span>
   </span>
 </template>
 

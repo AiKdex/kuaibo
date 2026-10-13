@@ -2,7 +2,7 @@
   <!-- 内置示例插件：文章元信息（协议首个实例，第三方照此格式开发） -->
   <div class="bpf-meta">
     <span v-if="ctx.category" class="bpf-tag">{{ ctx.category }}</span>
-    <span v-if="ctx.updatedAt" class="bpf-item">{{ $t('更新于') }} {{ fmt(ctx.updatedAt) }}</span>
+    <span v-if="ctx.updatedAt" class="bpf-item">更新于 {{ fmt(ctx.updatedAt) }}</span>
     <span v-if="ctx.size" class="bpf-item">{{ size(ctx.size) }}</span>
   </div>
 </template>

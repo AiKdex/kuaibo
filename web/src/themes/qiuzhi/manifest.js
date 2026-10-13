@@ -1,4 +1,3 @@
-import { t } from '@/i18n'
 /**
  * 求智主题 manifest —— 博客主题插件第一个实战（源自第四方「求智」就业情报 webUI）。
  *
@@ -12,16 +11,16 @@ import { t } from '@/i18n'
  */
 export default {
   id: 'qiuzhi',
-  title: t('求智 · 就业情报'),
+  title: '求智 · 就业情报',
   desc: '岗位情报 + 培训补贴联动：地区/类型/薪资筛选、我的条件匹配、三态岗位、过期触动、补贴直达（采集型视图）',
   version: '0.1.0',
   pages: ['jobs', 'training'],
   tokens: {
     // 设计令牌（style.css .qz-root 定义，--th-* 前缀防污染主应用）
-    '--th-ink': t('主文字色'), '--th-paper': t('页面底色'), '--th-card': t('卡片底色'),
-    '--th-c-main': t('主色(青) 品牌/链接'), '--th-c-coral': t('强调色(珊瑚) 薪资/缺口'),
-    '--th-c-mint': t('进行中/补贴'), '--th-c-amber': t('即将开启'), '--th-c-sky': t('来源链接'),
-    '--th-st-live': t('进行中状态色'), '--th-st-soon': t('即将开启状态色'), '--th-st-ended': t('已结束状态色')
+    '--th-ink': '主文字色', '--th-paper': '页面底色', '--th-card': '卡片底色',
+    '--th-c-main': '主色(青) 品牌/链接', '--th-c-coral': '强调色(珊瑚) 薪资/缺口',
+    '--th-c-mint': '进行中/补贴', '--th-c-amber': '即将开启', '--th-c-sky': '来源链接',
+    '--th-st-live': '进行中状态色', '--th-st-soon': '即将开启状态色', '--th-st-ended': '已结束状态色'
   },
   dataSources: ['collect'], // collect=采集型视图（特殊场景，非通用博客主题）
   dataScope: 'library' // library=直读文件库（采集目录+标签）。自用内页特例：

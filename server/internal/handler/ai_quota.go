@@ -5,6 +5,7 @@
 package handler
 
 import (
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -45,14 +46,19 @@ func (a *API) aiAskIdent(r *http.Request) (ident, tier string) {
 			return "u:" + uid, "user"
 		}
 	}
-	return "ip:" + a.aiClientIP(r), "guest"
+	return "ip:" + aiClientIP(r), "guest"
 }
 
-// aiClientIP 取客户端 IP（M12 修复：与登录限流同一口径，走 a.clientIP——
-// 默认只用 RemoteAddr，仅 security.trust_proxy=true 时才信任 X-Real-IP/X-Forwarded-For，
-// 否则访客可伪造请求头绕过 AI 问答配额。RemoteAddr 必须剥端口，否则每次连接都成新 ident）。
-func (a *API) aiClientIP(r *http.Request) string {
-	return a.clientIP(r)
+// aiClientIP 取客户端 IP（X-Real-IP 优先；RemoteAddr 必须剥端口，否则每次连接都成新 ident——
+// 原突发限流即因此形同虚设，本次一并修复）。
+func aiClientIP(r *http.Request) string {
+	if xff := r.Header.Get("X-Real-IP"); xff != "" {
+		return strings.TrimSpace(xff)
+	}
+	if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
+		return host
+	}
+	return r.RemoteAddr
 }
 
 // aiAskQuotaFor 身份层日配额。admin 0=不限；user 缺省 10；guest 缺省 3、显式 0=关闭游客使用。

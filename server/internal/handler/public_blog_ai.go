@@ -5,9 +5,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -63,7 +61,7 @@ func (a *API) publicBlogAsk(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	ip := a.aiClientIP(r)
+	ip := aiClientIP(r)
 	if !blogAskAllowed(ip) {
 		writeErr(w, http.StatusTooManyRequests, "BLOG_ASK_RATE", "提问过于频繁，请稍后再试")
 		return
@@ -117,7 +115,7 @@ func (a *API) publicBlogAsk(w http.ResponseWriter, r *http.Request) {
 	b.WriteString("你只基于下列「公开博客目录」回答读者问题；目录之外的内容不得编造。\n")
 	b.WriteString("若信息不足，明确说不知道。\n\n公开文章目录：\n")
 	if blogDirID != "" {
-		if files, err := a.collectBlogArticles(r.Context(), blogDirID, currentSiteID(r)); err == nil {
+		if files, err := a.collectDirFiles(r.Context(), blogDirID); err == nil {
 			n := 0
 			for _, it := range files {
 				if n >= 40 {
@@ -136,17 +134,6 @@ func (a *API) publicBlogAsk(w http.ResponseWriter, r *http.Request) {
 	}
 	if req.Path != "" {
 		fmt.Fprintf(&b, "\n读者当前正在阅读：%s\n", req.Path)
-	}
-
-	// 多租户计费（SPEC-BILLING）：站点档位日额度准入——超限直接拒，不进模型。
-	// 记在真正要花钱的调用点之前（而非事后统计），避免超发。
-	if err := a.billingSvc().AddAIUsage(r.Context(), service.DefaultSiteID); err != nil {
-		if errors.Is(err, service.ErrQuotaExceeded) {
-			writeErr(w, http.StatusPaymentRequired, "QUOTA_EXCEEDED", err.Error())
-			return
-		}
-		// 计量失败不阻断业务（计费是增强项，不能因记账故障让博客问答全挂）
-		log.Printf("[billing] ai usage 计量失败：%v", err)
 	}
 
 	res, err := a.ai.ChatJSON(r.Context(), []ai.Msg{
@@ -216,8 +203,6 @@ func (a *API) publicBlogPV(w http.ResponseWriter, r *http.Request) {
 		if fid := a.resolveBlogFileID(r.Context(), key); fid != "" {
 			_, _ = a.db.ExecContext(r.Context(),
 				`UPDATE files SET view_count=view_count+1 WHERE id=?`, fid)
-			// A5：同口径按天累加，供阅读热力图/趋势/站级看板（写入口唯一=此处）。
-			a.recordViewEvent(r.Context(), fid)
 		}
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"ok": true, "pv": n})

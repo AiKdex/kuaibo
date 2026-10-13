@@ -5,11 +5,11 @@
       <div class="pa-header-in">
         <div class="pa-brand">
           <div class="pa-name">{{ siteName || '爱库录' }}</div>
-          <p>{{ siteDesc || $t("目录即站点，文件即文章") }}</p>
+          <p>{{ siteDesc || '目录即站点，文件即文章' }}</p>
         </div>
         <nav class="pa-nav">
           <ThemeSwitch />
-          <a :href="blogUrl" class="active">{{ $t('文章') }}</a>
+          <a :href="blogUrl" class="active">文章</a>
           <a href="/api/v1/blog/feed.xml">RSS</a>
         </nav>
       </div>
@@ -17,11 +17,9 @@
 
     <!-- Featured Post -->
     <a v-if="featured" :href="postUrl(featured)" class="pa-feat">
-      <PostCover :post="featured" round>
-        <div class="pa-feat-img">
-          <div class="pa-feat-ph" :style="getGradient(featured)">{{ getEmoji(featured) }}</div>
-        </div>
-      </PostCover>
+      <div class="pa-feat-img">
+        <div class="pa-feat-ph" :style="getGradient(featured)">{{ getEmoji(featured) }}</div>
+      </div>
       <div class="pa-feat-body">
         <span v-if="getCategory(featured)" class="pa-cat">{{ getCategory(featured) }}</span>
         <h2>{{ getTitle(featured) }}</h2>
@@ -44,11 +42,9 @@
             :href="postUrl(post)"
             class="pa-card"
           >
-            <PostCover :post="post" round>
-              <div class="pa-card-img">
-                <div class="pa-card-ph" :style="getGradient(post)">{{ getEmoji(post) }}</div>
-              </div>
-            </PostCover>
+            <div class="pa-card-img">
+              <div class="pa-card-ph" :style="getGradient(post)">{{ getEmoji(post) }}</div>
+            </div>
             <div class="pa-card-body">
               <span v-if="getCategory(post)" class="pa-cat-sm">{{ getCategory(post) }}</span>
               <h3>{{ getTitle(post) }}</h3>
@@ -67,21 +63,21 @@
           <div class="sb-about">
             <div class="sb-avatar">{{ (siteName || 'A')[0] }}</div>
             <h3>{{ siteName || '爱库录' }}</h3>
-            <p>{{ siteDesc || $t("目录即站点，文件即文章") }}</p>
+            <p>{{ siteDesc || '目录即站点，文件即文章' }}</p>
           </div>
         </div>
 
         <div class="sb sb-ai">
-          <h4>{{ $t('🤖 AI 问答') }}</h4>
+          <h4>🤖 AI 问答</h4>
           <div class="sb-ai-box">
-            <input v-model="aiQuery" :placeholder="$t('问点什么...')" @keyup.enter="askAI" />
-            <button @click="askAI">{{ $t('问') }}</button>
+            <input v-model="aiQuery" placeholder="问点什么..." @keyup.enter="askAI" />
+            <button @click="askAI">问</button>
           </div>
           <p v-if="aiAnswer" class="sb-ai-ans">{{ aiAnswer }}</p>
         </div>
 
         <div v-if="tags && tags.length" class="sb">
-          <h4>{{ $t('标签') }}</h4>
+          <h4>标签</h4>
           <div class="sb-tags">
             <a v-for="t in tags" :key="t" :href="blogUrl + '?tag=' + encodeURIComponent(t)">{{ t }}</a>
           </div>
@@ -91,22 +87,18 @@
 
     <!-- Footer -->
     <footer class="pa-footer">
-      <p>© 2026 {{ siteName || '爱库录' }} {{ $t('· 目录即站点，文件即文章') }}</p>
+      <p>© 2026 {{ siteName || '爱库录' }} · 目录即站点，文件即文章</p>
       <div class="pa-footer-links">
         <a href="/api/v1/blog/feed.xml">RSS</a>
-        <a :href="blogUrl">{{ $t('博客') }}</a>
+        <a :href="blogUrl">博客</a>
       </div>
     </footer>
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import { t } from '@/i18n'
-import AskWidget from '../AskWidget.vue'
 import { computed, ref, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
-import PostCover from '@/components/PostCover.vue'
 import './style.css'
 
 const raw = inject('themeContext')
@@ -133,7 +125,7 @@ function postUrl(p) {
 
 function getTitle(p) {
   const name = p.file?.name || p.path || ''
-  return name.replace(/\.md$/i, '').split('/').pop() || t('common.unnamed')
+  return name.replace(/\.md$/i, '').split('/').pop() || '无标题'
 }
 
 function getSummary(p) {
@@ -168,16 +160,16 @@ function getGradient(p) { return { background: gradientMap[getCategory(p)] || 'l
 
 async function askAI() {
   if (!aiQuery.value.trim()) return
-  aiAnswer.value = t('思考中...')
+  aiAnswer.value = '思考中...'
   try {
     const res = await fetch('/api/v1/public/blog/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question: aiQuery.value })
     })
-    if (res.status === 429) { aiAnswer.value = t('提问太频繁，请 5 分钟后再试'); return }
+    if (res.status === 429) { aiAnswer.value = '提问太频繁，请 5 分钟后再试'; return }
     const data = await res.json()
-    aiAnswer.value = data.reply || data.answer || t('暂无回答')
-  } catch { aiAnswer.value = t('请求失败，请稍后重试') }
+    aiAnswer.value = data.reply || data.answer || '暂无回答'
+  } catch { aiAnswer.value = '请求失败，请稍后重试' }
 }
 </script>

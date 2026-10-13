@@ -42,8 +42,6 @@ type File struct {
 	UpdatedAt    int64  `json:"updated_at"`
 	PinScope     string `json:"pin_scope,omitempty"` // 文章置顶范围（2.1 置顶底座）：none|category|global
 	PinOrder     *int64 `json:"pin_order,omitempty"` // 置顶排序权重（同 scope 内升序；nil=未设）
-	ViewCount    int64  `json:"view_count"`          // 累计阅读量（files.view_count 列；WebDAV/Org 列表展示用）
-	SiteID       string `json:"site_id,omitempty"`   // 多站点归属（SPEC-MS-001）：内容隔离核心；缺省 'default'
 }
 
 var (
@@ -53,8 +51,6 @@ var (
 	ErrConflict = errors.New("service: name conflict")
 	// ErrInvalidName 非法名称（空/斜杠/..）。
 	ErrInvalidName = errors.New("service: invalid name")
-	// ErrForbidden 无写权限（C3：调用者对目标文件所在空间无写权限）。
-	ErrForbidden = errors.New("service: forbidden")
 )
 
 // FileStore 文件服务：元数据在 SQLite，内容在存储后端（受管写入）。
@@ -108,7 +104,7 @@ func now() int64 { return time.Now().UnixMilli() }
 func scanFile(row interface{ Scan(...any) error }) (*File, error) {
 	var f File
 	var parentID, mime, sha, state sql.NullString
-	if err := row.Scan(&f.ID, &f.SpaceID, &f.OwnerID, &parentID, &f.Name, &f.Kind, &mime, &f.Size, &sha, &f.StorageRef, &f.Version, &state, &f.CreatedAt, &f.UpdatedAt, &f.SiteID); err != nil {
+	if err := row.Scan(&f.ID, &f.SpaceID, &f.OwnerID, &parentID, &f.Name, &f.Kind, &mime, &f.Size, &sha, &f.StorageRef, &f.Version, &state, &f.CreatedAt, &f.UpdatedAt); err != nil {
 		return nil, err
 	}
 	f.ParentID = parentID.String
@@ -122,7 +118,7 @@ func scanFile(row interface{ Scan(...any) error }) (*File, error) {
 	return &f, nil
 }
 
-const fileCols = `id, space_id, owner_id, parent_id, name, kind, mime, size, sha256, storage_ref, version, content_state, created_at, updated_at, site_id`
+const fileCols = `id, space_id, owner_id, parent_id, name, kind, mime, size, sha256, storage_ref, version, content_state, created_at, updated_at`
 
 // getByID 内部查询。
 func (s *FileStore) getByID(ctx context.Context, id string) (*File, error) {
@@ -135,36 +131,6 @@ func (s *FileStore) getByID(ctx context.Context, id string) (*File, error) {
 		return nil, err
 	}
 	return f, nil
-}
-
-// requireSpaceWrite 校验调用者对目标空间有写权限（C3：文件写操作归属校验，
-// 防任意登录用户删改他人文件；服务层兜底——即使某端点漏加 handler 守卫也不会绕过）。
-// 放行条件（任一）：
-//   - ownerID 为空或系统 owner（SystemOwnerID）：内部/系统调用（桥接器、定时任务、服务令牌、AI 编排）
-//   - spaces.owner_id = ownerID：空间所有者（全权）
-//   - space_members.role = 'editor'：协作空间成员（可写；viewer 只读，拒绝）
-//
-// AiKlog 适配：本 fork 的博客内容统一落在站长 home 空间，handler 侧由 writeActor 把
-// 「站长/管理员/作者白名单成员」归一为站长主体，因此作者与内部调用均命中第 1/2 条；
-// 未被授权的一般登录用户其真实 uid 不命中任何一条 → ErrForbidden。
-func (s *FileStore) requireSpaceWrite(ctx context.Context, ownerID, spaceID string) error {
-	if ownerID == "" || ownerID == SystemOwnerID {
-		return nil
-	}
-	var oid string
-	if err := s.db.QueryRowContext(ctx, `SELECT owner_id FROM spaces WHERE id=?`, spaceID).Scan(&oid); err != nil {
-		return ErrNotFound
-	}
-	if oid == ownerID {
-		return nil
-	}
-	var role string
-	err := s.db.QueryRowContext(ctx,
-		`SELECT role FROM space_members WHERE space_id=? AND user_id=?`, spaceID, ownerID).Scan(&role)
-	if err == nil && role == "editor" {
-		return nil
-	}
-	return ErrForbidden
 }
 
 // splitTokens 拆词：按空白与中英文标点切分（解决中文整串 LIKE 不命中）。
@@ -231,7 +197,7 @@ func (s *FileStore) checkConflict(ctx context.Context, spaceID, parentID, name, 
 }
 
 // CreateDir 创建目录。
-func (s *FileStore) CreateDir(ctx context.Context, ownerID, spaceID, parentID, name, siteID string) (*File, error) {
+func (s *FileStore) CreateDir(ctx context.Context, ownerID, spaceID, parentID, name string) (*File, error) {
 	if !validName(name) {
 		return nil, ErrInvalidName
 	}
@@ -252,9 +218,9 @@ func (s *FileStore) CreateDir(ctx context.Context, ownerID, spaceID, parentID, n
 		return nil, err
 	}
 	_, err = s.db.ExecContext(ctx,
-		`INSERT INTO files (id, space_id, owner_id, parent_id, name, kind, storage_ref, version, content_state, created_at, updated_at, site_id)
-		 VALUES (?,?,?,?,?, 'dir', ?, 1, '{"visibility":"private","status":"draft"}', ?, ?, ?)`,
-		id, spaceID, ownerID, nullIfEmpty(parentID), name, ref, ts, ts, siteID)
+		`INSERT INTO files (id, space_id, owner_id, parent_id, name, kind, storage_ref, version, content_state, created_at, updated_at)
+		 VALUES (?,?,?,?,?, 'dir', ?, 1, '{"visibility":"private","status":"draft"}', ?, ?)`,
+		id, spaceID, ownerID, nullIfEmpty(parentID), name, ref, ts, ts)
 	if err != nil {
 		// DB 写入失败：补偿删除刚建的磁盘目录，保持两侧一致（避免留下空目录实体）
 		_ = s.st.Delete(ctx, storagePath(spaceID, ref))
@@ -266,7 +232,7 @@ func (s *FileStore) CreateDir(ctx context.Context, ownerID, spaceID, parentID, n
 }
 
 // Upload 上传文件（multipart 或流式均可；size 为已知长度，未知传 -1）。
-func (s *FileStore) Upload(ctx context.Context, ownerID, spaceID, parentID, name, mime string, r io.Reader, size int64, siteID string) (*File, error) {
+func (s *FileStore) Upload(ctx context.Context, ownerID, spaceID, parentID, name, mime string, r io.Reader, size int64) (*File, error) {
 	if !validName(name) {
 		return nil, ErrInvalidName
 	}
@@ -304,9 +270,9 @@ func (s *FileStore) Upload(ctx context.Context, ownerID, spaceID, parentID, name
 	sum := hex.EncodeToString(hasher.Sum(nil))
 	ts := now()
 	_, err = s.db.ExecContext(ctx,
-		`INSERT INTO files (id, space_id, owner_id, parent_id, name, kind, mime, size, sha256, storage_ref, version, content_state, created_at, updated_at, site_id)
-		 VALUES (?,?,?,?,?, 'file', ?, ?, ?, ?, 1, '{"visibility":"private","status":"published"}', ?, ?, ?)`,
-		id, spaceID, ownerID, nullIfEmpty(parentID), finalName, mime, size, sum, ref, ts, ts, siteID)
+		`INSERT INTO files (id, space_id, owner_id, parent_id, name, kind, mime, size, sha256, storage_ref, version, content_state, created_at, updated_at)
+		 VALUES (?,?,?,?,?, 'file', ?, ?, ?, ?, 1, '{"visibility":"private","status":"published"}', ?, ?)`,
+		id, spaceID, ownerID, nullIfEmpty(parentID), finalName, mime, size, sum, ref, ts, ts)
 	if err != nil {
 		return nil, err
 	}
@@ -325,15 +291,15 @@ func (s *FileStore) Upload(ctx context.Context, ownerID, spaceID, parentID, name
 }
 
 // ListDir 列出目录内容（按名称排序，目录在前）。
-func (s *FileStore) ListDir(ctx context.Context, spaceID, parentID, siteID string) ([]*File, error) {
+func (s *FileStore) ListDir(ctx context.Context, spaceID, parentID string) ([]*File, error) {
 	var rows *sql.Rows
 	var err error
 	if parentID == "" {
 		rows, err = s.db.QueryContext(ctx,
-			`SELECT `+fileCols+` FROM files WHERE space_id=? AND parent_id IS NULL AND site_id=? AND deleted_at IS NULL ORDER BY (kind='dir') DESC, name COLLATE NOCASE`, spaceID, siteID)
+			`SELECT `+fileCols+` FROM files WHERE space_id=? AND parent_id IS NULL AND deleted_at IS NULL ORDER BY (kind='dir') DESC, name COLLATE NOCASE`, spaceID)
 	} else {
 		rows, err = s.db.QueryContext(ctx,
-			`SELECT `+fileCols+` FROM files WHERE space_id=? AND parent_id=? AND site_id=? AND deleted_at IS NULL ORDER BY (kind='dir') DESC, name COLLATE NOCASE`, spaceID, parentID, siteID)
+			`SELECT `+fileCols+` FROM files WHERE space_id=? AND parent_id=? AND deleted_at IS NULL ORDER BY (kind='dir') DESC, name COLLATE NOCASE`, spaceID, parentID)
 	}
 	if err != nil {
 		return nil, err
@@ -468,11 +434,11 @@ func (s *FileStore) Search(ctx context.Context, opts SearchOpts) ([]SearchHit, e
 	defer rows.Close()
 	out := []SearchHit{}
 	for rows.Next() {
-		// modernc sqlite 驱动要求一次 Scan 全部列：fileCols(15) + score(1)
+		// modernc sqlite 驱动要求一次 Scan 全部列：fileCols(14) + score(1)
 		var f File
 		var parentID, mime, sha, state sql.NullString
 		var score int
-		if err := rows.Scan(&f.ID, &f.SpaceID, &f.OwnerID, &parentID, &f.Name, &f.Kind, &mime, &f.Size, &sha, &f.StorageRef, &f.Version, &state, &f.CreatedAt, &f.UpdatedAt, &f.SiteID, &score); err != nil {
+		if err := rows.Scan(&f.ID, &f.SpaceID, &f.OwnerID, &parentID, &f.Name, &f.Kind, &mime, &f.Size, &sha, &f.StorageRef, &f.Version, &state, &f.CreatedAt, &f.UpdatedAt, &score); err != nil {
 			return nil, err
 		}
 		f.ParentID = parentID.String
@@ -508,26 +474,8 @@ func (s *FileStore) Content(ctx context.Context, id string) (io.ReadCloser, *Fil
 	return rc, f, nil
 }
 
-// LocalPath 返回文件在**本地磁盘后端**上的宿主机绝对路径。
-//
-// 仅当存储后端实现 storage.PathLocator（本地盘 / 本地挂载点）时可用；
-// 远程后端（S3 / WebDAV）一律 ok=false，调用方据此降级为
-// probe_status='unsupported' —— 不要为此把整个对象拉回本地（音视频动辄数百 MB，
-// 代价远大于「这次探测不到」）。
-func (s *FileStore) LocalPath(ctx context.Context, id string) (string, bool) {
-	f, err := s.getByID(ctx, id)
-	if err != nil || f.Kind != "file" {
-		return "", false
-	}
-	loc, ok := s.st.(storage.PathLocator)
-	if !ok {
-		return "", false
-	}
-	return loc.LocalPath(storagePath(f.SpaceID, f.StorageRef))
-}
-
 // CreateDoc 新建文档（文本类文件，带初始内容；用于"新建文档/笔记"入口）。
-func (s *FileStore) CreateDoc(ctx context.Context, ownerID, spaceID, parentID, name, content, siteID string) (*File, error) {
+func (s *FileStore) CreateDoc(ctx context.Context, ownerID, spaceID, parentID, name, content string) (*File, error) {
 	if !validName(name) {
 		return nil, ErrInvalidName
 	}
@@ -539,7 +487,7 @@ func (s *FileStore) CreateDoc(ctx context.Context, ownerID, spaceID, parentID, n
 	if strings.HasSuffix(name, ".md") || strings.HasSuffix(name, ".markdown") {
 		mime = "text/markdown"
 	}
-	f, err := s.Upload(ctx, ownerID, spaceID, parentID, name, mime, strings.NewReader(content), int64(len(content)), siteID)
+	f, err := s.Upload(ctx, ownerID, spaceID, parentID, name, mime, strings.NewReader(content), int64(len(content)))
 	if err != nil {
 		return nil, err
 	}
@@ -559,19 +507,11 @@ func (s *FileStore) UpdateContent(ctx context.Context, ownerID, id, content stri
 	if err != nil {
 		return nil, err
 	}
-	if err := s.requireSpaceWrite(ctx, ownerID, f.SpaceID); err != nil {
-		return nil, err
-	}
 	if f.Kind != "file" {
 		return nil, errors.New("service: not a file")
 	}
 	if !isTextMime(f.Mime) {
 		return nil, errors.New("service: only text files are editable")
-	}
-	// B5 版本历史：覆盖写前先给「旧内容」留快照（v=f.Version，必须在 Put 之前）。
-	// 快照失败只记审计、不阻断本次保存 —— 版本历史是增值能力，不该连累用户这次编辑。
-	if err := s.SaveVersion(ctx, ownerID, id, f.Version, "编辑前快照"); err != nil {
-		_, _ = s.aud.Append(ctx, ownerID, "version.snapshot_failed", id, map[string]any{"version": f.Version, "err": err.Error()})
 	}
 	if err := s.st.Put(ctx, storagePath(f.SpaceID, f.StorageRef), strings.NewReader(content), int64(len(content))); err != nil {
 		return nil, err
@@ -599,103 +539,29 @@ func (s *FileStore) UpdateContent(ctx context.Context, ownerID, id, content stri
 	return nf, nil
 }
 
-// ReplaceContentBinary 二进制覆盖写：保持文件名与位置不变，仅替换内容与哈希（版本自增）。
-// 与 Upload 的区别：Upload 遇同名会加后缀另存，本方法是「原地覆盖」——WebDAV PUT 已存在文件的
-// 语义要求（否则每次保存都会复制出新文件）。任意 mime 均可（不限文本）。
-func (s *FileStore) ReplaceContentBinary(ctx context.Context, ownerID, id string, r io.Reader, size int64) (*File, error) {
-	f, err := s.getByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	if err := s.requireSpaceWrite(ctx, ownerID, f.SpaceID); err != nil {
-		return nil, err
-	}
-	if f.Kind != "file" {
-		return nil, errors.New("service: not a file")
-	}
-	// 调用方常复用同一个 *os.File（写完未回绕），此处统一回绕，避免写入空内容
-	if sk, ok := r.(io.Seeker); ok {
-		if _, err := sk.Seek(0, io.SeekStart); err != nil {
-			return nil, fmt.Errorf("service: 内容流回绕失败: %w", err)
-		}
-	}
-	// B5 版本历史：二进制覆盖前快照旧内容（同样失败不阻断）。
-	if err := s.SaveVersion(ctx, ownerID, id, f.Version, "二进制覆盖前快照"); err != nil {
-		_, _ = s.aud.Append(ctx, ownerID, "version.snapshot_failed", id, map[string]any{"version": f.Version, "err": err.Error()})
-	}
-	if err := s.st.Put(ctx, storagePath(f.SpaceID, f.StorageRef), r, size); err != nil {
-		return nil, err
-	}
-	ts := now()
-	// 哈希留空：二进制大文件不做全量重算（内容以存储后端为准，sha256 由上传侧提供/可选）
-	if _, err := s.db.ExecContext(ctx,
-		`UPDATE files SET size=?, version=version+1, updated_at=? WHERE id=?`, size, ts, id); err != nil {
-		return nil, err
-	}
-	s.b.Publish(ctx, bus.Event{Topic: "file.updated", Key: id, Data: map[string]any{"kind": "file", "size": size, "version": f.Version + 1, "via": "replace_binary"}})
-	_, _ = s.aud.Append(ctx, ownerID, "file.replace_binary", id, map[string]any{"name": f.Name, "size": size, "version": f.Version + 1})
-	nf, err := s.getByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	// 文本文件覆盖后重索引（内容变了，旧 chunks/向量/摘要失效）
-	if isTextMime(nf.Mime) {
-		if err := s.IndexFile(ctx, nf); err != nil {
-			_, _ = s.aud.Append(ctx, ownerID, "index.failed", id, map[string]any{"name": nf.Name, "err": err.Error()})
-		}
-	}
-	return nf, nil
-}
-
 // isTextMime 判断是否文本类文件（可在线编辑）。
-//
-// 结构化白名单：前缀 text/、后缀 +json/+xml，或下方显式枚举的 application/* 文本类型。
-// 历史实现用 strings.Contains 做子串匹配，会把
-// "application/vnd.openxmlformats-officedocument.wordprocessingml.document"（.docx/.xlsx/.pptx）
-// 里的 "xml" 误判为文本 —— 于是二进制被当文本读出、再写回即损坏文件，故收紧为白名单。
 func isTextMime(mime string) bool {
 	if mime == "" {
 		return false
 	}
-	m := strings.ToLower(strings.TrimSpace(mime))
-	if i := strings.IndexByte(m, ';'); i >= 0 { // 去掉 charset 等参数
-		m = strings.TrimSpace(m[:i])
-	}
-	if strings.HasPrefix(m, "text/") {
-		return true
-	}
-	if strings.HasSuffix(m, "+json") || strings.HasSuffix(m, "+xml") {
-		return true
-	}
-	switch m {
-	case "application/json",
-		"application/xml",
-		"application/yaml",
-		"application/x-yaml",
-		"application/toml",
-		"application/x-toml",
-		"application/javascript",
-		"application/x-javascript",
-		"application/ecmascript",
-		"application/typescript",
-		"application/sql",
-		"application/x-sql",
-		"application/x-sh",
-		"application/x-shellscript",
-		"application/x-markdown",
-		"application/rtf":
-		return true
-	}
-	return false
+	return strings.HasPrefix(mime, "text/") ||
+		strings.Contains(mime, "markdown") ||
+		strings.Contains(mime, "json") ||
+		strings.Contains(mime, "xml") ||
+		strings.Contains(mime, "yaml") ||
+		strings.Contains(mime, "javascript") ||
+		strings.Contains(mime, "typescript") ||
+		strings.Contains(mime, "html") ||
+		strings.Contains(mime, "css") ||
+		strings.Contains(mime, "sql") ||
+		strings.Contains(mime, "csv") ||
+		strings.Contains(mime, "shell")
 }
 
 // Move 移动/重命名（同空间内）。newParentID 空 = 移到根；newName 空 = 保持原名。
 func (s *FileStore) Move(ctx context.Context, ownerID, id, newParentID, newName string) (*File, error) {
 	f, err := s.getByID(ctx, id)
 	if err != nil {
-		return nil, err
-	}
-	if err := s.requireSpaceWrite(ctx, ownerID, f.SpaceID); err != nil {
 		return nil, err
 	}
 	if newName == "" {
@@ -785,9 +651,6 @@ func (s *FileStore) Move(ctx context.Context, ownerID, id, newParentID, newName 
 func (s *FileStore) Copy(ctx context.Context, ownerID, id, targetParentID, newName string) (*File, error) {
 	f, err := s.getByID(ctx, id)
 	if err != nil {
-		return nil, err
-	}
-	if err := s.requireSpaceWrite(ctx, ownerID, f.SpaceID); err != nil {
 		return nil, err
 	}
 	if f.Kind == "dir" {
@@ -903,14 +766,6 @@ func (s *FileStore) SetStatus(ctx context.Context, ownerID, id, status string) (
 	if status != "draft" && status != "published" {
 		return nil, errors.New("service: invalid status")
 	}
-	// C3 修复：写操作前置归属校验（原实现直接按 id UPDATE，任意登录用户可改他人文章状态）
-	f, err := s.getByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	if err := s.requireSpaceWrite(ctx, ownerID, f.SpaceID); err != nil {
-		return nil, err
-	}
 	if _, err := s.db.ExecContext(ctx,
 		`UPDATE files SET content_state=json_set(content_state, '$.status', ?), updated_at=? WHERE id=? AND deleted_at IS NULL`,
 		status, now(), id); err != nil {
@@ -925,9 +780,6 @@ func (s *FileStore) SetStatus(ctx context.Context, ownerID, id, status string) (
 func (s *FileStore) Delete(ctx context.Context, ownerID, id string) error {
 	f, err := s.getByID(ctx, id)
 	if err != nil {
-		return err
-	}
-	if err := s.requireSpaceWrite(ctx, ownerID, f.SpaceID); err != nil {
 		return err
 	}
 	ts := now()
@@ -985,7 +837,7 @@ func (s *FileStore) EnsurePath(ctx context.Context, ownerID, spaceID, parentID, 
 				cur, seg).Scan(&id)
 		}
 		if err == sql.ErrNoRows {
-			d, err := s.CreateDir(ctx, ownerID, spaceID, cur, seg, DefaultSiteID)
+			d, err := s.CreateDir(ctx, ownerID, spaceID, cur, seg)
 			if err != nil {
 				return "", err
 			}
@@ -1021,26 +873,6 @@ func (f *File) State() (vis, status string) {
 		st.Status = "draft"
 	}
 	return st.Visibility, st.Status
-}
-
-// NodeType 读取内容类型（A-G 契约：content_state.node_type）。
-// 缺省空串，约定为普通文章（post）；资源站/导航站等生产场景由主题按此差异化渲染。
-func (f *File) NodeType() string {
-	var st struct {
-		NodeType string `json:"node_type"`
-	}
-	_ = json.Unmarshal([]byte(f.ContentState), &st)
-	return st.NodeType
-}
-
-// Fields 读取自定义业务字段（A-G 契约：content_state.fields）。
-// 例如资源条目 {"file_id":"...","download_price":990}、导航条目 {"url":"...","logo":"..."}。
-func (f *File) Fields() map[string]any {
-	var st struct {
-		Fields map[string]any `json:"fields"`
-	}
-	_ = json.Unmarshal([]byte(f.ContentState), &st)
-	return st.Fields
 }
 
 // ---- 回收站（软删视图 / 恢复 / 彻底删除 / 清空） ----
@@ -1104,9 +936,6 @@ func (s *FileStore) Restore(ctx context.Context, ownerID, id string) (*File, err
 	if err != nil {
 		return nil, err
 	}
-	if err := s.requireSpaceWrite(ctx, ownerID, f.SpaceID); err != nil {
-		return nil, err
-	}
 	newName := f.Name
 	base := newName
 	ext := ""
@@ -1167,9 +996,6 @@ func (s *FileStore) Purge(ctx context.Context, ownerID, id string) error {
 	if err != nil {
 		return err
 	}
-	if err := s.requireSpaceWrite(ctx, ownerID, f.SpaceID); err != nil {
-		return err
-	}
 	ids, err := s.trashSubtree(ctx, id)
 	if err != nil {
 		return err
@@ -1177,59 +1003,8 @@ func (s *FileStore) Purge(ctx context.Context, ownerID, id string) error {
 	if len(ids) == 0 {
 		return nil
 	}
-	args := make([]any, len(ids))
-	for i, v := range ids {
-		args[i] = v
-	}
-	// B5 版本历史：先把快照位置取出来（file_versions 行马上会随子表一起删除），稍后删 blob。
-	type verRef struct {
-		space string
-		fid   string
-		ver   int
-	}
-	var vrefs []verRef
-	if vrows, verr := s.db.QueryContext(ctx,
-		`SELECT f.space_id, fv.file_id, fv.version FROM file_versions fv
-		 JOIN files f ON f.id = fv.file_id WHERE fv.file_id IN (`+placeholders(len(ids))+`)`, args...); verr == nil {
-		for vrows.Next() {
-			var r verRef
-			if err := vrows.Scan(&r.space, &r.fid, &r.ver); err == nil {
-				vrefs = append(vrefs, r)
-			}
-		}
-		vrows.Close()
-	}
-	// B6：子树下的评论 id 先收集 —— comments 行马上会被删，而它们的 @提及 也要一起清。
-	var commentIDs []string
-	if crows, cerr := s.db.QueryContext(ctx,
-		`SELECT id FROM comments WHERE file_id IN (`+placeholders(len(ids))+`)`, args...); cerr == nil {
-		for crows.Next() {
-			var cid string
-			if crows.Scan(&cid) == nil {
-				commentIDs = append(commentIDs, cid)
-			}
-		}
-		crows.Close()
-	}
-	// B15 派生资产（缩略图等）：key 形态 spaces/{space}/.derived/{fid}/{name}，与 files 行**没有**
-	// 外键关系、子表清扫也覆不到 → 必须像 vrefs 一样在删行前把 (space, fid) 取出来，稍后按前缀清。
-	// 🔴 别指望「事后靠 file_media.thumbnail_ref 对账」：本函数下面的子表循环**已经**把 file_media
-	// 行删掉了（B8 起就如此），等对账跑到时行已不在 —— B15 实测踩到，缩略图会永久残留。
-	type derRef struct{ space, fid string }
-	var drefs []derRef
-	if drows, derr := s.db.QueryContext(ctx,
-		`SELECT space_id, id FROM files WHERE id IN (`+placeholders(len(ids))+`)`, args...); derr == nil {
-		for drows.Next() {
-			var r derRef
-			if err := drows.Scan(&r.space, &r.fid); err == nil && r.space != "" {
-				drefs = append(drefs, r)
-			}
-		}
-		drows.Close()
-	}
 	// 先删引用子表（vectors.chunk_id 引用 index_chunks，须在 chunks 之前）
-	// file_media（B8）同样以 file_id 为主键列，随子树一并清理，避免遗留孤儿元信息
-	for _, t := range []string{"vectors", "file_ai_summaries", "file_tags", "collection_files", "shares", "comments", "file_versions", "file_media"} {
+	for _, t := range []string{"vectors", "file_ai_summaries", "file_tags", "collection_files", "shares", "comments"} {
 		q := `DELETE FROM ` + t + ` WHERE file_id IN (` + placeholders(len(ids)) + `)`
 		args := make([]any, len(ids))
 		for i, v := range ids {
@@ -1240,25 +1015,12 @@ func (s *FileStore) Purge(ctx context.Context, ownerID, id string) error {
 		}
 	}
 	q := `DELETE FROM index_chunks WHERE file_id IN (` + placeholders(len(ids)) + `)`
+	args := make([]any, len(ids))
+	for i, v := range ids {
+		args[i] = v
+	}
 	if _, err := s.db.ExecContext(ctx, q, args...); err != nil {
 		return err
-	}
-	// B6：订阅行用 target_id 列（不是 file_id），故不能并入上面的子表循环。
-	// 指向被删文件/目录的订阅一并失效（否则会留下指向幽灵目标的订阅）。
-	if _, err := s.db.ExecContext(ctx,
-		`DELETE FROM doc_subscriptions WHERE target_id IN (`+placeholders(len(ids))+`)`, args...); err != nil {
-		return err
-	}
-	// B6：提及行用 source_id 列，且同时承载 post(文件 id) 与 comment(评论 id) 两类，故合并一起清。
-	if mIDs := append(append([]string{}, ids...), commentIDs...); len(mIDs) > 0 {
-		margs := make([]any, len(mIDs))
-		for i, v := range mIDs {
-			margs[i] = v
-		}
-		if _, err := s.db.ExecContext(ctx,
-			`DELETE FROM mentions WHERE source_id IN (`+placeholders(len(mIDs))+`)`, margs...); err != nil {
-			return err
-		}
 	}
 	// 删存储内容（子树中所有文件）
 	rows, err := s.db.QueryContext(ctx, `SELECT storage_ref, space_id FROM files WHERE id IN (`+placeholders(len(ids))+`) AND kind='file' AND storage_ref<>''`, args...)
@@ -1273,14 +1035,6 @@ func (s *FileStore) Purge(ctx context.Context, ownerID, id string) error {
 		for _, rf := range refs {
 			_ = s.st.Delete(ctx, storagePath(rf.space, rf.ref))
 		}
-	}
-	// B5 版本历史：快照 blob 也要清（否则回收站清空后仍留有孤儿快照）
-	for _, r := range vrefs {
-		_ = s.st.Delete(ctx, versionKey(r.space, r.fid, r.ver))
-	}
-	// B15 派生资产：按 (space, fid) 整目录清。对象不存在时 List 安静返回空 → 天然幂等。
-	for _, r := range drefs {
-		s.DeleteDerivedPrefix(ctx, DerivedPrefix(r.space, r.fid))
 	}
 	if _, err := s.db.ExecContext(ctx, `DELETE FROM files WHERE id IN (`+placeholders(len(ids))+`)`, args...); err != nil {
 		return err
@@ -1312,77 +1066,4 @@ func placeholders(n int) string {
 		return "NULL"
 	}
 	return strings.TrimRight(strings.Repeat("?,", n), ",")
-}
-
-// ---- 派生资产（缩略图等）存储：B15 ----
-//
-// 设计取舍：派生对象**不建 files 行**——它们是媒体文件的实现细节，不是用户文件。
-// 好处是公开列表 / sitemap / 回收站 / 配额 / 搜索索引一律不受影响（零污染）；
-// 代价是生命周期要显式管理：随源文件 Purge 时按前缀整目录清理（见 DeleteDerivedPrefix）。
-//
-// key 形态：spaces/{spaceID}/.derived/{fileID}/{name}
-//   前缀里带 fileID 是为了「按文件一次清干净」；目录名以 . 开头，
-//   与用户可见路径（files.storage_ref）不会撞名。
-
-// DerivedPrefix 某文件的派生对象 key 前缀。
-func DerivedPrefix(spaceID, fileID string) string {
-	return "spaces/" + spaceID + "/.derived/" + fileID
-}
-
-// DerivedKey 派生对象完整 key。
-func DerivedKey(spaceID, fileID, name string) string {
-	return DerivedPrefix(spaceID, fileID) + "/" + name
-}
-
-// DerivedSpacePrefix 整个空间的派生对象前缀（对账兜底用）。
-func DerivedSpacePrefix(spaceID string) string {
-	return "spaces/" + spaceID + "/.derived"
-}
-
-// PutDerived 写入派生对象：不建 files 行、不发事件、不做文本索引（有意为之）。
-func (s *FileStore) PutDerived(ctx context.Context, key string, r io.Reader, size int64) error {
-	return s.st.Put(ctx, key, r, size)
-}
-
-// DerivedReader 读取派生对象。
-func (s *FileStore) DerivedReader(ctx context.Context, key string) (io.ReadCloser, error) {
-	rc, _, err := s.st.Get(ctx, key)
-	return rc, err
-}
-
-// DerivedStat 派生对象元信息（判存在与取大小）。
-func (s *FileStore) DerivedStat(ctx context.Context, key string) (storage.ObjectMeta, bool) {
-	om, err := s.st.Stat(ctx, key)
-	if err != nil || om.IsDir {
-		return storage.ObjectMeta{}, false
-	}
-	return om, true
-}
-
-// DeleteDerived 删除单个派生对象；对象不存在视为成功（幂等清理）。
-func (s *FileStore) DeleteDerived(ctx context.Context, key string) error {
-	if err := s.st.Delete(ctx, key); err != nil && !errors.Is(err, storage.ErrNotFound) {
-		return err
-	}
-	return nil
-}
-
-// DeleteDerivedPrefix 删除某前缀下全部派生对象，返回删除个数。
-// 后端不支持 List（远程对象存储实现可能返回错误）时安静返回 0 —— 清不掉派生对象
-// 只影响磁盘占用，不应让文件删除整体失败。
-func (s *FileStore) DeleteDerivedPrefix(ctx context.Context, prefix string) int {
-	objs, err := s.st.List(ctx, prefix)
-	if err != nil {
-		return 0
-	}
-	n := 0
-	for _, o := range objs {
-		if o.IsDir {
-			continue
-		}
-		if s.st.Delete(ctx, o.Key) == nil {
-			n++
-		}
-	}
-	return n
 }

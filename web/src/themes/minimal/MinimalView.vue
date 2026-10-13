@@ -2,21 +2,20 @@
   <div class="mn-root">
     <header class="mn-head">
       <a class="mn-brand" :href="publicHref">{{ ctx.siteName || '爱库录' }}</a>
-      <p class="mn-sub">{{ ctx.siteDesc || $t("目录即站点，文件即文章") }}</p>
+      <p class="mn-sub">{{ ctx.siteDesc || '目录即站点，文件即文章' }}</p>
       <nav class="mn-nav">
         <ThemeSwitch />
         <a :href="rssHref" target="_blank" rel="noopener">RSS</a>
-        <a href="https://aiklog.com">{{ $t('官网') }}</a>
+        <a href="https://aiklog.com">官网</a>
       </nav>
     </header>
 
     <main class="mn-main">
-      <div v-if="ctx.loading" class="mn-state">{{ $t('加载中…') }}</div>
+      <div v-if="ctx.loading" class="mn-state">加载中…</div>
       <div v-else-if="ctx.error" class="mn-state">{{ ctx.error }}</div>
-      <div v-else-if="!posts.length" class="mn-state">{{ $t('还没有公开文章') }}</div>
+      <div v-else-if="!posts.length" class="mn-state">还没有公开文章</div>
 
       <article v-for="(p, i) in posts" v-else :key="i" class="mn-item">
-        <PostCover :post="p" round />
         <a class="mn-link" :href="href(p)">
           <h2 class="mn-title">{{ title(p) }}</h2>
           <p v-if="p.preview" class="mn-excerpt">{{ clean(p.preview) }}</p>
@@ -33,15 +32,11 @@
       <a :href="rssHref">RSS</a>
     </footer>
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import { t } from '@/i18n'
-import AskWidget from '../AskWidget.vue'
 import { computed, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
-import PostCover from '@/components/PostCover.vue'
 import './style.css'
 
 const raw = inject('themeContext')
@@ -59,7 +54,7 @@ function href(p) {
 }
 function title(p) {
   const n = p.file?.name || p.name || p.path || ''
-  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || t('common.unnamed')
+  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || '未命名'
 }
 function cat(p) {
   const path = p.path || ''

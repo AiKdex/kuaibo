@@ -122,13 +122,3 @@ a:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
-
-/* @提及（B12）：正文/评论里的 @ 标记。
-   全局声明 → 19 套主题共用（各主题可写同名类覆盖）；半透明中性底色在明暗主题下都可读。 */
-.mention {
-  color: var(--primary);
-  background: rgba(127, 127, 127, 0.14);
-  border-radius: 4px;
-  padding: 0 3px;
-  font-weight: 500;
-}

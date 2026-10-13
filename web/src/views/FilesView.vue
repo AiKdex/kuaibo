@@ -8,7 +8,7 @@
       <div v-if="dragging" class="drop-overlay">
         <div class="drop-hint">
           <AikIcon name="upload" :size="30" />
-          <span>{{  $t('松开上传到当前位置')  }}</span>
+          <span>松开上传到当前位置</span>
         </div>
       </div>
     </Transition>
@@ -18,46 +18,46 @@
       <div class="toolbar-actions">
         <label class="btn btn-primary">
           <AikIcon name="upload" :size="15" />
-          <span>{{  $t('上传')  }}</span>
+          <span>上传</span>
           <input type="file" multiple hidden @change="onPickFiles" />
         </label>
         <button class="btn" @click="openMkdir">
           <AikIcon name="plus" :size="15" />
-          <span>{{  $t('新建文件夹')  }}</span>
+          <span>新建文件夹</span>
         </button>
         <button class="btn" @click="openCreateDoc">
           <AikIcon name="fileText" :size="15" />
-          <span>{{  $t('新建文档')  }}</span>
+          <span>新建文档</span>
         </button>
-        <button class="icon-btn" :title="$t('刷新')" @click="files.refresh()">
+        <button class="icon-btn" title="刷新" @click="files.refresh()">
           <AikIcon name="refresh" :size="15" />
         </button>
-        <button v-if="hasClipboard()" class="btn" @click="pasteClipboard" :title="$t('粘贴剪贴板中的文件')">
+        <button v-if="hasClipboard()" class="btn" @click="pasteClipboard" title="粘贴剪贴板中的文件">
           <AikIcon name="clipboard" :size="14" />
-          <span>{{  $t('粘贴')  }}</span>
+          <span>粘贴</span>
         </button>
-        <button class="btn" @click="exportAll" :disabled="exporting" :title="$t('一键导出全站 MD（含 博客/ 目录，ZIP）')">
+        <button class="btn" @click="exportAll" :disabled="exporting" title="一键导出全站 MD（含 博客/ 目录，ZIP）">
           <AikIcon name="download" :size="14" />
-          <span>{{  exporting ? $t('导出中…') : $t('导出全站')  }}</span>
+          <span>{{ exporting ? '导出中…' : '导出全站' }}</span>
         </button>
 
         <!-- 选取后操作（选中时出现，KodExplorer 式） -->
         <template v-if="files.selected.length">
           <span class="toolbar-sep"></span>
-          <button class="btn" @click="toolbarCopy" :title="$t('复制选中项')">
-            <AikIcon name="copy" :size="14" /><span>{{  $t('复制')  }}</span>
+          <button class="btn" @click="toolbarCopy" title="复制选中项">
+            <AikIcon name="copy" :size="14" /><span>复制</span>
           </button>
-          <button class="btn" @click="toolbarCut" :title="$t('剪切选中项')">
-            <AikIcon name="cut" :size="14" /><span>{{  $t('剪切')  }}</span>
+          <button class="btn" @click="toolbarCut" title="剪切选中项">
+            <AikIcon name="cut" :size="14" /><span>剪切</span>
           </button>
-          <button class="btn" @click="toolbarRename" :disabled="files.selected.length !== 1" :title="$t('重命名（仅单选）')">
-            <AikIcon name="edit" :size="14" /><span>{{  $t('重命名')  }}</span>
+          <button class="btn" @click="toolbarRename" :disabled="files.selected.length !== 1" title="重命名（仅单选）">
+            <AikIcon name="edit" :size="14" /><span>重命名</span>
           </button>
-          <button class="btn btn-danger-ghost" @click="toolbarDelete" :title="$t('删除选中项')">
-            <AikIcon name="trash" :size="14" /><span>{{  $t('删除')  }}</span>
+          <button class="btn btn-danger-ghost" @click="toolbarDelete" title="删除选中项">
+            <AikIcon name="trash" :size="14" /><span>删除</span>
           </button>
-          <button class="btn" @click="openOrganize" :title="$t('AI 整理：建议目录/标签，检测相似重复')">
-            <AikIcon name="sparkles" :size="14" /><span>{{  $t('AI 整理')  }}</span>
+          <button class="btn" @click="openOrganize" title="AI 整理：建议目录/标签，检测相似重复">
+            <AikIcon name="sparkles" :size="14" /><span>AI 整理</span>
           </button>
         </template>
 
@@ -65,20 +65,20 @@
           <button
             class="icon-btn"
             :class="{ active: files.viewMode === 'grid' }"
-            :title="$t('网格视图')"
+            title="网格视图"
             @click="files.setViewMode('grid')"
           ><AikIcon name="grid" :size="16" /></button>
           <button
             class="icon-btn"
             :class="{ active: files.viewMode === 'list' }"
-            :title="$t('列表视图')"
+            title="列表视图"
             @click="files.setViewMode('list')"
           ><AikIcon name="list" :size="16" /></button>
         </div>
         <!-- 标签筛选：跨目录按标签列文件（知识库/博客共用标签体系） -->
         <select v-if="allTags.length" v-model="tagFilter" class="tag-filter" @change="applyTagFilter">
-          <option value="">{{ $t('按标签筛选') }}</option>
-          <option v-for="t in allTags" :key="t.id" :value="t.id">{{  t.path  }}（{{  t.count  }}）</option>
+          <option value="">按标签筛选</option>
+          <option v-for="t in allTags" :key="t.id" :value="t.id">{{ t.path }}（{{ t.count }}）</option>
         </select>
       </div>
     </div>
@@ -86,8 +86,8 @@
     <!-- 错误提示 -->
     <div v-if="files.error" class="error-banner">
       <AikIcon name="info" :size="14" />
-      <span>{{  files.error  }}</span>
-      <button class="btn-link" @click="files.refresh()">{{ $t('重试') }}</button>
+      <span>{{ files.error }}</span>
+      <button class="btn-link" @click="files.refresh()">重试</button>
     </div>
 
     <!-- 上传进度 -->
@@ -96,23 +96,23 @@
       <div class="up-bar">
         <div class="up-fill" :style="{ width: uploadState.percent + '%' }"></div>
       </div>
-      <span class="up-text">{{  uploadState.percent  }}%</span>
+      <span class="up-text">{{ uploadState.percent }}%</span>
     </div>
 
     <!-- 内容 -->
     <div v-if="files.loading" class="loading-state">
       <div class="spinner"></div>
-      <span>{{ $t('加载中…') }}</span>
+      <span>加载中…</span>
     </div>
 
     <!-- 空态 -->
     <div v-else-if="!files.items.length" class="empty-state" @click="pickFiles">
       <div class="empty-icon"><AikIcon name="upload" :size="28" /></div>
-      <p class="empty-title">{{ $t('这个位置还没有内容') }}</p>
-      <p class="empty-desc">{{ $t('点击或拖拽文件到此处上传，资料将保存在你的自有存储中') }}</p>
+      <p class="empty-title">这个位置还没有内容</p>
+      <p class="empty-desc">点击或拖拽文件到此处上传，资料将保存在你的自有存储中</p>
       <button class="btn btn-primary" @click.stop="pickFiles">
         <AikIcon name="upload" :size="15" />
-        <span>{{ $t('上传文件') }}</span>
+        <span>上传文件</span>
       </button>
       <input ref="emptyInput" type="file" multiple hidden @change="onPickFiles" />
     </div>
@@ -133,35 +133,21 @@
       >
         <div class="thumb">
           <img
-            v-if="thumbUrl(f)"
+            v-if="isImage(f)"
             :src="thumbUrl(f)"
             loading="lazy"
             :alt="f.name"
-            @error="onThumbError(f)"
+            @error="$event.target.style.display = 'none'"
           />
           <div v-else class="thumb-icon" :class="'kind-' + fileKind(f)">
             <AikIcon :name="kindIcon(f)" :size="30" />
           </div>
-          <span v-if="thumbUrl(f) && fileKind(f) === 'video'" class="thumb-play" :title="$t('视频缩略图（点开可播放）')"></span>
         </div>
-        <div class="item-name" :title="f.name">{{  f.name  }}
-          <span v-if="f.kind === 'dir' && sharedDirIds.has(f.id)" class="dir-share-badge" :title="$t('此文件夹已整体分享到公开博客（强授权）')">{{ $t('已分享') }}</span>
+        <div class="item-name" :title="f.name">{{ f.name }}
+          <span v-if="f.kind === 'dir' && sharedDirIds.has(f.id)" class="dir-share-badge" title="此文件夹已整体分享到公开博客（强授权）">已分享</span>
         </div>
         <div class="item-meta">
-          <span>{{  f.kind === 'dir' ? $t('文件夹') : formatSize(f.size)  }}</span>
-        </div>
-        <div v-if="isVideo(f)" class="grid-transcode" @click.stop>
-          <button
-            v-if="tcStatus(f) === '' || tcStatus(f) === 'failed' || tcStatus(f) === 'canceled'"
-            class="mini-btn"
-            @click="triggerTranscodeFor(f)"
-          >{{  tcStatus(f) === 'failed' ? $t('重试转码') : $t('转码')  }}</button>
-          <template v-else-if="tcStatus(f) === 'queued' || tcStatus(f) === 'running'">
-            <span class="tc-progress">{{  tcStatus(f) === 'queued' ? $t('排队中') : $t('转码中')  }} {{  tcProgress(f)  }}</span>
-            <span class="tc-bar"><i :style="{ width: tcProgress(f) }"></i></span>
-            <button class="mini-btn ghost" @click="cancelTranscodeFor(f)">{{ $t('取消') }}</button>
-          </template>
-          <span v-else-if="tcStatus(f) === 'done'" class="tc-done">{{ $t('✓ 已转码') }}</span>
+          <span>{{ f.kind === 'dir' ? '文件夹' : formatSize(f.size) }}</span>
         </div>
         <div class="grid-ops" @click.stop>
           <button
@@ -171,7 +157,7 @@
           >
             <AikIcon v-if="files.selected.includes(f.id)" name="check" :size="12" />
           </button>
-          <button class="icon-btn grid-more" :data-mid="f.id" :title="$t('更多操作')" @click="toggleMenu(f.id)">
+          <button class="icon-btn grid-more" :data-mid="f.id" title="更多操作" @click="toggleMenu(f.id)">
             <AikIcon name="more" :size="14" />
           </button>
           <FileMenu
@@ -201,7 +187,7 @@
           <button
             class="check select-all"
             :class="{ on: allSelected, half: someSelected && !allSelected }"
-            :title="allSelected ? t('取消全选') : t('全选本页')"
+            :title="allSelected ? '取消全选' : '全选本页'"
             @click.stop="toggleSelectAll"
           >
             <AikIcon v-if="allSelected" name="check" :size="12" />
@@ -209,28 +195,28 @@
         </span>
         <span class="col-name" :class="{ resizing: resizingCol === 'name' }">
           <button class="th-btn" :class="{ active: sortKey === 'name' }" @click="toggleSort('name')">
-            {{ $t('名称') }}
+            名称
             <AikIcon v-if="sortKey === 'name'" :name="sortDir === 1 ? 'arrowUp' : 'arrowDown'" :size="11" />
           </button>
           <span class="col-resize" @mousedown.prevent="startResize($event, 'name')"></span>
         </span>
         <span class="col-type" :class="{ resizing: resizingCol === 'type' }">
           <button class="th-btn" :class="{ active: sortKey === 'type' }" @click="toggleSort('type')">
-            {{ $t('类型') }}
+            类型
             <AikIcon v-if="sortKey === 'type'" :name="sortDir === 1 ? 'arrowUp' : 'arrowDown'" :size="11" />
           </button>
           <span class="col-resize" @mousedown.prevent="startResize($event, 'type')"></span>
         </span>
         <span class="col-size" :class="{ resizing: resizingCol === 'size' }">
           <button class="th-btn" :class="{ active: sortKey === 'size' }" @click="toggleSort('size')">
-            {{ $t('大小') }}
+            大小
             <AikIcon v-if="sortKey === 'size'" :name="sortDir === 1 ? 'arrowUp' : 'arrowDown'" :size="11" />
           </button>
           <span class="col-resize" @mousedown.prevent="startResize($event, 'size')"></span>
         </span>
         <span class="col-time" :class="{ resizing: resizingCol === 'time' }">
           <button class="th-btn" :class="{ active: sortKey === 'time' }" @click="toggleSort('time')">
-            {{ $t('修改时间') }}
+            修改时间
             <AikIcon v-if="sortKey === 'time'" :name="sortDir === 1 ? 'arrowUp' : 'arrowDown'" :size="11" />
           </button>
           <span class="col-resize" @mousedown.prevent="startResize($event, 'time')"></span>
@@ -258,26 +244,25 @@
         </span>
         <span class="col-name">
           <AikIcon :name="kindIcon(f)" :size="16" />
-          <span class="row-name" :title="f.name">{{  f.name  }}</span>
-          <span v-if="mediaMeta(f)" class="row-media">{{  mediaMeta(f)  }}</span>
-          <span v-if="f.kind === 'dir' && sharedDirIds.has(f.id)" class="dir-share-badge" :title="$t('此文件夹已整体分享到公开博客（强授权）')">{{ $t('已分享') }}</span>
-          <span v-for="t in visibleTags(f)" :key="t.id" class="row-tag" :title="`点击按「${t.path}」筛选`" @click.stop="filterByTag(t)">{{  t.path  }}</span>
+          <span class="row-name" :title="f.name">{{ f.name }}</span>
+          <span v-if="f.kind === 'dir' && sharedDirIds.has(f.id)" class="dir-share-badge" title="此文件夹已整体分享到公开博客（强授权）">已分享</span>
+          <span v-for="t in visibleTags(f)" :key="t.id" class="row-tag" :title="`点击按「${t.path}」筛选`" @click.stop="filterByTag(t)">{{ t.path }}</span>
           <span v-if="(f.tags || []).length > 2" class="row-tag more" :class="{ open: moreOpen === f.id }"
             @click.stop="toggleMore(f.id)">
-            +{{  (f.tags || []).length - MAX_INLINE_TAGS  }}
+            +{{ (f.tags || []).length - MAX_INLINE_TAGS }}
             <span class="tag-pop" @click.stop>
               <button v-for="t in moreTags(f)" :key="t.id" class="tag-pop-item" @click.stop="filterByTag(t)">
-                {{  t.path  }}
+                {{ t.path }}
               </button>
             </span>
           </span>
         </span>
-        <span class="col-type">{{  fileTypeLabel(f)  }}</span>
-        <span class="col-size">{{  f.kind === 'dir' ? '—' : formatSize(f.size)  }}</span>
-        <span class="col-time">{{  formatTime(f.updated_at)  }}</span>
+        <span class="col-type">{{ fileTypeLabel(f) }}</span>
+        <span class="col-size">{{ f.kind === 'dir' ? '—' : formatSize(f.size) }}</span>
+        <span class="col-time">{{ formatTime(f.updated_at) }}</span>
         <span class="col-action">
           <div class="row-menu" @click.stop>
-            <button class="icon-btn" :data-mid="f.id" :title="$t('更多操作')" @click="toggleMenu(f.id)">
+            <button class="icon-btn" :data-mid="f.id" title="更多操作" @click="toggleMenu(f.id)">
               <AikIcon name="more" :size="16" />
             </button>
             <FileMenu
@@ -303,15 +288,15 @@
 
     <!-- 标签筛选分页条 -->
     <div v-if="tagFilter && sortedItems.length > tagPageSize" class="tag-pager">
-      <span class="tag-pager-info">{{ $t('共') }} {{  sortedItems.length  }} {{ $t('个文件') }}</span>
+      <span class="tag-pager-info">共 {{ sortedItems.length }} 个文件</span>
       <select v-model="tagPageSize" class="tag-pager-size" @change="tagPage = 1">
-        <option :value="20">{{ $t('20 / 页') }}</option>
-        <option :value="50">{{ $t('50 / 页') }}</option>
-        <option :value="100">{{ $t('100 / 页') }}</option>
+        <option :value="20">20 / 页</option>
+        <option :value="50">50 / 页</option>
+        <option :value="100">100 / 页</option>
       </select>
-      <button class="pager-btn" :disabled="tagPage <= 1" @click="tagGo(tagPage - 1)">{{ $t('上一页') }}</button>
-      <span class="tag-pager-cur">{{  tagPage  }} / {{  tagTotalPages()  }}</span>
-      <button class="pager-btn" :disabled="tagPage >= tagTotalPages()" @click="tagGo(tagPage + 1)">{{ $t('下一页') }}</button>
+      <button class="pager-btn" :disabled="tagPage <= 1" @click="tagGo(tagPage - 1)">上一页</button>
+      <span class="tag-pager-cur">{{ tagPage }} / {{ tagTotalPages() }}</span>
+      <button class="pager-btn" :disabled="tagPage >= tagTotalPages()" @click="tagGo(tagPage + 1)">下一页</button>
     </div>
 
     <!-- 标签 / 分类弹窗 -->
@@ -329,17 +314,17 @@
     <!-- 新建文件夹弹窗 -->
     <Transition name="fade">
       <div v-if="showMkdir" class="modal-mask" @click.self="showMkdir = false">        <div class="modal modal-sm">
-          <h3>{{ $t('新建文件夹') }}</h3>
+          <h3>新建文件夹</h3>
           <input
             ref="mkdirInput"
             v-model="newDirName"
             class="modal-input"
-            :placeholder="$t('文件夹名称')"
+            placeholder="文件夹名称"
             @keydown.enter="confirmMkdir"
           />
           <div class="modal-actions">
-            <button class="btn" @click="showMkdir = false">{{ $t('取消') }}</button>
-            <button class="btn btn-primary" @click="confirmMkdir">{{ $t('创建') }}</button>
+            <button class="btn" @click="showMkdir = false">取消</button>
+            <button class="btn btn-primary" @click="confirmMkdir">创建</button>
           </div>
         </div>
       </div>
@@ -349,23 +334,23 @@
     <Transition name="fade">
       <div v-if="showDoc" class="modal-mask" @click.self="showDoc = false">
         <div class="modal modal-doc">
-          <h3>{{ $t('新建文档') }}</h3>
+          <h3>新建文档</h3>
           <input
             ref="docNameInput"
             v-model="docName"
             class="modal-input"
-            :placeholder="$t('文档名称（如 笔记.md）')"
+            placeholder="文档名称（如 笔记.md）"
             @keydown.enter="confirmDoc"
           />
           <textarea
             v-model="docContent"
             class="modal-textarea"
-            :placeholder="$t('初始内容（可留空，创建后随时编辑）')"
+            placeholder="初始内容（可留空，创建后随时编辑）"
             rows="6"
           ></textarea>
           <div class="modal-actions">
-            <button class="btn" @click="showDoc = false">{{ $t('取消') }}</button>
-            <button class="btn btn-primary" :disabled="!docName.trim()" @click="confirmDoc">{{ $t('创建') }}</button>
+            <button class="btn" @click="showDoc = false">取消</button>
+            <button class="btn btn-primary" :disabled="!docName.trim()" @click="confirmDoc">创建</button>
           </div>
         </div>
       </div>
@@ -375,25 +360,25 @@
     <Transition name="fade">
       <div v-if="ocrState" class="modal-mask" @click.self="ocrState = null">
         <div class="modal modal-ocr">
-          <h3>{{ $t('OCR 识别 —') }} {{  ocrState.name  }}</h3>
-          <p v-if="ocrLoading" class="modal-desc">{{ $t('正在识别图片文字…（首次约 5-15 秒）') }}</p>
+          <h3>OCR 识别 — {{ ocrState.name }}</h3>
+          <p v-if="ocrLoading" class="modal-desc">正在识别图片文字…（首次约 5-15 秒）</p>
           <div v-else class="ocr-body">
-            <div class="ocr-text">{{  ocrState.text || $t('未识别到文字')  }}</div>
+            <div class="ocr-text">{{ ocrState.text || '未识别到文字' }}</div>
           </div>
           <div class="modal-actions">
-            <button class="btn" @click="ocrState = null">{{ $t('关闭') }}</button>
+            <button class="btn" @click="ocrState = null">关闭</button>
             <button
               v-if="ocrState.text && !ocrLoading"
               class="btn"
               :disabled="ocrCleaning"
               @click="cleanOcrText"
-            >{{  ocrCleaning ? $t('整理中…') : $t('AI 整理')  }}</button>
+            >{{ ocrCleaning ? '整理中…' : 'AI 整理' }}</button>
             <button
               v-if="ocrState.text && !ocrLoading"
               class="btn btn-primary"
               :disabled="ocrSaving"
               @click="saveOcrDoc"
-            >{{  ocrSaving ? $t('保存中…') : $t('保存为文档')  }}</button>
+            >{{ ocrSaving ? '保存中…' : '保存为文档' }}</button>
           </div>
         </div>
       </div>
@@ -403,17 +388,17 @@
     <Transition name="fade">
       <div v-if="showRename" class="modal-mask" @click.self="showRename = false">
         <div class="modal">
-          <h3>{{ $t('重命名') }}</h3>
+          <h3>重命名</h3>
           <input
             ref="renameInput"
             v-model="renameName"
             class="modal-input"
-            :placeholder="$t('新名称')"
+            placeholder="新名称"
             @keydown.enter="confirmRename"
           />
           <div class="modal-actions">
-            <button class="btn" @click="showRename = false">{{ $t('取消') }}</button>
-            <button class="btn btn-primary" @click="confirmRename">{{ $t('确定') }}</button>
+            <button class="btn" @click="showRename = false">取消</button>
+            <button class="btn btn-primary" @click="confirmRename">确定</button>
           </div>
         </div>
       </div>
@@ -423,46 +408,47 @@
     <Transition name="fade">
       <div v-if="shareState" class="modal-mask" @click.self="shareState = null">
         <div class="modal modal-share">
-          <h3>{{ $t('分享 / 发布 —') }} {{  shareState.name  }}</h3>
+          <h3>分享 / 发布 — {{ shareState.name }}</h3>
           <!-- 文件夹整体分享：强授权确认（必须先显式确认，服务端同步校验） -->
           <template v-if="shareState.kind === 'dir' && !shareState.url">
             <div class="dir-share-warn">
               <AikIcon name="alert" :size="16" />
               <div>
-                <p class="dir-share-title">{{ $t('文件夹整体分享（强授权）') }}</p>
+                <p class="dir-share-title">文件夹整体分享（强授权）</p>
                 <p class="dir-share-desc">
-                  {{ $t('此操作将把该文件夹') }}<b>{{ $t('及全部子文件夹') }}</b>{{ $t('中的文件整体公开到对外博客（不含草稿）， 任何人拿到链接即可阅读。') }}<b>{{ $t('目录后续新增文件会自动公开') }}</b>{{ $t('（撤销分享后全部下线）。') }}
+                  此操作将把该文件夹<b>及全部子文件夹</b>中的文件整体公开到对外博客（不含草稿），
+                  任何人拿到链接即可阅读。<b>目录后续新增文件会自动公开</b>（撤销分享后全部下线）。
                 </p>
-                <p class="dir-share-tip">{{ $t('这是一次公开范围较大的操作，需要你显式确认后才能创建。') }}</p>
+                <p class="dir-share-tip">这是一次公开范围较大的操作，需要你显式确认后才能创建。</p>
               </div>
             </div>
             <div v-if="shareState.fileCount != null" class="dir-share-count">
-              {{ $t('将公开') }} <b>{{  shareState.fileCount  }}</b> {{ $t('个文件') }}
+              将公开 <b>{{ shareState.fileCount }}</b> 个文件
             </div>
             <div class="share-actions">
-              <button class="btn" @click="shareState = null">{{ $t('取消') }}</button>
+              <button class="btn" @click="shareState = null">取消</button>
               <button class="btn btn-danger" :disabled="shareState.creating" @click="createShareUrl">
-                {{  shareState.creating ? $t('正在创建…') : $t('确认整体分享')  }}
+                {{ shareState.creating ? '正在创建…' : '确认整体分享' }}
               </button>
             </div>
           </template>
           <!-- 单文件分享 / 已创建 -->
           <template v-else>
-            <p class="modal-desc">{{ $t('任何人拿到链接即可阅读（公开访问，无需登录）。发布后可作为博客文章展示。') }}</p>
-            <div v-if="shareState.creating" class="share-loading">{{ $t('正在创建分享链接…') }}</div>
+            <p class="modal-desc">任何人拿到链接即可阅读（公开访问，无需登录）。发布后可作为博客文章展示。</p>
+            <div v-if="shareState.creating" class="share-loading">正在创建分享链接…</div>
             <template v-else-if="shareState.url">
               <input ref="shareInput" :value="shareState.url" class="modal-input share-url" readonly @click="copyShareUrl" />
-              <div v-if="shareState.kind === 'dir'" class="dir-share-count">{{ $t('已整体分享，目录内公开文件：') }}{{  shareState.fileCount  }}</div>
+              <div v-if="shareState.kind === 'dir'" class="dir-share-count">已整体分享，目录内公开文件：{{ shareState.fileCount }}</div>
               <div class="share-actions">
-                <button class="btn" :disabled="shareState.revoking" @click="openSharePage">{{ $t('打开预览') }}</button>
-                <button class="btn" @click="copyShareUrl">{{ $t('复制链接') }}</button>
-                <button class="btn btn-danger-ghost" :disabled="shareState.revoking" @click="revokeShare">{{ $t('撤销') }}</button>
+                <button class="btn" :disabled="shareState.revoking" @click="openSharePage">打开预览</button>
+                <button class="btn" @click="copyShareUrl">复制链接</button>
+                <button class="btn btn-danger-ghost" :disabled="shareState.revoking" @click="revokeShare">撤销</button>
               </div>
             </template>
             <template v-else>
               <div class="share-actions">
-                <button class="btn" @click="shareState = null">{{ $t('关闭') }}</button>
-                <button class="btn btn-primary" :disabled="shareState.creating" @click="createShareUrl">{{ $t('创建链接') }}</button>
+                <button class="btn" @click="shareState = null">关闭</button>
+                <button class="btn btn-primary" :disabled="shareState.creating" @click="createShareUrl">创建链接</button>
               </div>
             </template>
           </template>
@@ -474,32 +460,30 @@
     <Transition name="fade">
       <div v-if="confirmState" class="modal-mask" @click.self="confirmState = null">
         <div class="modal modal-sm">
-          <h3>{{  confirmState.title  }}</h3>
-          <p class="modal-desc">{{  confirmState.message  }}</p>
+          <h3>{{ confirmState.title }}</h3>
+          <p class="modal-desc">{{ confirmState.message }}</p>
           <div class="modal-actions">
-            <button class="btn" @click="confirmState = null">{{ $t('取消') }}</button>
-            <button class="btn btn-danger" @click="confirmOk">{{ $t('删除') }}</button>
+            <button class="btn" @click="confirmState = null">取消</button>
+            <button class="btn btn-danger" @click="confirmOk">删除</button>
           </div>
         </div>
       </div>
-    </Transition>
 
-    <!-- 同名冲突对话框（资源管理器式：覆盖 / 重命名 / 跳过） -->
-    <Transition name="fade">
+      <!-- 同名冲突对话框（资源管理器式：覆盖 / 重命名 / 跳过） -->
       <div v-if="conflict" class="modal-mask" @click.self="closeConflict('skip')">
         <div class="modal modal-sm">
-          <h3>{{ $t('目标位置已存在同名文件') }}</h3>
+          <h3>目标位置已存在同名文件</h3>
           <p class="modal-desc">
-“{{ conflict.names[0] }}”{{ conflict.names.length > 1 ? ' 等 ' + conflict.names.length + $t('个文件') : '' }} {{ $t('在目标位置已存在同名文件') }}
+            “{{ conflict.names[0] }}”{{ conflict.names.length > 1 ? ` 等 ${conflict.names.length} 个文件` : '' }} 在目标位置已存在
           </p>
           <label class="conflict-all">
             <input type="checkbox" v-model="conflict.applyAll" />
-            {{ $t('为剩余冲突执行相同操作') }}
+            为剩余冲突执行相同操作
           </label>
           <div class="modal-actions">
-            <button class="btn btn-danger" @click="closeConflict('overwrite')">{{ $t('覆盖') }}</button>
-            <button class="btn" @click="closeConflict('skip')">{{ $t('跳过') }}</button>
-            <button class="btn btn-primary" @click="closeConflict('rename')">{{ $t('重命名') }}</button>
+            <button class="btn btn-danger" @click="closeConflict('overwrite')">覆盖</button>
+            <button class="btn" @click="closeConflict('skip')">跳过</button>
+            <button class="btn btn-primary" @click="closeConflict('rename')">重命名</button>
           </div>
         </div>
       </div>
@@ -510,8 +494,7 @@
 </template>
 
 <script setup>
-import { t as i18t } from '@/i18n'
-import { ref, computed, onMounted, onUnmounted, watch, reactive } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AikIcon from '@/components/AikIcon.vue'
 import FileMenu from '@/components/FileMenu.vue'
@@ -531,7 +514,7 @@ async function exportAll() {
   if (exporting.value) return
   exporting.value = true
   try {
-    const job = await api.requestJSON('/exports', { method: 'POST', body: JSON.stringify({ source: 'all', name: t('aiklog-全站') }) })
+    const job = await api.requestJSON('/exports', { method: 'POST', body: JSON.stringify({ source: 'all', name: 'aiklog-全站' }) })
     const jid = job.id
     for (let i = 0; i < 120; i++) {
       await new Promise((r) => setTimeout(r, 1000))
@@ -543,17 +526,17 @@ async function exportAll() {
         document.body.appendChild(a)
         a.click()
         a.remove()
-        showToast(d.status === 'done' ? i18t('全站导出完成（含博客目录）') : i18t('导出完成（部分失败，见详情）'))
+        showToast(d.status === 'done' ? '全站导出完成（含博客目录）' : '导出完成（部分失败，见详情）')
         return
       }
       if (d.status === 'failed') {
-        showToast(i18t('导出失败：') + (d.last_error || t('未知错误')))
+        showToast('导出失败：' + (d.last_error || '未知错误'))
         return
       }
     }
-    showToast(t('导出超时，请稍后在导入导出中心查看'))
+    showToast('导出超时，请稍后在导入导出中心查看')
   } catch (e) {
-    showToast(t(i18t('导出失败：')) + (e.message || e))
+    showToast('导出失败：' + (e.message || e))
   } finally {
     exporting.value = false
   }
@@ -598,7 +581,7 @@ function visibleTags(f) {
   return (f.tags || []).slice(0, MAX_INLINE_TAGS)
 }
 function moreTagsTitle(f) {
-  return t('更多标签：') + (f.tags || []).slice(MAX_INLINE_TAGS).map((t) => t.path).join('、')
+  return '更多标签：' + (f.tags || []).slice(MAX_INLINE_TAGS).map((t) => t.path).join('、')
 }
 const moreOpen = ref(null)
 function moreTags(f) {
@@ -654,7 +637,6 @@ function tagGo(p) {
 import { useToastStore } from '@/stores/toast'
 const toastStore = useToastStore()
 import { tryCopy } from '@/utils/clipboard'
-import { t } from '@/i18n'
 const confirmState = ref(null)
 
 function askConfirm(title, message, onOk) {
@@ -680,184 +662,13 @@ function isImage(f) {
   return f.kind === 'file' && IMAGE_EXT.includes(ext(f.name))
 }
 
-// ---- 缩略图（B15）----
-// 能出缩略图的类型，与后端 thumbMimeOf 同口径：图片（**排除 svg**，活性文档不解码）+ 视频。
-const VIDEO_EXT = ['mp4', 'mov', 'mkv', 'webm', 'avi']
-const AUDIO_EXT = ['mp3', 'wav', 'm4a', 'flac', 'ogg']
-const THUMB_EXT = IMAGE_EXT.filter((e) => e !== 'svg').concat(VIDEO_EXT)
-
-function canThumb(f) {
-  return f.kind === 'file' && THUMB_EXT.includes(ext(f.name))
-}
-
-// 缓存是普通 Map（非响应式）→ 异步到达后必须显式自增来触发重渲染，否则会白屏占位。
-// ⚠️ 这正是「资产 200 ≠ 页面渲染成功」那类坑：请求成功但视图不更新。
-const thumbTick = ref(0)
-const thumbMiss = new Set() // 本地失败集：同一列表里不反复打同一个 404
-
-// 缩略图：优先派生对象；拿不到就退回图标。
-// 有意**不**退回原图 —— 列表里拉整张原图正是 B15 要收掉的开销（大图会把首屏拖垮）。
+// 缩略图：优先缓存 blob，未加载则异步拉取（鉴权后）
 function thumbUrl(f) {
-  void thumbTick.value // 建立响应式依赖
-  if (!canThumb(f)) return ''
-  const cached = api.fetchThumbUrlSync(f.id)
+  const cached = api.fetchMediaUrlSync(f.id)
   if (cached) return cached
-  if (thumbMiss.has(f.id)) return ''
-  api
-    .fetchThumbUrl(f.id)
-    .then((u) => {
-      if (u) thumbTick.value++
-      else thumbMiss.add(f.id)
-    })
-    .catch(() => thumbMiss.add(f.id))
+  api.fetchMediaUrl(f.id).catch(() => {})
   return ''
 }
-
-// 图片解码失败（服务端缩略图坏了）→ 让位给图标，而不是留个破图
-function onThumbError(f) {
-  thumbMiss.add(f.id)
-  api.invalidateThumb(f.id)
-  thumbTick.value++
-}
-
-// ---- 批量媒体元信息（B15）：只读缓存，不触发探测/生成 ----
-const mediaInfo = ref({})
-const mediaAsked = new Set()
-
-function fmtDuration(ms) {
-  const s = Math.round(ms / 1000)
-  const h = Math.floor(s / 3600)
-  const m = Math.floor((s % 3600) / 60)
-  const ss = s % 60
-  const pad = (n) => String(n).padStart(2, '0')
-  return h > 0 ? `${h}:${pad(m)}:${pad(ss)}` : `${m}:${pad(ss)}`
-}
-
-// 列表行尾的「分辨率 · 时长」：只在拿到缓存值后显示，避免闪一串占位
-function mediaMeta(f) {
-  if (f.kind !== 'file') return ''
-  const e = ext(f.name)
-  if (!VIDEO_EXT.includes(e) && !AUDIO_EXT.includes(e)) return ''
-  const m = mediaInfo.value[f.id]
-  if (!m) return ''
-  const parts = []
-  if (m.width && m.height) parts.push(`${m.width}×${m.height}`)
-  if (m.duration_ms > 0) parts.push(fmtDuration(m.duration_ms))
-  return parts.join(' · ')
-}
-
-// 按可见项补拉元信息：去重 + 限批量 100（与后端上限一致）+ 失败静默
-async function loadMediaMeta() {
-  const ids = visibleItems.value
-    .filter((f) => f.kind === 'file')
-    .map((f) => f.id)
-    .filter((id) => !mediaAsked.has(id))
-  if (!ids.length) return
-  const batch = ids.slice(0, 100)
-  batch.forEach((id) => mediaAsked.add(id))
-  try {
-    const d = await api.fetchMediaBatch(batch)
-    if (d && d.items && Object.keys(d.items).length) {
-      mediaInfo.value = { ...mediaInfo.value, ...d.items }
-    }
-  } catch (_) {
-    /* 元信息是增强项：失败不影响列表本身 */
-  }
-}
-// ---- 视频转码（B17）：触发 / 状态 / 取消 ----
-// 状态域与后端同构：queued|running|done|failed|canceled；空串=从未发起。
-// 复用 thumbTick 的响应式思路：transcodeTick 自增触发重渲染（缓存非响应式，必须手动 tick）。
-const transcodeTick = ref(0)
-const transcodeData = reactive({}) // id -> { status, progress, message, bytes, height, signature }
-const transcodeAsked = new Set()
-const transcodeTimers = {}
-
-function isVideo(f) {
-  return f.kind === 'file' && VIDEO_EXT.includes(ext(f.name))
-}
-// 渲染期惰性拉取状态（与 thumbUrl 同思路：模板反复调用收敛成一次请求）。
-function tcStatus(f) {
-  void transcodeTick.value
-  const j = transcodeData[f.id]
-  if (!j) {
-    if (!transcodeAsked.has(f.id)) {
-      transcodeAsked.add(f.id)
-      api
-        .transcodeStatus(f.id)
-        .then((r) => {
-          transcodeData[f.id] = r || { status: '' }
-          transcodeTick.value++
-          const s = r && r.status
-          if (s === 'queued' || s === 'running') pollTranscode(f.id)
-          else transcodeAsked.delete(f.id)
-        })
-        .catch(() => transcodeAsked.delete(f.id))
-    }
-    return ''
-  }
-  return j.status || ''
-}
-function tcProgress(f) {
-  const j = transcodeData[f.id]
-  if (!j) return '0%'
-  const p = j.progress
-  if (p > 0) return Math.round(p * 100) + '%'
-  if (p < 0) return '…'
-  return '0%'
-}
-function pollTranscode(id) {
-  if (transcodeTimers[id]) return
-  transcodeTimers[id] = setInterval(() => {
-    api
-      .transcodeStatus(id)
-      .then((r) => {
-        transcodeData[id] = r || { status: '' }
-        transcodeTick.value++
-        const s = r && r.status
-        if (s === 'done' || s === 'failed' || s === 'canceled') {
-          clearInterval(transcodeTimers[id])
-          delete transcodeTimers[id]
-          transcodeAsked.delete(id)
-        }
-      })
-      .catch(() => {
-        clearInterval(transcodeTimers[id])
-        delete transcodeTimers[id]
-      })
-  }, 1000)
-}
-function triggerTranscodeFor(f) {
-  transcodeAsked.delete(f.id)
-  api
-    .triggerTranscode(f.id)
-    .then((r) => {
-      transcodeData[f.id] = r || { status: 'queued' }
-      transcodeTick.value++
-      pollTranscode(f.id)
-    })
-    .catch((e) => {
-      toastStore.push((e && e.message) || t('转码发起失败'))
-    })
-}
-function cancelTranscodeFor(f) {
-  api
-    .cancelTranscode(f.id)
-    .then(() => {
-      if (transcodeData[f.id]) transcodeData[f.id].status = 'canceled'
-      transcodeTick.value++
-    })
-    .catch(() => {})
-}
-
-// 首次加载与监听必须放到 onMounted，**不能**在这里直接 watch(visibleItems)：
-// 🔴 watch(source) 在**创建时**就会求值一次源（与 immediate 无关），而 visibleItems 依赖的
-// sortedItems 在本文件里声明得更靠后 → setup 期求值直接踩 TDZ
-// （ReferenceError: Cannot access 'X' before initialization，症状是整页白屏 —— 已实测踩到）。
-// onMounted 里 setup 已跑完，所有 const 都已初始化，安全。
-onMounted(() => {
-  loadMediaMeta()
-  watch(visibleItems, () => { loadMediaMeta() })
-})
 
 function fileKind(f) {
   if (f.kind === 'dir') return 'dir'
@@ -967,15 +778,15 @@ function onItemDblClick(f) {
 
 // 类型列文案（KodExplorer 式：文件夹 / md文件 / 文本 / 图片…）
 const TYPE_LABELS = {
-  dir: t(i18t('文件夹')),
-  text: t(i18t('文本')),
-  image: t('图片'),
-  audio: t('音频'),
-  video: t('视频'),
-  archive: t('压缩包'),
-  pdf: t('PDF 文档'),
-  code: t('代码'),
-  file: t('文件')
+  dir: '文件夹',
+  text: '文本',
+  image: '图片',
+  audio: '音频',
+  video: '视频',
+  archive: '压缩包',
+  pdf: 'PDF 文档',
+  code: '代码',
+  file: '文件'
 }
 
 function fileTypeLabel(f) {
@@ -983,9 +794,9 @@ function fileTypeLabel(f) {
   const t = fileKind(f)
   if (t === 'text') {
     const e = ext(f.name)
-    return e === 'md' || e === 'markdown' ? 'Markdown' : i18t('文本')
+    return e === 'md' || e === 'markdown' ? 'Markdown' : '文本'
   }
-  return TYPE_LABELS[t] || t('文件')
+  return TYPE_LABELS[t] || '文件'
 }
 
 // ---- 上传 ----
@@ -1025,7 +836,7 @@ async function doUpload(list) {
       }
     }
     if (n > 1) showToast(`已上传 ${n} 个文件`)
-    else showToast(t('已上传'))
+    else showToast('已上传')
   } catch (err) {
     files.error = err.message
   } finally {
@@ -1438,12 +1249,12 @@ function menuDownload(f) {
     a.download = f.name
     a.click()
     setTimeout(() => URL.revokeObjectURL(url), 30000)
-  }).catch((e) => showToast(e.message || t('下载失败')))
+  }).catch((e) => showToast(e.message || '下载失败'))
 }
 function menuCopy(f) {
   closeMenu()
   if (f.kind === 'dir') {
-    files.error = i18t('目录复制将在阶段 3 提供')
+    files.error = '目录复制将在阶段 3 提供'
     return
   }
   clipboard.value = { ids: [f.id], cut: false, names: [f.name] }
@@ -1464,7 +1275,7 @@ async function menuToDraft(f) {
     files.error = ''
     showToast(`「${f.name}」已转为草稿，可在草稿箱查看`)
   } catch (err) {
-    files.error = t('操作失败：') + err.message
+    files.error = '操作失败：' + err.message
   }
 }
 // 标签 / 分类（网盘打标 → 知识库/博客/检索共用）
@@ -1514,7 +1325,7 @@ async function createShareUrl() {
     st.fileCount = r.file_count != null ? r.file_count : null
     if (st.kind === 'dir') refreshSharedDirs()
   } catch (err) {
-    files.error = t('创建分享失败：') + (err.message || err)
+    files.error = '创建分享失败：' + (err.message || err)
   } finally {
     st.creating = false
   }
@@ -1529,14 +1340,14 @@ function copyShareUrl() {
   // 剪贴板 API；失败时选中链接提示手动复制（不触发系统级弹窗）
   tryCopy(input).then((ok) => {
     if (ok) {
-      showToast(t('分享链接已复制'))
+      showToast('分享链接已复制')
     } else {
       const el = shareInput.value
       if (el) {
         el.focus()
         el.select()
       }
-      showToast(t('浏览器限制了自动复制，请按 Ctrl+C 复制'))
+      showToast('浏览器限制了自动复制，请按 Ctrl+C 复制')
     }
   })
 }
@@ -1552,11 +1363,11 @@ async function revokeShare() {
   try {
     const token = new URL(st.url).hash.replace(/^#\/p\//, '')
     await api.revokeShare(token)
-    showToast(t('已撤销分享，链接已失效'))
+    showToast('已撤销分享，链接已失效')
     if (st.kind === 'dir') refreshSharedDirs()
     shareState.value = null
   } catch (err) {
-    files.error = t('撤销失败：') + (err.message || err)
+    files.error = '撤销失败：' + (err.message || err)
   } finally {
     if (st.revoking !== undefined) st.revoking = false
   }
@@ -1575,7 +1386,7 @@ async function menuOcr(f) {
     ocrState.value.text = r.text || ''
   } catch (err) {
     ocrState.value.text = ''
-    files.error = t('OCR 识别失败：') + (err.message || err)
+    files.error = 'OCR 识别失败：' + (err.message || err)
   } finally {
     ocrLoading.value = false
   }
@@ -1589,7 +1400,7 @@ async function cleanOcrText() {
     const r = await api.cleanText(st.text, 'ocr')
     st.text = r.text || st.text
   } catch (err) {
-    files.error = t('整理失败：') + (err.message || err)
+    files.error = '整理失败：' + (err.message || err)
   } finally {
     ocrCleaning.value = false
   }
@@ -1607,13 +1418,13 @@ async function saveOcrDoc() {
     showToast(`已保存为文档「${r.name}」，可编辑 / 加入知识库`)
   } catch (err) {
     ocrSaving.value = false
-    files.error = t('保存失败：') + (err.message || err)
+    files.error = '保存失败：' + (err.message || err)
   }
 }
 async function menuDelete(f) {
   closeMenu()
   askConfirm(
-    t('删除文件'),
+    '删除文件',
     `确定删除「${f.name}」？删除后可在回收站恢复。`,
     async () => {
       try {
@@ -1651,7 +1462,7 @@ async function pasteClipboard() {
     } else if (st.skipped > 0) {
       showToast(`所选项目已在目标位置（${st.skipped} 项）`)
     } else {
-      showToast(t('粘贴完成'))
+      showToast('粘贴完成')
     }
   } catch (err) {
     files.error = err.message
@@ -1769,12 +1580,12 @@ async function toolbarDelete() {
   const sel = selectedItems()
   if (!sel.length) return
   askConfirm(
-    t('删除选中项'),
+    '删除选中项',
     `确定删除选中的 ${sel.length} 项？删除后可在回收站恢复。`,
     async () => {
       try {
         await files.remove(sel.map((f) => f.id))
-        showToast(t(i18t('已删除')))
+        showToast('已删除')
       } catch (err) {
         files.error = err.message
       }
@@ -1792,7 +1603,7 @@ function openOrganize() {
   showOrganize.value = true
 }
 function onOrganizeApplied() {
-  showToast(t('AI 整理已应用，正在刷新…'))
+  showToast('AI 整理已应用，正在刷新…')
   showOrganize.value = false
   files.refresh()
   files.loadTree()
@@ -1948,12 +1759,6 @@ onUnmounted(() => {
   window.removeEventListener('keydown', onGlobalKeydown, true)
   document.removeEventListener('mousemove', onDocMouseMove)
   document.removeEventListener('mouseup', onDocMouseUp)
-  // F1 修复：转码轮询定时器此前未清理 —— 离开文件页后仍每秒打 /files/{id}/transcode，
-  // 既泄漏定时器又持续产生无效请求（登出后还会反复触发 401）。
-  for (const id of Object.keys(transcodeTimers)) {
-    clearInterval(transcodeTimers[id])
-    delete transcodeTimers[id]
-  }
   if (cDrag.ghost) {
     cDrag.ghost.remove()
     cDrag.ghost = null
@@ -1968,9 +1773,7 @@ onUnmounted(() => {
 .files-view {
   position: relative;
   min-height: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px 24px 40px;
+  padding: 0 24px 40px;
 }
 
 /* 工具栏（面包屑已移到顶栏，这里仅操作按钮） */
@@ -2269,7 +2072,6 @@ body.dragging {
 }
 
 .thumb {
-  position: relative;
   height: 96px;
   display: flex;
   align-items: center;
@@ -2278,72 +2080,6 @@ body.dragging {
   border-radius: var(--radius-sm);
   background: var(--surface-2);
   margin-bottom: 10px;
-}
-
-/* 视频缩略图角标：纯 CSS 三角，不引图标资源（图标名未登记时会渲染成空白） */
-.thumb-play {
-  position: absolute;
-  right: 6px;
-  bottom: 6px;
-  width: 0;
-  height: 0;
-  border-left: 9px solid rgba(255, 255, 255, 0.92);
-  border-top: 6px solid transparent;
-  border-bottom: 6px solid transparent;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
-}
-
-/* 视频转码控制（B17）：网格卡片底部一行，不抢缩略图 */
-.grid-transcode {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 18px;
-  padding: 0 8px 6px;
-  font-size: var(--fs-xs, 12px);
-}
-.mini-btn {
-  border: 1px solid var(--border-2, #d0d4dc);
-  background: var(--surface-2, #f3f4f6);
-  color: var(--text-1, #222);
-  border-radius: 6px;
-  padding: 1px 8px;
-  font-size: var(--fs-xs, 12px);
-  cursor: pointer;
-  line-height: 1.5;
-}
-.mini-btn:hover {
-  background: var(--surface-3, #e6e8ec);
-}
-.mini-btn.ghost {
-  color: var(--text-3, #888);
-}
-.tc-progress {
-  color: var(--text-3, #888);
-  white-space: nowrap;
-}
-.tc-bar {
-  flex: 1;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--surface-3, #e6e8ec);
-  overflow: hidden;
-}
-.tc-bar > i {
-  display: block;
-  height: 100%;
-  background: var(--accent, #3b82f6);
-}
-.tc-done {
-  color: var(--ok, #16a34a);
-}
-
-/* 列表行里的「分辨率 · 时长」：低对比、不抢文件名 */
-.row-media {
-  margin-left: 8px;
-  font-size: var(--fs-xs, 12px);
-  color: var(--text-3);
-  white-space: nowrap;
 }
 
 .thumb img {

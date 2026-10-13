@@ -213,27 +213,3 @@ func (l *Local) Move(ctx context.Context, from, to string) error {
 	}
 	return nil
 }
-
-// PathLocator 是「本地类后端」可选实现的能力接口：把后端内 key 解析为宿主机绝对路径。
-//
-// 为什么需要：有些操作必须**就地读取**宿主机文件，而不是拿到 io.Reader 顺序读 ——
-// 典型如 ffprobe 解析 mp4（moov 原子可能在文件尾，纯流式读取不可靠）。
-// S3 / OSS / WebDAV 等远程后端不实现该接口，调用方应据此**降级**
-// （记 probe_status='unsupported'），而不是把整个对象先拉回本地。
-type PathLocator interface {
-	// LocalPath 返回 key 对应的宿主机绝对路径；key 非法、对象不存在或为目录时 ok=false。
-	LocalPath(key string) (string, bool)
-}
-
-// LocalPath 实现 PathLocator（仅本地磁盘后端；也适用于挂载到本地路径的 NAS 场景）。
-func (l *Local) LocalPath(key string) (string, bool) {
-	full, err := l.full(key)
-	if err != nil {
-		return "", false
-	}
-	st, err := os.Stat(full)
-	if err != nil || st.IsDir() {
-		return "", false
-	}
-	return full, true
-}

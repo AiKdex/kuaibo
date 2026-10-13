@@ -1,25 +1,25 @@
 <template>
   <div class="eforum-root">
-    <EmforumHead :site-name="siteName" :site-desc="siteDesc" :blog-url="blogUrl" :slogan="$t('AUTHOR · 作者专栏')" />
+    <EmforumHead :site-name="siteName" :site-desc="siteDesc" :blog-url="blogUrl" slogan="AUTHOR · 作者专栏" />
 
-    <div v-if="loading" class="ef-state">{{ $t('正在加载文章…') }}</div>
+    <div v-if="loading" class="ef-state">正在加载文章…</div>
     <div v-else-if="error" class="ef-state ef-state-err">{{ error }}</div>
 
     <div v-else class="ef-wrap">
       <div class="ef-board-info">
         <div>
-          <div class="ef-board-name">{{ $t('✍ 作者：') }}{{ author || $t("未知作者") }}</div>
-          <div class="ef-board-desc">{{ $t('共') }} {{ list.length }} {{ $t('篇公开文章') }}</div>
+          <div class="ef-board-name">✍ 作者：{{ author || '未知作者' }}</div>
+          <div class="ef-board-desc">共 {{ list.length }} 篇公开文章</div>
         </div>
         <div class="ef-board-actions">
-          <a class="ef-ghost-btn" :href="blogUrl">{{ $t('‹ 返回全部版块') }}</a>
+          <a class="ef-ghost-btn" :href="blogUrl">‹ 返回全部版块</a>
         </div>
       </div>
 
       <div class="ef-layout">
         <main class="ef-list">
           <div class="ef-list-head">
-            <span class="ef-feed">{{ $t('该作者的全部主题') }}</span>
+            <span class="ef-feed">该作者的全部主题</span>
           </div>
           <EmforumThread v-for="p in list" :key="p.token || p.path" :post="p" />
           <p v-if="!list.length" class="ef-empty">
@@ -32,17 +32,14 @@
     </div>
 
     <EmforumFoot :site-name="siteName" :blog-url="blogUrl" />
-    <EmforumAsk />
   </div>
 </template>
 
 <script setup>
-import { t } from '@/i18n'
 import { computed } from 'vue'
 import EmforumHead from './EmforumHead.vue'
 import EmforumSide from './EmforumSide.vue'
 import EmforumFoot from './EmforumFoot.vue'
-import EmforumAsk from './EmforumAsk.vue'
 import EmforumThread from './EmforumThread.vue'
 import './style.css'
 import { readPageParam, useBlog, LIST_HREF } from './helpers.js'
@@ -75,6 +72,6 @@ const list = computed(() =>
   author.value ? posts.value.filter((p) => authorOf(p) === author.value) : [],
 )
 const authorHint = computed(() =>
-  hasAuthorField.value ? t('该作者下暂无公开文章') : t('作者数据尚未由系统侧透出（规范 §10-10），敬请期待'),
+  hasAuthorField.value ? '该作者下暂无公开文章' : '作者数据尚未由系统侧透出（规范 §10-10），敬请期待',
 )
 </script>

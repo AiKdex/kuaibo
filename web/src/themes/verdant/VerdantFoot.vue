@@ -10,14 +10,14 @@
       </div>
 
       <div class="vd-foot-col">
-        <div class="vd-foot-h">{{ $t('开始阅读') }}</div>
-        <a class="vd-foot-link" :href="blogUrl">{{ $t('全部文章') }}</a>
-        <a class="vd-foot-link" :href="rssHref">{{ $t('RSS 订阅') }}</a>
-        <a class="vd-foot-link" href="/blog">{{ $t('静态页（SEO）') }}</a>
+        <div class="vd-foot-h">开始阅读</div>
+        <a class="vd-foot-link" :href="blogUrl">全部文章</a>
+        <a class="vd-foot-link" :href="rssHref">RSS 订阅</a>
+        <a class="vd-foot-link" href="/blog">静态页（SEO）</a>
       </div>
 
       <div class="vd-foot-col">
-        <div class="vd-foot-h">{{ $t('分类') }}</div>
+        <div class="vd-foot-h">分类</div>
         <button
           v-for="c in cats.slice(0, 4)"
           :key="c.name"
@@ -27,13 +27,13 @@
         >
           {{ c.name }}（{{ c.count }}）
         </button>
-        <div v-if="!cats.length" class="vd-foot-desc">{{ $t('暂无分类') }}</div>
+        <div v-if="!cats.length" class="vd-foot-desc">暂无分类</div>
       </div>
     </div>
 
     <div class="vd-wrap vd-foot-bottom">
       <span class="vd-foot-copy">© {{ year }} {{ siteName || '爱库录' }}</span>
-      <span class="vd-foot-copy">{{ $t('共') }} {{ total }} {{ $t('篇文章 · 由 AiKlog 驱动') }}</span>
+      <span class="vd-foot-copy">共 {{ total }} 篇文章 · 由 AiKlog 驱动</span>
     </div>
   </footer>
 </template>

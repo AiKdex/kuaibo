@@ -8,12 +8,12 @@
           <span class="cl-logo-text">{{ siteName }}</span>
         </a>
         <nav class="cl-nav">
-          <a :href="homeHref" class="cl-nav-a active">{{ $t('首页') }}</a>
-          <a :href="archiveHref" class="cl-nav-a">{{ $t('归档') }}</a>
+          <a :href="homeHref" class="cl-nav-a active">首页</a>
+          <a :href="archiveHref" class="cl-nav-a">归档</a>
           <ThemeSwitch />
           <a :href="rssHref" class="cl-nav-a">RSS</a>
         </nav>
-        <button class="cl-search-btn" @click="showSearch = !showSearch" :title="$t('搜索')">🔍</button>
+        <button class="cl-search-btn" @click="showSearch = !showSearch" title="搜索">🔍</button>
       </div>
     </header>
 
@@ -24,10 +24,10 @@
           v-model="searchQuery"
           class="cl-search-input"
           type="text"
-          :placeholder="$t('输入关键词搜索文章…')"
+          placeholder="输入关键词搜索文章…"
           @keydown.enter="goSearch"
         />
-        <button class="cl-search-go" @click="goSearch">{{ $t('搜索') }}</button>
+        <button class="cl-search-go" @click="goSearch">搜索</button>
       </div>
     </div>
 
@@ -35,14 +35,14 @@
     <section class="cl-hero" v-if="featured">
       <div class="cl-hero-card">
         <div class="cl-hero-content">
-          <span class="cl-hero-badge"><span class="cl-pulse"></span> {{ $t('最新发布') }}</span>
+          <span class="cl-hero-badge"><span class="cl-pulse"></span> 最新发布</span>
           <h1 class="cl-hero-title">
             <a :href="hrefOf(featured)">{{ titleOf(featured) }}</a>
           </h1>
           <p class="cl-hero-excerpt" v-if="featured.preview">{{ cleanPreview(featured.preview) }}</p>
           <div class="cl-hero-actions">
-            <a class="cl-btn cl-btn-fill" :href="hrefOf(featured)">{{ $t('阅读全文 →') }}</a>
-            <a class="cl-btn cl-btn-ghost" :href="archiveHref">{{ $t('浏览归档 ↗') }}</a>
+            <a class="cl-btn cl-btn-fill" :href="hrefOf(featured)">阅读全文 →</a>
+            <a class="cl-btn cl-btn-ghost" :href="archiveHref">浏览归档 ↗</a>
           </div>
         </div>
       </div>
@@ -51,7 +51,7 @@
     <!-- 状态处理：加载中 / 错误 / 空态 -->
     <div v-if="loading" class="cl-state">
       <div class="cl-state-icon">⏳</div>
-      <p>{{ $t('正在加载文章…') }}</p>
+      <p>正在加载文章…</p>
     </div>
     <div v-else-if="error" class="cl-state cl-state-error">
       <div class="cl-state-icon">⚠️</div>
@@ -59,14 +59,14 @@
     </div>
     <div v-else-if="!posts.length" class="cl-state">
       <div class="cl-state-icon">📭</div>
-      <p>{{ $t('还没有公开文章') }}</p>
+      <p>还没有公开文章</p>
     </div>
 
     <template v-else>
       <!-- 精选推荐：2 列大卡片 -->
       <section class="cl-section cl-section-out" v-if="picks.length">
         <div class="cl-section-head">
-          <h2 class="cl-section-title"><span class="cl-sec-icon cl-sec-grad">📌</span> {{ $t('近期更新') }}</h2>
+          <h2 class="cl-section-title"><span class="cl-sec-icon cl-sec-grad">📌</span> 近期更新</h2>
         </div>
         <div class="cl-grid-2">
           <article v-for="p in picks" :key="p.token" class="cl-card">
@@ -92,19 +92,17 @@
       <!-- 最新文章：3 列网格 -->
       <section class="cl-section cl-section-out" v-if="gridPosts.length">
         <div class="cl-section-head">
-          <h2 class="cl-section-title"><span class="cl-sec-icon cl-sec-pink">✨</span> {{ $t('最新文章') }}</h2>
+          <h2 class="cl-section-title"><span class="cl-sec-icon cl-sec-pink">✨</span> 最新文章</h2>
         </div>
         <div class="cl-grid-3">
           <article v-for="p in gridPosts" :key="p.token" class="cl-card">
             <a :href="hrefOf(p)" class="cl-card-link">
-              <PostCover :post="p" round>
-                <div class="cl-card-thumb" :style="{ background: gradientOf(p) }">
-                  <span class="cl-card-emoji">{{ emojiOf(p) }}</span>
-                  <div class="cl-card-tags" v-if="catOf(p)">
-                    <span class="cl-card-tag">{{ catOf(p) }}</span>
-                  </div>
+              <div class="cl-card-thumb" :style="{ background: gradientOf(p) }">
+                <span class="cl-card-emoji">{{ emojiOf(p) }}</span>
+                <div class="cl-card-tags" v-if="catOf(p)">
+                  <span class="cl-card-tag">{{ catOf(p) }}</span>
                 </div>
-              </PostCover>
+              </div>
               <div class="cl-card-body">
                 <h3 class="cl-card-title">{{ titleOf(p) }}</h3>
                 <p class="cl-card-excerpt" v-if="p.preview">{{ cleanPreview(p.preview) }}</p>
@@ -120,17 +118,15 @@
       <!-- 全部文章：左列表 + 右侧栏 -->
       <section class="cl-section cl-section-out" v-if="listPosts.length">
         <div class="cl-section-head">
-          <h2 class="cl-section-title"><span class="cl-sec-icon cl-sec-grad">📖</span> {{ $t('全部文章') }}</h2>
+          <h2 class="cl-section-title"><span class="cl-sec-icon cl-sec-grad">📖</span> 全部文章</h2>
         </div>
         <div class="cl-main-area">
           <div class="cl-left-col">
             <article v-for="p in listPosts" :key="p.token" class="cl-list-item">
               <a :href="hrefOf(p)" class="cl-list-link">
-                <PostCover :post="p" round>
-                  <div class="cl-list-thumb" :style="{ background: gradientOf(p) }">
-                    <span class="cl-list-emoji">{{ emojiOf(p) }}</span>
-                  </div>
-                </PostCover>
+                <div class="cl-list-thumb" :style="{ background: gradientOf(p) }">
+                  <span class="cl-list-emoji">{{ emojiOf(p) }}</span>
+                </div>
                 <div class="cl-list-body">
                   <div class="cl-list-tags" v-if="catOf(p)">
                     <span class="cl-list-tag">{{ catOf(p) }}</span>
@@ -151,11 +147,11 @@
               <div class="cl-profile">
                 <div class="cl-profile-avatar">{{ avatarLetter }}</div>
                 <div class="cl-profile-name">{{ siteName }}</div>
-                <div class="cl-profile-desc">{{ ctx.siteDesc || $t("记录技术与生活的博客") }}</div>
+                <div class="cl-profile-desc">{{ ctx.siteDesc || '记录技术与生活的博客' }}</div>
                 <div class="cl-profile-stats">
-                  <div class="cl-pstat"><div class="cl-pstat-num">{{ posts.length }}</div><div class="cl-pstat-label">{{ $t('文章') }}</div></div>
-                  <div class="cl-pstat"><div class="cl-pstat-num">{{ cats.length }}</div><div class="cl-pstat-label">{{ $t('分类') }}</div></div>
-                  <div class="cl-pstat"><div class="cl-pstat-num">{{ tags.length }}</div><div class="cl-pstat-label">{{ $t('标签') }}</div></div>
+                  <div class="cl-pstat"><div class="cl-pstat-num">{{ posts.length }}</div><div class="cl-pstat-label">文章</div></div>
+                  <div class="cl-pstat"><div class="cl-pstat-num">{{ cats.length }}</div><div class="cl-pstat-label">分类</div></div>
+                  <div class="cl-pstat"><div class="cl-pstat-num">{{ tags.length }}</div><div class="cl-pstat-label">标签</div></div>
                 </div>
               </div>
             </div>
@@ -163,8 +159,8 @@
             <!-- 文章分类 -->
             <div class="cl-widget" v-if="cats.length">
               <div class="cl-widget-head">
-                <h3>{{ $t('📂 文章分类') }}</h3>
-                <a :href="archiveHref" class="cl-widget-more">{{ $t('归档 →') }}</a>
+                <h3>📂 文章分类</h3>
+                <a :href="archiveHref" class="cl-widget-more">归档 →</a>
               </div>
               <div class="cl-cat-list">
                 <a v-for="(c, i) in cats.slice(0, 6)" :key="c.name" class="cl-cat-item" :href="'/app#/blog/cat/' + encodeURIComponent(c.name)">
@@ -180,7 +176,7 @@
             <!-- 标签云 -->
             <div class="cl-widget" v-if="tags.length">
               <div class="cl-widget-head">
-                <h3>{{ $t('🏷️ 标签') }}</h3>
+                <h3>🏷️ 标签</h3>
               </div>
               <div class="cl-tagcloud">
                 <a v-for="t in tags" :key="t.name" class="cl-tcloud-t" :href="'/app#/blog/tag/' + encodeURIComponent(t.name)">{{ t.name }}</a>
@@ -199,31 +195,31 @@
             <span class="cl-logo-icon">{{ avatarLetter }}</span>
             <span class="cl-logo-text">{{ siteName }}</span>
           </div>
-          <p class="cl-fbrand-desc">{{ ctx.siteDesc || $t("一个关于技术与生活的博客") }}</p>
+          <p class="cl-fbrand-desc">{{ ctx.siteDesc || '一个关于技术与生活的博客' }}</p>
           <div class="cl-fbrand-links">
-            <a :href="rssHref" :title="$t('RSS 订阅')">📡</a>
-            <a :href="homeHref" :title="$t('首页')">🏠</a>
-            <a :href="archiveHref" :title="$t('归档')">📅</a>
+            <a :href="rssHref" title="RSS 订阅">📡</a>
+            <a :href="homeHref" title="首页">🏠</a>
+            <a :href="archiveHref" title="归档">📅</a>
           </div>
         </div>
         <div class="cl-fcol">
-          <h4>{{ $t('导航') }}</h4>
+          <h4>导航</h4>
           <ul>
-            <li><a :href="homeHref">{{ $t('首页') }}</a></li>
-            <li><a :href="archiveHref">{{ $t('归档') }}</a></li>
-            <li><a href="/app#/blog/search">{{ $t('搜索') }}</a></li>
+            <li><a :href="homeHref">首页</a></li>
+            <li><a :href="archiveHref">归档</a></li>
+            <li><a href="/app#/blog/search">搜索</a></li>
           </ul>
         </div>
         <div class="cl-fcol" v-if="cats.length">
-          <h4>{{ $t('分类') }}</h4>
+          <h4>分类</h4>
           <ul>
             <li v-for="c in cats.slice(0, 4)" :key="c.name"><a :href="'/app#/blog/cat/' + encodeURIComponent(c.name)">{{ c.name }}</a></li>
           </ul>
         </div>
         <div class="cl-fcol">
-          <h4>{{ $t('订阅') }}</h4>
+          <h4>订阅</h4>
           <ul>
-            <li><a :href="rssHref">{{ $t('RSS 订阅') }}</a></li>
+            <li><a :href="rssHref">RSS 订阅</a></li>
             <li><a href="/api/v1/blog/sitemap.xml">Sitemap</a></li>
           </ul>
         </div>
@@ -235,17 +231,13 @@
     </footer>
 
     <!-- 回到顶部 -->
-    <button class="cl-fab" @click="scrollToTop" :title="$t('回到顶部')">↑</button>
+    <button class="cl-fab" @click="scrollToTop" title="回到顶部">↑</button>
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import { t } from '@/i18n'
-import AskWidget from '../AskWidget.vue'
 import { ref, computed, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
-import PostCover from '@/components/PostCover.vue'
 import './style.css'
 
 const raw = inject('themeContext')
@@ -278,7 +270,7 @@ function scrollToTop() {
 /* ── 派生函数（与 SSR 保持一致）── */
 function titleOf(p) {
   const n = p.file?.name || p.path || ''
-  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || t('common.unnamed')
+  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || '无标题'
 }
 function catOf(p) {
   const path = p.path || ''

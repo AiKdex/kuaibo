@@ -10,13 +10,13 @@
           <span class="hj-brand-dot"></span>
         </a>
         <nav class="hj-nav">
-          <a :href="homeHref">{{ $t('首页') }}</a>
-          <a :href="archiveHref">{{ $t('归档') }}</a>
-          <a :href="tagBaseHref">{{ $t('标签') }}</a>
+          <a :href="homeHref">首页</a>
+          <a :href="archiveHref">归档</a>
+          <a :href="tagBaseHref">标签</a>
           <ThemeSwitch />
         </nav>
         <div class="hj-hdr-right">
-          <button class="hj-icon-btn" @click="showSearch = !showSearch" :title="$t('搜索')" :aria-label="$t('搜索')">
+          <button class="hj-icon-btn" @click="showSearch = !showSearch" title="搜索" aria-label="搜索">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
           </button>
           <a class="hj-btn hj-btn-amber" :href="rssHref">RSS</a>
@@ -32,17 +32,17 @@
           v-model="searchQuery"
           class="hj-search-input"
           type="text"
-          :placeholder="$t('输入关键词搜索文章…')"
+          placeholder="输入关键词搜索文章…"
           @keydown.enter="goSearch"
         />
-        <button class="hj-btn hj-btn-amber" @click="goSearch">{{ $t('搜索') }}</button>
+        <button class="hj-btn hj-btn-amber" @click="goSearch">搜索</button>
       </div>
     </div>
 
     <!-- 状态处理：加载中 / 错误 / 空态 -->
     <div v-if="loading" class="hj-state">
       <div class="hj-state-icon">⏳</div>
-      <p>{{ $t('正在加载文章…') }}</p>
+      <p>正在加载文章…</p>
     </div>
     <div v-else-if="error" class="hj-state hj-state-error">
       <div class="hj-state-icon">⚠️</div>
@@ -50,7 +50,7 @@
     </div>
     <div v-else-if="!post" class="hj-state">
       <div class="hj-state-icon">📄</div>
-      <p>{{ $t('文章不存在或未公开') }}</p>
+      <p>文章不存在或未公开</p>
     </div>
 
     <template v-else>
@@ -67,15 +67,14 @@
               <span v-if="post.author" class="hj-meta-dot"></span>
               <span>{{ dateOf(post) }}</span>
               <span class="hj-meta-dot"></span>
-              <a :href="shareHref" class="hj-post-share" target="_blank" rel="noopener">{{ $t('查看静态页') }}</a>
-              <BlogPluginSlot mount="post_meta" :ctx="pluginCtx" />
+              <a :href="shareHref" class="hj-post-share" target="_blank" rel="noopener">查看静态页</a>
             </div>
             <div class="hj-post-body" v-html="post.html"></div>
           </article>
 
           <!-- 相关文章 -->
           <section v-if="related.length" class="hj-related">
-            <h2 class="hj-related-title">{{ $t('更多文章') }}</h2>
+            <h2 class="hj-related-title">更多文章</h2>
             <div class="hj-related-list">
               <a v-for="r in related" :key="r.token" :href="hrefOf(r)" class="hj-related-item">
                 <span class="hj-related-name">{{ titleOf(r) }}</span>
@@ -97,18 +96,18 @@
             <div class="hj-about-card">
               <div class="hj-about-avatar">{{ initialOf(siteName) }}</div>
               <div class="hj-about-name">{{ siteName }}</div>
-              <p class="hj-about-desc">{{ siteDesc || $t("写代码的人，偶尔写点别的。") }}</p>
+              <p class="hj-about-desc">{{ siteDesc || '写代码的人，偶尔写点别的。' }}</p>
               <div class="hj-about-stats">
-                <div class="hj-about-stat"><div class="num">{{ posts.length }}</div><div class="label">{{ $t('文章') }}</div></div>
-                <div class="hj-about-stat"><div class="num">{{ catStats.length }}</div><div class="label">{{ $t('分类') }}</div></div>
-                <div class="hj-about-stat"><div class="num">{{ tags.length }}</div><div class="label">{{ $t('标签') }}</div></div>
+                <div class="hj-about-stat"><div class="num">{{ posts.length }}</div><div class="label">文章</div></div>
+                <div class="hj-about-stat"><div class="num">{{ catStats.length }}</div><div class="label">分类</div></div>
+                <div class="hj-about-stat"><div class="num">{{ tags.length }}</div><div class="label">标签</div></div>
               </div>
             </div>
           </div>
 
           <!-- 分类 -->
           <div v-if="catStats.length" class="hj-side-widget">
-            <div class="hj-side-head"><h3>{{ $t('分类') }}</h3><span class="hj-side-line"></span></div>
+            <div class="hj-side-head"><h3>分类</h3><span class="hj-side-line"></span></div>
             <div class="hj-cat-list">
               <a
                 v-for="c in catStats"
@@ -127,7 +126,7 @@
 
           <!-- 标签 -->
           <div v-if="tags.length" class="hj-side-widget">
-            <div class="hj-side-head"><h3>{{ $t('标签') }}</h3><span class="hj-side-line"></span></div>
+            <div class="hj-side-head"><h3>标签</h3><span class="hj-side-line"></span></div>
             <div class="hj-tags">
               <a v-for="t in tags" :key="t.name" :href="tagHref(t.name)">{{ t.name }}</a>
             </div>
@@ -136,7 +135,7 @@
           <!-- 引言 -->
           <div class="hj-side-widget">
             <div class="hj-quote-card">
-              <p class="q">{{ $t('「好的设计是尽可能少的设计。」') }}</p>
+              <p class="q">「好的设计是尽可能少的设计。」</p>
               <span class="author">— Dieter Rams</span>
             </div>
           </div>
@@ -160,7 +159,6 @@
 </template>
 
 <script setup>
-import { t } from '@/i18n'
 import { ref, computed, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
 import BlogPluginSlot from '@/components/BlogPluginSlot.vue'
@@ -229,7 +227,7 @@ const pluginCtx = computed(() => ({
 
 function titleOf(p) {
   const n = p.file?.name || p.path || ''
-  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || t('common.unnamed')
+  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || '无标题'
 }
 function catOf(p) {
   const path = p.path || ''

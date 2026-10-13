@@ -4,25 +4,6 @@
 
 ---
 
-## [0.1.1-family.4] - 2026-10-01
-
-### 修复
-
-- **family.3 回归修复**：family.3 由源码受损的本地树构建（269 文件缺失 + 249 文件陈旧，含 entitle 公钥、B30 安全加固、Org 授权、REQ-007 在线验签接线），静默剥掉了 family.2 已有能力。本版以 `c378ca8`（family.2）完整树为底，仅叠加侧栏优化三文件
-- `/api/v1/license/verify`（REQ-007 在线验签）恢复可用
-
-### 侧栏
-
-- 移除冗余「检索」导航项（顶栏全局搜索同路由 `/search`）
-- 图标去撞车：家族传承 `clock→heart`、草稿箱 `edit→fileText`、静态页 `book→globe`
-- 修复 AikIcon：`database` 图标 `ellipse` 类型不被模板支持导致空白（改纯 path）、重复 `edit` 键去重、补 `heart`/`layers`/`globe`
-
-### 部署
-
-- bin md5 `653e1076b891c4ef2834f043c61afe9e`（36,110,496 B），124 与生产互等；回滚点 `aiklog.bak.20261001132454`（124）/ `aiklog.bak.20261001132529`（生产）
-
----
-
 ## [0.1.23] - 2026-09-13
 
 ### 链接

@@ -1,24 +1,25 @@
 <template>
   <div class="vd-root">
-    <VerdantHead :site-name="siteName" :blog-url="blogUrl" :slogan="$t('AUTHOR · 作者')" />
+    <VerdantHead :site-name="siteName" :blog-url="blogUrl" slogan="AUTHOR · 作者" />
 
-    <div v-if="loading" class="vd-wrap"><div class="vd-state">{{ $t('正在加载文章…') }}</div></div>
+    <div v-if="loading" class="vd-wrap"><div class="vd-state">正在加载文章…</div></div>
     <div v-else-if="error" class="vd-wrap"><div class="vd-state vd-state-err">{{ error }}</div></div>
 
     <template v-else>
       <section class="vd-sub-hero">
         <div class="vd-wrap">
           <div class="vd-sect">
-            <h2 class="vd-sect-t">{{ author || $t("作者") }}</h2>
+            <h2 class="vd-sect-t">{{ author || '作者' }}</h2>
             <span class="vd-rule"></span>
-            <span class="vd-sect-note">{{ list.length }} {{ $t('篇') }}</span>
+            <span class="vd-sect-note">{{ list.length }} 篇</span>
           </div>
           <!-- 作者字段属系统侧待透出项（规范 §10-10）：拿不到就如实说明，不伪造 -->
-          <p v-if="!hasAuthorField" class="vd-sub-d">{{ $t("当前列表数据未包含作者字段，以下为全部公开文章；系统补齐后本页会自动按作者过滤。") }}
+          <p v-if="!hasAuthorField" class="vd-sub-d">
+            当前列表数据未包含作者字段，以下为全部公开文章；系统补齐后本页会自动按作者过滤。
           </p>
-          <p v-else class="vd-sub-d">{{ $t('按作者聚合的公开文章。') }}</p>
+          <p v-else class="vd-sub-d">按作者聚合的公开文章。</p>
           <div class="vd-filters">
-            <a class="vd-btn vd-btn-g vd-btn-sm" :href="blogUrl">{{ $t('‹ 返回全部文章') }}</a>
+            <a class="vd-btn vd-btn-g vd-btn-sm" :href="blogUrl">‹ 返回全部文章</a>
           </div>
         </div>
       </section>
@@ -28,18 +29,16 @@
           <div v-if="list.length" class="vd-grid">
             <VerdantCard v-for="(p, i) in list" :key="p.token || p.path" :post="p" :index="i" />
           </div>
-          <div v-else class="vd-state">{{ $t('该作者下暂无文章') }}</div>
+          <div v-else class="vd-state">该作者下暂无文章</div>
         </div>
       </section>
     </template>
 
     <VerdantFoot :site-name="siteName" :blog-url="blogUrl" :posts="posts" />
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import AskWidget from '../AskWidget.vue'
 import { computed } from 'vue'
 import VerdantHead from './VerdantHead.vue'
 import VerdantCard from './VerdantCard.vue'

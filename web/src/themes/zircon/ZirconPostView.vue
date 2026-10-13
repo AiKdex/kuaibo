@@ -4,7 +4,7 @@
 
     <main class="zc-main">
       <nav class="zc-crumb">
-        <a class="zc-crumb-link" :href="listHref">{{ $t('全部文章') }}</a>
+        <a class="zc-crumb-link" :href="listHref">全部文章</a>
         <span class="zc-crumb-sep" aria-hidden="true">/</span>
         <template v-if="post.cat">
           <span class="zc-crumb-mid">{{ post.cat }}</span>
@@ -18,7 +18,6 @@
         <h1 class="zc-post-title">{{ post.title }}</h1>
         <div class="zc-post-meta">
           <span v-for="(m, i) in meta" :key="i" class="zc-post-meta-i">{{ m }}</span>
-          <BlogPluginSlot mount="post_meta" :ctx="pluginCtx" />
         </div>
       </header>
 
@@ -29,18 +28,18 @@
 
           <div class="zc-post-foot">
             <button class="zc-btn" type="button" @click="copyLink">
-              {{ copied ? $t("链接已复制") : $t("复制分享链接") }}
+              {{ copied ? '链接已复制' : '复制分享链接' }}
             </button>
-            <a class="zc-btn zc-btn-ghost" :href="shareHref">{{ $t('打开静态页') }}</a>
+            <a class="zc-btn zc-btn-ghost" :href="shareHref">打开静态页</a>
           </div>
 
           <nav v-if="prevPost || nextPost" class="zc-pn">
             <a v-if="prevPost" class="zc-pn-item" :href="href(prevPost)">
-              <span class="zc-pn-dir">{{ $t('← 上一篇') }}</span>
+              <span class="zc-pn-dir">← 上一篇</span>
               <span class="zc-pn-t">{{ titleOf(prevPost) }}</span>
             </a>
             <a v-if="nextPost" class="zc-pn-item zc-pn-item-r" :href="href(nextPost)">
-              <span class="zc-pn-dir">{{ $t('下一篇 →') }}</span>
+              <span class="zc-pn-dir">下一篇 →</span>
               <span class="zc-pn-t">{{ titleOf(nextPost) }}</span>
             </a>
           </nav>
@@ -53,7 +52,7 @@
 
         <aside class="zc-side">
           <div v-if="toc.length" class="zc-side-box">
-            <div class="zc-side-t">{{ $t('本文目录') }}</div>
+            <div class="zc-side-t">本文目录</div>
             <ul class="zc-toc">
               <li v-for="(h, i) in toc" :key="i" class="zc-toc-li">
                 <button
@@ -69,7 +68,7 @@
           </div>
 
           <div v-if="related.length" class="zc-side-box">
-            <div class="zc-side-t">{{ $t('相关文章') }}</div>
+            <div class="zc-side-t">相关文章</div>
             <ul class="zc-side-list">
               <li v-for="(p, i) in related" :key="i" class="zc-side-li">
                 <a class="zc-side-a" :href="href(p)">{{ titleOf(p) }}</a>
@@ -79,11 +78,11 @@
           </div>
 
           <div v-if="cats.length" class="zc-side-box">
-            <div class="zc-side-t">{{ $t('分类') }}</div>
+            <div class="zc-side-t">分类</div>
             <ul class="zc-side-list">
               <li v-for="c in cats" :key="c.name" class="zc-side-li">
                 <span class="zc-side-a">{{ c.name }}</span>
-                <span class="zc-side-d">{{ c.count }} {{ $t('篇') }}</span>
+                <span class="zc-side-d">{{ c.count }} 篇</span>
               </li>
             </ul>
           </div>
@@ -93,11 +92,9 @@
 
     <ZirconFoot />
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import AskWidget from '../AskWidget.vue'
 /**
  * ZirconPostView —— 青璃主题文章内页（entries.post）。
  *

@@ -2,40 +2,40 @@
   <div class="shares-view">
     <!-- 顶栏 -->
     <div class="sv-topbar">
-      <h2 class="sv-title">{{  $t('博客 / 分享')  }}</h2>
+      <h2 class="sv-title">博客 / 分享</h2>
       <div class="sv-actions">
-        <button class="btn btn-sm" :title="$t('在浏览器中打开对外博客首页')" @click="openBlogHome">
-          <AikIcon name="link" :size="13" /><span>{{  $t('对外首页')  }}</span>
+        <button class="btn btn-sm" title="在浏览器中打开对外博客首页" @click="openBlogHome">
+          <AikIcon name="link" :size="13" /><span>对外首页</span>
         </button>
-        <button class="icon-btn" :title="$t('刷新')" @click="load"><AikIcon name="refresh" :size="15" /></button>
+        <button class="icon-btn" title="刷新" @click="load"><AikIcon name="refresh" :size="15" /></button>
       </div>
     </div>
 
     <!-- 视图切换：博客首页 / 管理 -->
     <div class="sv-tabs">
       <button class="tab" :class="{ active: view === 'home' }" @click="view = 'home'">
-        <AikIcon name="book" :size="14" /><span>{{  $t('博客首页')  }}</span>
+        <AikIcon name="book" :size="14" /><span>博客首页</span>
       </button>
       <button class="tab" :class="{ active: view === 'manage' }" @click="view = 'manage'">
-        <AikIcon name="grid" :size="14" /><span>{{  $t('管理')  }}</span>
+        <AikIcon name="grid" :size="14" /><span>管理</span>
       </button>
-      <span v-if="view === 'home' && activeItems.length" class="tab-count">{{  activeItems.length  }} {{  $t('篇已发布')  }}</span>
+      <span v-if="view === 'home' && activeItems.length" class="tab-count">{{ activeItems.length }} 篇已发布</span>
     </div>
 
     <!-- 错误/加载 -->
     <div v-if="error" class="error-banner">
       <AikIcon name="info" :size="14" />
-      <span>{{  error  }}</span>
-      <button class="btn-link" @click="load">{{  $t('重试')  }}</button>
+      <span>{{ error }}</span>
+      <button class="btn-link" @click="load">重试</button>
     </div>
-    <div v-if="loading" class="loading-state"><div class="spinner"></div><span>{{  $t('加载中…')  }}</span></div>
+    <div v-if="loading" class="loading-state"><div class="spinner"></div><span>加载中…</span></div>
 
     <!-- ============ 博客首页（阅读视角） ============ -->
     <template v-else-if="view === 'home'">
       <div v-if="!activeItems.length" class="empty-state">
         <div class="empty-icon"><AikIcon name="book" :size="28" /></div>
-        <p class="empty-title">{{  $t('博客还没有文章')  }}</p>
-        <p class="empty-desc">{{  $t('在文件列表中右键 → 「分享 / 发布」，即可把文档发布为博客文章')  }}</p>
+        <p class="empty-title">博客还没有文章</p>
+        <p class="empty-desc">在文件列表中右键 → 「分享 / 发布」，即可把文档发布为博客文章</p>
       </div>
       <div v-else class="blog-list">
         <article
@@ -48,22 +48,22 @@
             <AikIcon :name="kindIcon(it)" :size="20" />
           </div>
           <div class="bp-body">
-            <h3 class="bp-title" :title="it.file?.name">{{  it.file?.name || $t('（文件已删除）')  }}
-              <span v-if="it.scope === 'dir'" class="dir-tag" :title="$t('来自文件夹整体分享')">{{  $t('文件夹')  }}</span>
+            <h3 class="bp-title" :title="it.file?.name">{{ it.file?.name || '（文件已删除）' }}
+              <span v-if="it.scope === 'dir'" class="dir-tag" title="来自文件夹整体分享">文件夹</span>
             </h3>
             <div class="bp-meta">
-              <span>{{  formatTime(it.created_at)  }}</span>
+              <span>{{ formatTime(it.created_at) }}</span>
               <span class="dot">·</span>
-              <span>{{  it.file?.size ? formatSize(it.file.size) : '—'  }}</span>
+              <span>{{ it.file?.size ? formatSize(it.file.size) : '—' }}</span>
               <span class="dot">·</span>
-              <span>{{  typeLabel(it.file)  }}</span>
+              <span>{{ typeLabel(it.file) }}</span>
               <template v-if="it.path">
                 <span class="dot">·</span>
-                <span class="bp-path" :title="it.path">{{  it.path  }}</span>
+                <span class="bp-path" :title="it.path">{{ it.path }}</span>
               </template>
             </div>
           </div>
-          <span class="bp-read">{{ $t('阅读') }}<AikIcon name="chevronRight" :size="12" /></span>
+          <span class="bp-read">阅读<AikIcon name="chevronRight" :size="12" /></span>
         </article>
       </div>
     </template>
@@ -72,42 +72,42 @@
     <template v-else>
       <div v-if="!items.length" class="empty-state">
         <div class="empty-icon"><AikIcon name="fileText" :size="28" /></div>
-        <p class="empty-title">{{ $t('还没有发布任何内容') }}</p>
-        <p class="empty-desc">{{ $t('在文件列表中右键 → 「分享 / 发布」，即可把文档作为博客文章发布') }}</p>
+        <p class="empty-title">还没有发布任何内容</p>
+        <p class="empty-desc">在文件列表中右键 → 「分享 / 发布」，即可把文档作为博客文章发布</p>
       </div>
       <div v-else class="sv-list">
         <div class="sv-head">
-          <span class="col-name">{{ $t('文档') }}</span>
-          <span class="col-meta">{{ $t('类型') }}</span>
-          <span class="col-meta">{{ $t('大小') }}</span>
-          <span class="col-meta">{{ $t('发布时间') }}</span>
-          <span class="col-status">{{ $t('状态') }}</span>
-          <span class="col-actions">{{ $t('操作') }}</span>
+          <span class="col-name">文档</span>
+          <span class="col-meta">类型</span>
+          <span class="col-meta">大小</span>
+          <span class="col-meta">发布时间</span>
+          <span class="col-status">状态</span>
+          <span class="col-actions">操作</span>
         </div>
         <div v-for="it in items" :key="it.token" class="sv-row" :class="'st-' + it.status">
           <span class="col-name">
             <AikIcon :name="kindIcon(it)" :size="16" />
-            <span class="sv-file-name" :title="it.file?.name || t('（文件已删除）')">{{  it.file?.name || $t('（文件已删除）')  }}</span>
+            <span class="sv-file-name" :title="it.file?.name || '（文件已删除）'">{{ it.file?.name || '（文件已删除）' }}</span>
           </span>
-          <span class="col-meta">{{  it.scope === 'dir' ? $t('文件夹·整体') : typeLabel(it.file)  }}</span>
-          <span class="col-meta">{{  it.file?.size ? formatSize(it.file.size) : '—'  }}</span>
-          <span class="col-meta">{{  formatTime(it.created_at)  }}</span>
+          <span class="col-meta">{{ it.scope === 'dir' ? '文件夹·整体' : typeLabel(it.file) }}</span>
+          <span class="col-meta">{{ it.file?.size ? formatSize(it.file.size) : '—' }}</span>
+          <span class="col-meta">{{ formatTime(it.created_at) }}</span>
           <span class="col-status">
-            <span class="st-badge" :class="'st-' + it.status">{{  statusLabel(it.status)  }}</span>
+            <span class="st-badge" :class="'st-' + it.status">{{ statusLabel(it.status) }}</span>
           </span>
           <span class="col-actions">
             <template v-if="it.status === 'active'">
-              <button class="btn btn-sm" @click="copyUrl(it)">{{ $t('复制链接') }}</button>
-              <button class="btn btn-sm" @click="openPage(it)">{{ $t('预览') }}</button>
+              <button class="btn btn-sm" @click="copyUrl(it)">复制链接</button>
+              <button class="btn btn-sm" @click="openPage(it)">预览</button>
               <template v-if="it.token === 'blog'">
-                <span class="st-locked" :title="$t('博客分享为系统内置：关闭/开启博客请到博客管理页使用博客开关')">{{ $t('内置') }}</span>
+                <span class="st-locked" title="博客分享为系统内置：关闭/开启博客请到博客管理页使用博客开关">内置</span>
               </template>
               <template v-else>
-                <button class="btn btn-sm btn-danger-ghost" @click="revoke(it)">{{ $t('撤销') }}</button>
+                <button class="btn btn-sm btn-danger-ghost" @click="revoke(it)">撤销</button>
               </template>
             </template>
             <template v-else>
-              <span class="st-gone">{{  it.status === 'revoked' ? $t('已撤销') : it.status === 'expired' ? $t('已过期') : $t('文件缺失')  }}</span>
+              <span class="st-gone">{{ it.status === 'revoked' ? '已撤销' : it.status === 'expired' ? '已过期' : '文件缺失' }}</span>
             </template>
           </span>
         </div>
@@ -115,7 +115,7 @@
     </template>
 
     <!-- 提示条 -->
-    <p class="sv-hint">{{ $t('发布后任何人凭链接即可阅读；撤销后链接立即失效。限时分享、访问统计将随阶段开放。') }}</p>
+    <p class="sv-hint">发布后任何人凭链接即可阅读；撤销后链接立即失效。限时分享、访问统计将随阶段开放。</p>
   </div>
 </template>
 
@@ -125,7 +125,6 @@ import AikIcon from '@/components/AikIcon.vue'
 import * as api from '@/api'
 import { useToastStore } from '@/stores/toast'
 import { tryCopy } from '@/utils/clipboard'
-import { t } from '@/i18n'
 const toastStore = useToastStore()
 
 const view = ref('home')
@@ -162,9 +161,9 @@ function openBlogHome() {
 async function copyUrl(it) {
   const url = shareUrl(it.token)
   if (await tryCopy(url)) {
-    toastStore.push(t('链接已复制'))
+    toastStore.push('链接已复制')
   } else {
-    toastStore.push(t('浏览器限制了自动复制，请手动复制链接'))
+    toastStore.push('浏览器限制了自动复制，请手动复制链接')
   }
 }
 
@@ -176,7 +175,7 @@ function openPage(it) {
 async function revoke(it) {
   try {
     await api.revokeShare(it.token)
-    toastStore.push(t('已撤销，链接已失效'))
+    toastStore.push('已撤销，链接已失效')
     await load()
   } catch (e) {
     error.value = e.message
@@ -197,13 +196,13 @@ function kindIcon(it) {
 
 function typeLabel(f) {
   if (!f) return '—'
-  if (f.kind === 'dir') return t('文件夹')
+  if (f.kind === 'dir') return '文件夹'
   const e = (f.name || '').split('.').pop().toLowerCase()
-  return (e || t('文件')).toUpperCase()
+  return (e || '文件').toUpperCase()
 }
 
 function statusLabel(s) {
-  return { active: t('已发布'), revoked: t('已撤销'), expired: t('已过期'), missing: t('文件缺失') }[s] || s
+  return { active: '已发布', revoked: '已撤销', expired: '已过期', missing: '文件缺失' }[s] || s
 }
 
 function formatSize(n) {
@@ -226,9 +225,7 @@ onMounted(load)
 
 <style scoped>
 .shares-view {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px 24px 40px;
+  padding: 18px 24px 40px;
 }
 
 .sv-topbar {

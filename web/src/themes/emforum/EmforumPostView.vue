@@ -2,7 +2,7 @@
   <div class="ef-post">
     <!-- 面包屑 -->
     <nav class="ef-crumb">
-      <a :href="listHref">{{ $t('版块首页') }}</a>
+      <a :href="listHref">版块首页</a>
       <span class="sep">/</span>
       <template v-if="post.cat">
         <a :href="listHref">{{ post.cat }}</a>
@@ -21,33 +21,32 @@
             <span class="ef-avatar" :class="boardColorCls">{{ avatarText }}</span>
             <span class="ef-meta-id">
               <span class="ef-m-name">{{ authorName }}</span>
-              <span class="ef-m-sub">{{ dateText }} · {{ post.cat || $t('默认版块') }}</span>
+              <span class="ef-m-sub">{{ dateText }} · {{ post.cat || '默认版块' }}</span>
             </span>
-            <span class="ef-floor">{{ $t('楼主') }}</span>
-            <BlogPluginSlot mount="post_meta" :ctx="pluginCtx" />
+            <span class="ef-floor">楼主</span>
           </div>
         </header>
 
         <figure class="ef-cover">
-          <span class="ef-cover-ico">{{ boardIconOf(post.cat || $t("文")) }}</span>
-          <figcaption>{{ post.cat || $t('综合') }} {{ $t('版块 · 主题帖') }}</figcaption>
+          <span class="ef-cover-ico">{{ boardIconOf(post.cat || '文') }}</span>
+          <figcaption>{{ post.cat || '综合' }} 版块 · 主题帖</figcaption>
         </figure>
 
         <article ref="art" class="ef-article" v-html="post.html"></article>
 
         <!-- 标签 + 分享 -->
         <div v-if="post.cat" class="ef-tax">
-          <span class="ef-lbl">{{ $t('标签') }}</span>
+          <span class="ef-lbl">标签</span>
           <span class="ef-tag">{{ post.cat }}</span>
         </div>
         <div class="ef-share">
           <button class="ef-btn ef-btn-sm" :class="{ liked }" type="button" @click="toggleLike">
-            ♥ {{ liked ? $t("已赞") : $t("赞") }}
+            ♥ {{ liked ? '已赞' : '赞' }}
           </button>
-          <button class="ef-btn ef-btn-sm" type="button" @click="copyLink">{{ $t('复制链接') }}</button>
-          <button class="ef-btn ef-btn-sm" type="button" @click="shareWeibo">{{ $t('分享到微博') }}</button>
+          <button class="ef-btn ef-btn-sm" type="button" @click="copyLink">复制链接</button>
+          <button class="ef-btn ef-btn-sm" type="button" @click="shareWeibo">分享到微博</button>
           <button class="ef-btn ef-btn-sm" :class="{ fav: favorited }" type="button" @click="favorited = !favorited">
-            {{ favorited ? $t("已收藏") : $t("收藏") }}
+            {{ favorited ? '已收藏' : '收藏' }}
           </button>
         </div>
 
@@ -56,18 +55,18 @@
           <span class="ef-avatar ef-avatar-lg" :class="boardColorCls">{{ avatarText }}</span>
           <div>
             <h4>{{ post.author }}</h4>
-            <div class="ef-role">{{ $t('本文作者') }}</div>
+            <div class="ef-role">本文作者</div>
           </div>
         </div>
 
         <!-- 上下篇 -->
         <div v-if="prevPost || nextPost" class="ef-pn">
           <a v-if="prevPost" class="prev" :href="postHref(prevPost)">
-            <span class="dir">{{ $t('← 上一篇') }}</span>
+            <span class="dir">← 上一篇</span>
             <div class="ttl">{{ titleOf(prevPost) }}</div>
           </a>
           <a v-if="nextPost" class="next" :href="postHref(nextPost)">
-            <span class="dir">{{ $t('下一篇 →') }}</span>
+            <span class="dir">下一篇 →</span>
             <div class="ttl">{{ titleOf(nextPost) }}</div>
           </a>
         </div>
@@ -81,7 +80,7 @@
       <!-- 侧栏 -->
       <aside class="ef-side">
         <div v-if="tocList.length" class="ef-sb">
-          <h3>{{ $t('本文目录') }}</h3>
+          <h3>本文目录</h3>
           <ul class="ef-toc">
             <li v-for="(h, i) in tocList" :key="i" :class="{ sub: h.level === 3 }">
               <button type="button" @click="scrollToHeading(i)">{{ h.text }}</button>
@@ -89,7 +88,7 @@
           </ul>
         </div>
         <div v-if="hotPosts.length" class="ef-sb">
-          <h3>{{ $t('最新主题') }}</h3>
+          <h3>热门主题</h3>
           <ol class="ef-hot">
             <li v-for="p in hotPosts" :key="p.token || p.path">
               <span>
@@ -100,15 +99,15 @@
           </ol>
         </div>
         <div v-if="cats.length" class="ef-sb">
-          <h3>{{ $t('版块标签云') }}</h3>
+          <h3>版块标签云</h3>
           <div class="ef-cloud">
             <span v-for="c in cats" :key="c.name" class="ef-cloud-tag">{{ c.icon }} {{ c.name }}</span>
           </div>
         </div>
         <div class="ef-cta">
-          <b>{{ $t('订阅本版') }}<br>{{ $t('更新不错过') }}</b>
-          <p>{{ $t("新主题发布时通过 RSS 第一时间通知你。") }}</p>
-          <a class="ef-btn" :href="rssHref">{{ $t('订阅 RSS') }}</a>
+          <b>订阅本版<br>更新不错过</b>
+          <p>新主题发布时通过 RSS 第一时间通知你。</p>
+          <a class="ef-btn" :href="rssHref">订阅 RSS</a>
         </div>
       </aside>
     </div>
@@ -116,7 +115,7 @@
     <!-- 相关文章 -->
     <section v-if="related.length" class="ef-related">
       <div class="ef-sect">
-        <h2>{{ $t('相关主题') }}</h2>
+        <h2>相关主题</h2>
         <span class="ef-rule"></span>
         <span class="ef-note">Related</span>
       </div>
@@ -128,12 +127,10 @@
         </a>
       </div>
     </section>
-    <EmforumAsk />
   </div>
 </template>
 
 <script setup>
-import { t as i18t } from '@/i18n'
 /**
  * EmforumPostView —— EmForum 主题「文章内页」（entries.post）。
  * 宿主 BlogPostView 在主题声明 entries.post 时整页交给本组件渲染，
@@ -142,7 +139,6 @@ import { t as i18t } from '@/i18n'
  */
 import { computed, ref } from 'vue'
 import BlogPluginSlot from '@/components/BlogPluginSlot.vue'
-import EmforumAsk from './EmforumAsk.vue'
 import {
   useBlog,
   postTitle,
@@ -169,7 +165,7 @@ const avatarText = computed(() => (authorName.value || '?').slice(0, 1))
 const boardColorCls = computed(() => boardColor(post.value.cat || '文'))
 const dateText = computed(() => {
   const d = postDate({ file: { updated_at: post.value.updatedAt } }, 'ymd')
-  return d ? d + i18t('发布') : ''
+  return d ? d + ' 发布' : ''
 })
 function boardIconOf(name) {
   // 用稳定的版块序号取图标

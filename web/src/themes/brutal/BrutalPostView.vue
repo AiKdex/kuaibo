@@ -2,7 +2,7 @@
   <div class="bt-post">
     <!-- 面包屑 -->
     <nav class="bt-crumb">
-      <a :href="listHref">{{ $t('首页') }}</a>
+      <a :href="listHref">首页</a>
       <span class="sep">/</span>
       <template v-if="post.cat">
         <a :href="listHref">{{ post.cat }}</a>
@@ -23,30 +23,29 @@
               <span class="bt-m-name">{{ authorName }}</span>
               <span class="bt-m-sub">{{ dateText }}</span>
             </span>
-            <BlogPluginSlot mount="post_meta" :ctx="pluginCtx" />
           </div>
         </header>
 
         <figure class="bt-cover">
           <b>{{ coverText }}</b>
-          <figcaption>{{ $t('封面 · 硬边框 + 硬阴影 + 几何图案') }}</figcaption>
+          <figcaption>封面 · 硬边框 + 硬阴影 + 几何图案</figcaption>
         </figure>
 
         <article ref="art" class="bt-article" v-html="post.html"></article>
 
         <!-- 标签 + 分享 -->
         <div v-if="post.cat" class="bt-tax">
-          <span class="bt-lbl">{{ $t('标签') }}</span>
+          <span class="bt-lbl">标签</span>
           <span class="bt-tag">{{ post.cat }}</span>
         </div>
         <div class="bt-share">
           <button class="bt-btn bt-btn-sm" :class="{ liked }" type="button" @click="toggleLike">
-            ▲ {{ liked ? $t("已赞") : $t("赞") }}
+            ▲ {{ liked ? '已赞' : '赞' }}
           </button>
-          <button class="bt-btn bt-btn-sm" type="button" @click="copyLink">{{ $t('复制链接') }}</button>
-          <button class="bt-btn bt-btn-sm" type="button" @click="shareWeibo">{{ $t('分享到微博') }}</button>
+          <button class="bt-btn bt-btn-sm" type="button" @click="copyLink">复制链接</button>
+          <button class="bt-btn bt-btn-sm" type="button" @click="shareWeibo">分享到微博</button>
           <button class="bt-btn bt-btn-sm" :class="{ fav: favorited }" type="button" @click="favorited = !favorited">
-            {{ favorited ? $t("已收藏") : $t("收藏") }}
+            {{ favorited ? '已收藏' : '收藏' }}
           </button>
         </div>
 
@@ -55,18 +54,18 @@
           <span class="bt-ava bt-ava-lg">{{ avatarText }}</span>
           <div>
             <h4>{{ post.author }}</h4>
-            <div class="bt-role">{{ $t('本文作者') }}</div>
+            <div class="bt-role">本文作者</div>
           </div>
         </div>
 
         <!-- 上下篇 -->
         <div v-if="prevPost || nextPost" class="bt-pn">
           <a v-if="prevPost" class="prev" :href="postHref(prevPost)">
-            <span class="dir">{{ $t('← 上一篇') }}</span>
+            <span class="dir">← 上一篇</span>
             <div class="ttl">{{ titleOf(prevPost) }}</div>
           </a>
           <a v-if="nextPost" class="next" :href="postHref(nextPost)">
-            <span class="dir">{{ $t('下一篇 →') }}</span>
+            <span class="dir">下一篇 →</span>
             <div class="ttl">{{ titleOf(nextPost) }}</div>
           </a>
         </div>
@@ -80,7 +79,7 @@
       <!-- 侧栏 -->
       <aside class="bt-side">
         <div v-if="tocList.length" class="bt-sb y">
-          <h3>{{ $t('本文目录') }}</h3>
+          <h3>本文目录</h3>
           <ul class="bt-toc">
             <li v-for="(h, i) in tocList" :key="i" :class="{ sub: h.level === 3 }">
               <button type="button" @click="scrollToHeading(i)">{{ h.text }}</button>
@@ -88,7 +87,7 @@
           </ul>
         </div>
         <div v-if="hotPosts.length" class="bt-sb p">
-          <h3>{{ $t('热门文章') }}</h3>
+          <h3>热门文章</h3>
           <ol class="bt-hot">
             <li v-for="p in hotPosts" :key="p.token || p.path">
               <span>
@@ -99,15 +98,15 @@
           </ol>
         </div>
         <div v-if="cats.length" class="bt-sb m">
-          <h3>{{ $t('标签云') }}</h3>
+          <h3>标签云</h3>
           <div class="bt-cloud">
             <span v-for="c in cats" :key="c.name" class="bt-cloud-tag">{{ c.name }}</span>
           </div>
         </div>
         <div class="bt-cta">
-          <b>{{ $t('每周两封') }}<br>{{ $t('只写干货') }}</b>
-          <p>{{ $t("新文章发布时通知你，含未发布草稿的片段。") }}</p>
-          <a class="bt-btn" :href="rssHref">{{ $t('订阅 RSS') }}</a>
+          <b>每周两封<br>只写干货</b>
+          <p>新文章发布时通知你，含未发布草稿的片段。</p>
+          <a class="bt-btn" :href="rssHref">订阅 RSS</a>
         </div>
       </aside>
     </div>
@@ -115,7 +114,7 @@
     <!-- 相关文章 -->
     <section v-if="related.length" class="bt-related">
       <div class="bt-sect">
-        <h2>{{ $t('你可能还想看') }}</h2>
+        <h2>你可能还想看</h2>
         <span class="bt-rule"></span>
         <span class="bt-note">Related</span>
       </div>
@@ -128,12 +127,9 @@
       </div>
     </section>
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import { t as i18t } from '@/i18n'
-import AskWidget from '../AskWidget.vue'
 /**
  * BrutalPostView —— Brutal 主题「文章内页」（entries.post）。
  * 宿主 BlogPostView 在主题声明 entries.post 时整页交给本组件渲染，
@@ -157,7 +153,7 @@ const authorName = computed(() => post.value.author || siteName.value)
 const avatarText = computed(() => (authorName.value || '?').slice(0, 1))
 const dateText = computed(() => {
   const d = postDate({ file: { updated_at: post.value.updatedAt } }, 'ymd')
-  return d ? d + i18t('发布') : ''
+  return d ? d + ' 发布' : ''
 })
 const coverText = computed(() => {
   const t = post.value.title || 'RAW & BOLD'

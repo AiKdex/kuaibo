@@ -10,13 +10,13 @@
           <span class="hj-brand-dot"></span>
         </a>
         <nav class="hj-nav">
-          <a :href="homeHref">{{ $t('首页') }}</a>
-          <a :href="archiveHref">{{ $t('归档') }}</a>
-          <a :href="tagHref">{{ $t('标签') }}</a>
+          <a :href="homeHref">首页</a>
+          <a :href="archiveHref">归档</a>
+          <a :href="tagHref">标签</a>
           <ThemeSwitch />
         </nav>
         <div class="hj-hdr-right">
-          <button class="hj-icon-btn" @click="showSearch = !showSearch" :title="$t('搜索')" :aria-label="$t('搜索')">
+          <button class="hj-icon-btn" @click="showSearch = !showSearch" title="搜索" aria-label="搜索">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
           </button>
           <a class="hj-btn hj-btn-amber" :href="rssHref">RSS</a>
@@ -28,19 +28,19 @@
     <!-- 搜索栏（展开/收起） -->
     <div v-if="showSearch" class="hj-search-bar">
       <div class="hj-search-in">
-        <input v-model="searchQuery" class="hj-search-input" type="text" :placeholder="$t('输入关键词搜索文章…')" @keydown.enter="goSearch" />
-        <button class="hj-btn hj-btn-amber" @click="goSearch">{{ $t('搜索') }}</button>
+        <input v-model="searchQuery" class="hj-search-input" type="text" placeholder="输入关键词搜索文章…" @keydown.enter="goSearch" />
+        <button class="hj-btn hj-btn-amber" @click="goSearch">搜索</button>
       </div>
     </div>
 
     <main class="hj-inner-main">
-      <h1 class="hj-inner-title">{{ $t('归档') }}{{ archiveLabel ? '：' + archiveLabel : '' }}</h1>
-      <p class="hj-inner-count">{{ posts.length }} {{ $t('篇文章') }}</p>
+      <h1 class="hj-inner-title">归档{{ archiveLabel ? '：' + archiveLabel : '' }}</h1>
+      <p class="hj-inner-count">{{ posts.length }} 篇文章</p>
 
       <!-- 状态处理：加载中 / 错误 / 空态 -->
       <div v-if="loading" class="hj-state">
         <div class="hj-state-icon">⏳</div>
-        <p>{{ $t('正在加载…') }}</p>
+        <p>正在加载…</p>
       </div>
       <div v-else-if="error" class="hj-state hj-state-error">
         <div class="hj-state-icon">⚠️</div>
@@ -51,7 +51,7 @@
           <div v-for="g in grouped" :key="g.ym" class="hj-archive-group">
             <div class="hj-archive-year">
               <button type="button" class="hj-archive-btn" @click="jumpTo(g.ym)">{{ g.ym }}</button>
-              <span class="hj-archive-count">{{ g.items.length }} {{ $t('篇') }}</span>
+              <span class="hj-archive-count">{{ g.items.length }} 篇</span>
             </div>
             <ul :id="'hj-ym-' + g.ym" class="hj-archive-list">
               <li v-for="p in g.items" :key="p.token" class="hj-archive-item">
@@ -61,7 +61,7 @@
             </ul>
           </div>
         </div>
-        <p v-else class="hj-empty">{{ $t('暂无文章') }}</p>
+        <p v-else class="hj-empty">暂无文章</p>
       </template>
     </main>
 
@@ -77,7 +77,6 @@
 </template>
 
 <script setup>
-import { t } from '@/i18n'
 import { ref, computed, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
 import './style.css'
@@ -134,7 +133,7 @@ function goSearch() {
   if (q) searchLink.value?.click()
 }
 
-function titleOf(p) { const n = p.file?.name || p.path || ''; return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || t('common.unnamed') }
+function titleOf(p) { const n = p.file?.name || p.path || ''; return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || '无标题' }
 function dateOf(p) { const v = p.file?.updated_at; if (!v) return ''; const ms = typeof v === 'number' ? (v > 1e12 ? v : v * 1000) : Date.parse(v); if (!Number.isFinite(ms)) return ''; const d = new Date(ms); const z = (n) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}` }
 function hrefOf(p) { return ctx.value.postUrl ? ctx.value.postUrl(p) : '/app#/blog?view=public' }
 </script>

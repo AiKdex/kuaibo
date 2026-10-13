@@ -1,19 +1,19 @@
 <template>
   <div class="vd-root">
-    <VerdantHead :site-name="siteName" :blog-url="blogUrl" :slogan="$t('ARCHIVE · 归档')" />
+    <VerdantHead :site-name="siteName" :blog-url="blogUrl" slogan="ARCHIVE · 归档" />
 
-    <div v-if="loading" class="vd-wrap"><div class="vd-state">{{ $t('正在加载文章…') }}</div></div>
+    <div v-if="loading" class="vd-wrap"><div class="vd-state">正在加载文章…</div></div>
     <div v-else-if="error" class="vd-wrap"><div class="vd-state vd-state-err">{{ error }}</div></div>
 
     <template v-else>
       <section class="vd-sub-hero">
         <div class="vd-wrap">
           <div class="vd-sect">
-            <h2 class="vd-sect-t">{{ $t('全部归档') }}</h2>
+            <h2 class="vd-sect-t">全部归档</h2>
             <span class="vd-rule"></span>
-            <span class="vd-sect-note">{{ posts.length }} {{ $t('篇 ·') }} {{ groups.length }} {{ $t('年') }}</span>
+            <span class="vd-sect-note">{{ posts.length }} 篇 · {{ groups.length }} 年</span>
           </div>
-          <p class="vd-sub-d">{{ $t('按更新时间（') }}<code>file.updated_at</code>{{ $t("）分组，由前端从公开文章列表派生。") }}</p>
+          <p class="vd-sub-d">按更新时间（<code>file.updated_at</code>）分组，由前端从公开文章列表派生。</p>
 
           <!-- 年份跳转一律 button + scrollIntoView，绝不写进 href / location.hash（规范 §9.3） -->
           <div v-if="groups.length > 1" class="vd-filters">
@@ -32,12 +32,12 @@
 
       <section class="vd-body">
         <div class="vd-wrap">
-          <div v-if="!groups.length" class="vd-state">{{ $t('还没有公开文章') }}</div>
+          <div v-if="!groups.length" class="vd-state">还没有公开文章</div>
 
           <section v-for="g in groups" :id="'vd-y-' + g.year" :key="g.year" class="vd-archive-year">
             <div class="vd-year-head">
               <span class="vd-year-n">{{ g.year }}</span>
-              <span class="vd-year-c">{{ g.list.length }} {{ $t('篇') }}</span>
+              <span class="vd-year-c">{{ g.list.length }} 篇</span>
             </div>
             <ul class="vd-year-list">
               <li v-for="p in g.list" :key="p.token || p.path" class="vd-year-item">
@@ -53,11 +53,9 @@
 
     <VerdantFoot :site-name="siteName" :blog-url="blogUrl" :posts="posts" />
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import AskWidget from '../AskWidget.vue'
 import { computed } from 'vue'
 import VerdantHead from './VerdantHead.vue'
 import VerdantFoot from './VerdantFoot.vue'

@@ -96,17 +96,6 @@ func (a *API) requireArticleUnlock(w http.ResponseWriter, r *http.Request, fileI
 	return errPasswordRequired
 }
 
-// articleLocked 无副作用的密码闸门探针（不写响应）。C2 修复用：
-// SSR 文章页（/blog/{slug}、/{slug}）不能只靠 requireArticleUnlock —— 那是"写 JSON 错误"的形态，
-// HTML 页面需要的是"少渲染正文"，故这里给一个纯判定版本供 SSR 轨调用。
-func (a *API) articleLocked(r *http.Request, fileID string) bool {
-	pwd, err := a.articleAccessPwd(r, fileID)
-	if err != nil || pwd == "" {
-		return false
-	}
-	return !a.articleUnlocked(r, fileID)
-}
-
 // blogPostsAccess POST /api/v1/blog/posts/access {"id":"文章id","password":"...或空串清除"}
 // 2.2 文章密码设置（站长/作者；密码 sha256 哈希入库，不存明文）。
 func (a *API) blogPostsAccess(w http.ResponseWriter, r *http.Request) {
@@ -153,10 +142,6 @@ func (a *API) blogPostsAccess(w http.ResponseWriter, r *http.Request) {
 
 // publicUnlock POST /api/v1/public/unlock {"file_id":"...","password":"..."}
 // 公开解锁：校验文章密码 → 签发解锁凭证（24h 会话级）。
-//
-// 限流（安全加固）：本端点在 publicPath 白名单内 = 完全匿名，若不限流则可被无限次
-// 爆破文章访问密码（密码空间通常很小）。复用 loginThrottle 的滑窗计数，按
-// 「客户端 IP + file_id」聚合计数——既防单篇爆破，也防同一 IP 换文章批量试。
 func (a *API) publicUnlock(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		FileID   string `json:"file_id"`
@@ -166,25 +151,15 @@ func (a *API) publicUnlock(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "BAD_JSON", "缺少 file_id 或 password")
 		return
 	}
-	// 限流键：IP + 文章 id（不同文章独立计数，避免误伤正常读者）
-	tkey := "unlock:" + a.clientIP(r) + ":" + req.FileID
-	if ok, remain := loginThrottler.allow(tkey); !ok {
-		w.Header().Set("Retry-After", strconv.Itoa(remain))
-		writeErr(w, http.StatusTooManyRequests, "RATE_LIMITED",
-			"尝试过于频繁，请 "+strconv.Itoa(remain)+" 秒后再试")
-		return
-	}
 	pwd, err := a.articleAccessPwd(r, req.FileID)
 	if err != nil || pwd == "" {
 		writeErr(w, http.StatusNotFound, "NOT_PROTECTED", "该文章未设置密码")
 		return
 	}
 	if subtle.ConstantTimeCompare([]byte(hashAccessPwd(req.Password)), []byte(pwd)) != 1 {
-		loginThrottler.hit(tkey) // 仅失败计数
 		writeErr(w, http.StatusForbidden, "WRONG_PASSWORD", "密码错误")
 		return
 	}
-	loginThrottler.reset(tkey) // 成功清零
 	writeJSON(w, http.StatusOK, map[string]any{"ok": true, "unlock_token": a.issueUnlockToken(req.FileID), "expires_in": 86400})
 }
 

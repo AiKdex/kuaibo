@@ -145,7 +145,7 @@ func (a *API) emailCodeSend(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusConflict, "EMAIL_TAKEN", "该邮箱已被其他账号使用")
 		return
 	}
-	ip := a.clientIP(r)
+	ip := clientIP(r)
 	if ok, _ := loginThrottler.allow("ec:" + ip + "|" + email); !ok {
 		writeErr(w, http.StatusTooManyRequests, "CODE_RATE_LIMITED", "发送过于频繁，请稍后再试")
 		return
@@ -179,8 +179,6 @@ func (a *API) emailCodeSend(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	// 发送成功即计数（审计#2：防验证码轰炸；失败路径不计数以免误伤正常重试）
-	loginThrottler.hit("ec:" + ip + "|" + email)
 	if a.smtpDebug() {
 		log.Printf("[email-code] debug_mode: %s -> code=%s purpose=%s", email, code, purpose)
 		writeJSON(w, http.StatusOK, map[string]any{"ok": true, "debug_code": code, "debug": true})
@@ -305,7 +303,7 @@ func (a *API) authRegister(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusForbidden, "REGISTER_CLOSED", "站点未开放注册，请联系管理员开通账号")
 		return
 	}
-	ip := a.clientIP(r)
+	ip := clientIP(r)
 	if ok, _ := loginThrottler.allow("reg:" + ip); !ok {
 		writeErr(w, http.StatusTooManyRequests, "LOGIN_RATE_LIMITED", "注册尝试过于频繁，请稍后再试")
 		return
@@ -340,7 +338,6 @@ func (a *API) authRegister(w http.ResponseWriter, r *http.Request) {
 	if err := a.db.QueryRowContext(r.Context(),
 		`SELECT id FROM users WHERE username=?`, req.Username).Scan(&exists); err == nil {
 		writeErr(w, http.StatusConflict, "USER_EXISTS", "用户名已被占用")
-		loginThrottler.hit("reg:" + ip) // 审计#2：撞用户名=重复尝试，计入注册限流
 		return
 	}
 	// 邮箱：site.email_required 时必填且需验证码；否则可选（提供则校验验证码）。
@@ -348,7 +345,6 @@ func (a *API) authRegister(w http.ResponseWriter, r *http.Request) {
 	emailRequired := a.cfg.GetBool("site.email_required")
 	if emailRequired && email == "" {
 		writeErr(w, http.StatusBadRequest, "EMAIL_REQUIRED", "本站注册需填写邮箱并通过验证码")
-		loginThrottler.hit("reg:" + ip)
 		return
 	}
 	if email != "" {
@@ -363,12 +359,10 @@ func (a *API) authRegister(w http.ResponseWriter, r *http.Request) {
 		if emailRequired || req.Code != "" {
 			if len(req.Code) != 6 {
 				writeErr(w, http.StatusBadRequest, "BAD_CODE", "请先获取验证码")
-		loginThrottler.hit("reg:" + ip)
 				return
 			}
 			if err := a.emailCodeValid(r.Context(), email, req.Code, "register"); err != nil {
 				writeErr(w, http.StatusBadRequest, "CODE_INVALID", err.Error())
-		loginThrottler.hit("reg:" + ip)
 				return
 			}
 		}
@@ -376,7 +370,6 @@ func (a *API) authRegister(w http.ResponseWriter, r *http.Request) {
 		if err := a.db.QueryRowContext(r.Context(),
 			`SELECT id FROM users WHERE email=?`, email).Scan(&taken); err == nil {
 			writeErr(w, http.StatusConflict, "EMAIL_TAKEN", "该邮箱已被其他账号使用")
-		loginThrottler.hit("reg:" + ip)
 			return
 		}
 	}

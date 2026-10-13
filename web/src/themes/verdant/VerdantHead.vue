@@ -14,7 +14,7 @@
         <div v-if="$slots.stats" class="vd-stats"><slot name="stats" /></div>
         <nav class="vd-nav">
           <ThemeSwitch />
-          <a :href="blogUrl">{{ $t('全部文章') }}</a>
+          <a :href="blogUrl">全部文章</a>
           <a :href="rssHref">RSS</a>
         </nav>
       </div>

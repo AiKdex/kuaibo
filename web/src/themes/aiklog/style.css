@@ -423,16 +423,6 @@
   border-radius: 999px;
 }
 
-/* A-G 内容类型角标：resource=资源 / link=外链 / article=文章 */
-.ak-card-type {
-  color: #fff;
-  background: var(--th-jade-d, #0d7a6a);
-  padding: 1px 8px;
-  border-radius: 999px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
 .ak-card-title {
   font-family: var(--th-font-d);
   font-size: 16px;

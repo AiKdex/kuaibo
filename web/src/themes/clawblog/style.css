@@ -539,32 +539,11 @@
   margin-bottom: 28px;
 }
 
-/* ── Post page（两栏：正文 + 侧栏 SideWidget）── */
-.cb-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 24px;
-  max-width: 1100px;
+/* ── Post page ── */
+.cl-post-main {
+  max-width: 720px;
   margin: 0 auto;
-  align-items: start;
   padding: 32px 24px;
-}
-.cb-article {
-  min-width: 0;
-}
-.cb-aside {
-  position: sticky;
-  top: 20px;
-}
-@media (max-width: 860px) {
-  .cb-layout {
-    grid-template-columns: 1fr;
-    padding: 20px 16px;
-  }
-  .cb-aside {
-    position: static;
-    margin-top: 20px;
-  }
 }
 .cl-post-header {
   margin-bottom: 32px;
@@ -1151,6 +1130,9 @@
   }
   .cl-post-title {
     font-size: 20px;
+  }
+  .cl-post-main {
+    padding: 20px 16px;
   }
   .cl-search-box {
     flex-direction: column;

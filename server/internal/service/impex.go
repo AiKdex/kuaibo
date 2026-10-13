@@ -137,39 +137,16 @@ func (s *ImpexStore) Get(ctx context.Context, id string) (*ImpexJob, error) {
 	return &j, nil
 }
 
-// OwnerOf 返回任务归属用户 ID（payload.owner_id；缺省为 SystemOwnerID）。M11 归属校验用。
-func (s *ImpexStore) OwnerOf(ctx context.Context, id string) (string, error) {
-	var raw string
-	if err := s.db.QueryRowContext(ctx, `SELECT payload FROM impex_jobs WHERE id=?`, id).Scan(&raw); err != nil {
-		return "", err
-	}
-	var p map[string]any
-	if json.Unmarshal([]byte(raw), &p) == nil {
-		if o := ixStr(p["owner_id"]); o != "" {
-			return o, nil
-		}
-	}
-	return SystemOwnerID, nil
-}
-
-// List 任务历史（kind 为空取全部；ownerID 非空时仅返回该用户任务——M11 归属隔离），按创建时间倒序。
-func (s *ImpexStore) List(ctx context.Context, kind, ownerID string, limit int) ([]*ImpexJob, error) {
+// List 任务历史（kind 为空取全部），按创建时间倒序。
+func (s *ImpexStore) List(ctx context.Context, kind string, limit int) ([]*ImpexJob, error) {
 	if limit <= 0 || limit > 200 {
 		limit = 50
 	}
 	q := `SELECT id FROM impex_jobs`
 	args := []any{}
-	conds := []string{}
 	if kind != "" {
-		conds = append(conds, `kind=?`)
+		q += ` WHERE kind=?`
 		args = append(args, kind)
-	}
-	if ownerID != "" {
-		conds = append(conds, `COALESCE(json_extract(payload,'$.owner_id'),'') = ?`)
-		args = append(args, ownerID)
-	}
-	if len(conds) > 0 {
-		q += ` WHERE ` + strings.Join(conds, ` AND `)
 	}
 	q += ` ORDER BY created_at DESC LIMIT ?`
 	args = append(args, limit)
@@ -566,7 +543,7 @@ func (s *ImpexStore) importBytes(ctx context.Context, owner, space, parent, rel 
 			return nil, nil
 		}
 	}
-	return s.files.Upload(ctx, owner, space, pid, name, ixMimeOf(name), bytes.NewReader(b), int64(len(b)), DefaultSiteID)
+	return s.files.Upload(ctx, owner, space, pid, name, ixMimeOf(name), bytes.NewReader(b), int64(len(b)))
 }
 
 // findChildBySHA 同目录内按内容 SHA256 找文件（内容级去重；同名但内容不同不受影响）。
@@ -621,7 +598,7 @@ func (s *ImpexStore) runURLImport(ctx context.Context, j *ImpexJob) error {
 		name += ".md"
 	}
 	body := "> 来源：" + raw + "\n\n" + md + "\n"
-	if _, err := s.files.CreateDoc(ctx, owner, space, parent, name, body, DefaultSiteID); err != nil {
+	if _, err := s.files.CreateDoc(ctx, owner, space, parent, name, body); err != nil {
 		s.appendFail(ctx, j.ID, ImpexFail{Item: raw, Error: err.Error(), Ref: map[string]any{"url": raw}})
 	}
 	prog.step()
@@ -661,7 +638,7 @@ func (s *ImpexStore) runClipboardImport(ctx context.Context, j *ImpexJob) error 
 		if path.Ext(n) == "" {
 			n += ".png"
 		}
-		if _, err := s.files.Upload(ctx, owner, space, parent, n, ixMimeOf(n), bytes.NewReader(data), int64(len(data)), DefaultSiteID); err != nil {
+		if _, err := s.files.Upload(ctx, owner, space, parent, n, ixMimeOf(n), bytes.NewReader(data), int64(len(data))); err != nil {
 			s.appendFail(ctx, j.ID, ImpexFail{Item: "clipboard-image", Error: err.Error()})
 		}
 		prog.step()
@@ -675,7 +652,7 @@ func (s *ImpexStore) runClipboardImport(ctx context.Context, j *ImpexJob) error 
 	if !strings.HasSuffix(strings.ToLower(n), ".md") {
 		n += ".md"
 	}
-	if _, err := s.files.CreateDoc(ctx, owner, space, parent, n, text, DefaultSiteID); err != nil {
+	if _, err := s.files.CreateDoc(ctx, owner, space, parent, n, text); err != nil {
 		s.appendFail(ctx, j.ID, ImpexFail{Item: n, Error: err.Error()})
 	}
 	prog.step()
@@ -1045,7 +1022,7 @@ func (s *ImpexStore) collectTree(ctx context.Context, spaceID, rootID string) ([
 	out := []ixRelFile{}
 	var rec func(id, prefix string) error
 	rec = func(id, prefix string) error {
-		items, err := s.files.ListDir(ctx, spaceID, id, DefaultSiteID)
+		items, err := s.files.ListDir(ctx, spaceID, id)
 		if err != nil {
 			return err
 		}
@@ -1118,9 +1095,7 @@ func ixFetchURL(ctx context.Context, raw, ua string) (string, string, error) {
 	}
 	req.Header.Set("User-Agent", ua)
 	req.Header.Set("Accept", "text/html,application/xhtml+xml")
-	resp, err := (&http.Client{Timeout: 25 * time.Second,
-		Transport:     &http.Transport{DialContext: SafeDialContext}, // H6 收尾：建连前复验最终 IP
-		CheckRedirect: safeCheckRedirect}).Do(req)
+	resp, err := (&http.Client{Timeout: 25 * time.Second}).Do(req)
 	if err != nil {
 		return "", "", err
 	}

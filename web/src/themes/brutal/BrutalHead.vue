@@ -3,7 +3,7 @@
   <div class="bt-marquee" aria-hidden="true">
     <div class="bt-marquee-track">
       <span v-for="n in 2" :key="n" class="bt-marquee-set">
-        <i>{{ $t('新粗野主义') }}</i><i>{{ $t('硬边框') }}</i><i>{{ $t('硬阴影') }}</i><i>{{ $t('高饱和撞色') }}</i><i>{{ $t('零圆角') }}</i><i>{{ $t('不装温柔') }}</i>
+        <i>新粗野主义</i><i>硬边框</i><i>硬阴影</i><i>高饱和撞色</i><i>零圆角</i><i>不装温柔</i>
       </span>
     </div>
   </div>
@@ -12,7 +12,7 @@
   <header class="bt-masthead">
     <div class="bt-wrap bt-mast-row">
       <a class="bt-brand" :href="blogUrl">
-        <span class="bt-brand-mark">{{ $t('粗') }}</span>
+        <span class="bt-brand-mark">粗</span>
         <span class="bt-brand-txt">
           <!-- 站名用 div，不用 h1（规范 §5.3） -->
           <span class="bt-brand-name">{{ siteName || '爱库录' }}</span>
@@ -24,7 +24,7 @@
         <div v-if="$slots.stats" class="bt-stats"><slot name="stats" /></div>
         <nav class="bt-nav">
           <ThemeSwitch />
-          <a :href="blogUrl">{{ $t('全部文章') }}</a>
+          <a :href="blogUrl">全部文章</a>
           <a :href="rssHref">RSS</a>
         </nav>
       </div>

@@ -1,36 +1,37 @@
 <template>
   <div class="brutal-root">
-    <BrutalHead :site-name="siteName" :blog-url="blogUrl" :slogan="$t('AUTHOR · 作者')" />
+    <BrutalHead :site-name="siteName" :blog-url="blogUrl" slogan="AUTHOR · 作者" />
 
-    <div v-if="loading" class="bt-wrap"><div class="bt-state">{{ $t('正在加载文章…') }}</div></div>
+    <div v-if="loading" class="bt-wrap"><div class="bt-state">正在加载文章…</div></div>
     <div v-else-if="error" class="bt-wrap"><div class="bt-state bt-state-err">{{ error }}</div></div>
 
     <template v-else>
       <section class="bt-posts">
         <div class="bt-wrap">
           <div class="bt-sect">
-            <h2>{{ author || $t("作者主页") }}</h2>
+            <h2>{{ author || '作者主页' }}</h2>
             <span class="bt-rule"></span>
-            <span class="bt-sect-note">{{ list.length }} {{ $t('篇') }}</span>
+            <span class="bt-sect-note">{{ list.length }} 篇</span>
           </div>
 
           <!-- 契约未透出 file.author：明确说明而非伪造数据（规范 §2.2 / §4.4） -->
           <div class="bt-notice">
-            <b>{{ $t('作者信息未开放') }}</b>
+            <b>作者信息未开放</b>
             <p>
-              {{ $t('当前博客数据契约未包含文章作者字段，因此无法按作者筛选。下方展示站点全部文章，待系统透出') }} <code>file.author</code> {{ $t('后本页将自动按作者聚合。') }}
+              当前博客数据契约未包含文章作者字段，因此无法按作者筛选。
+              下方展示站点全部文章，待系统透出 <code>file.author</code> 后本页将自动按作者聚合。
             </p>
           </div>
 
           <div class="bt-bar">
-            <span class="bt-bar-info">{{ $t('共') }} {{ list.length }} {{ $t('篇文章') }}</span>
-            <a class="bt-btn bt-btn-sm" :href="blogUrl">{{ $t('‹ 返回全部文章') }}</a>
+            <span class="bt-bar-info">共 {{ list.length }} 篇文章</span>
+            <a class="bt-btn bt-btn-sm" :href="blogUrl">‹ 返回全部文章</a>
           </div>
 
           <div v-if="list.length" class="bt-grid">
             <BrutalCard v-for="(p, i) in list" :key="p.token || p.path" :post="p" :index="i" />
           </div>
-          <div v-else class="bt-state">{{ $t('暂无文章') }}</div>
+          <div v-else class="bt-state">暂无文章</div>
         </div>
       </section>
 
@@ -43,11 +44,9 @@
 
     <BrutalFoot :site-name="siteName" :blog-url="blogUrl" />
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import AskWidget from '../AskWidget.vue'
 import { computed } from 'vue'
 import BrutalHead from './BrutalHead.vue'
 import BrutalCard from './BrutalCard.vue'

@@ -65,7 +65,7 @@ func (a *API) filesList(w http.ResponseWriter, r *http.Request) {
 	}
 	parent := r.URL.Query().Get("parent")
 	// 爱库录精简发行：博客目录对站长可见（文件管理可直接拖 md 发布）；根目录/博客根仍禁止删除
-	items, err := a.files.ListDir(r.Context(), a.homeSpaceID(), parent, a.operatingSiteID(r))
+	items, err := a.files.ListDir(r.Context(), a.homeSpaceID(), parent)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "FILES_LIST_FAILED", err.Error())
 		return
@@ -91,12 +91,8 @@ func (a *API) filesResolveWiki(w http.ResponseWriter, r *http.Request) {
 
 // filesRestore 从回收站恢复：POST /api/v1/files/{id}/restore
 func (a *API) filesRestore(w http.ResponseWriter, r *http.Request) {
-	// C3 修复：文件写操作仅 owner/admin/作者白名单（此前无守卫，任意登录用户可删改全站文件）
-	if !a.blogAuthorOnly(w, r) {
-		return
-	}
 	id := r.PathValue("id")
-	f, err := a.files.Restore(r.Context(), a.writeActor(r), id)
+	f, err := a.files.Restore(r.Context(), a.homeOwnerID(), id)
 	if err != nil {
 		writeErr(w, http.StatusBadRequest, "RESTORE_FAILED", err.Error())
 		return
@@ -106,38 +102,26 @@ func (a *API) filesRestore(w http.ResponseWriter, r *http.Request) {
 
 // filesPurge 彻底删除：DELETE /api/v1/files/{id}/purge
 func (a *API) filesPurge(w http.ResponseWriter, r *http.Request) {
-	// C3 修复：文件写操作仅 owner/admin/作者白名单（此前无守卫，任意登录用户可删改全站文件）
-	if !a.blogAuthorOnly(w, r) {
-		return
-	}
 	id := r.PathValue("id")
 	// 博客目录保护：站点公开根，禁止任何形式的删除
 	if id == service.BlogDirID {
 		writeErr(w, http.StatusForbidden, "BLOG_DIR_PROTECTED", "博客目录是站点根，禁止删除（子目录和文件不受限）")
 		return
 	}
-	if err := a.files.Purge(r.Context(), a.writeActor(r), id); err != nil {
+	if err := a.files.Purge(r.Context(), a.homeOwnerID(), id); err != nil {
 		writeErr(w, http.StatusBadRequest, "PURGE_FAILED", err.Error())
 		return
 	}
-	// B15：清掉已失去源文件的媒体记录与缩略图派生对象（对账式，覆盖子树）
-	a.cleanupMediaOrphans(r.Context())
 	writeJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
 // filesEmptyTrash 清空回收站：POST /api/v1/files/trash/empty
 func (a *API) filesEmptyTrash(w http.ResponseWriter, r *http.Request) {
-	// C3 修复：文件写操作仅 owner/admin/作者白名单（此前无守卫，任意登录用户可删改全站文件）
-	if !a.blogAuthorOnly(w, r) {
-		return
-	}
-	n, err := a.files.EmptyTrash(r.Context(), a.writeActor(r), a.homeSpaceID())
+	n, err := a.files.EmptyTrash(r.Context(), a.homeOwnerID(), a.homeSpaceID())
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "EMPTY_TRASH_FAILED", err.Error())
 		return
 	}
-	// B15：清空回收站一次可能清掉整棵子树，同样走孤儿对账
-	a.cleanupMediaOrphans(r.Context())
 	writeJSON(w, http.StatusOK, map[string]any{"ok": true, "purged": n})
 }
 
@@ -178,10 +162,6 @@ func (a *API) maybeAutoPublishBlogFile(ctx context.Context, f *service.File) {
 
 // filesSetStatus 更新内容状态：PUT /api/v1/files/{id}/status {status:"draft"|"published"}
 func (a *API) filesSetStatus(w http.ResponseWriter, r *http.Request) {
-	// C3 修复：文件写操作仅 owner/admin/作者白名单（此前无守卫，任意登录用户可删改全站文件）
-	if !a.blogAuthorOnly(w, r) {
-		return
-	}
 	id := r.PathValue("id")
 	var req struct {
 		Status string `json:"status"`
@@ -190,7 +170,7 @@ func (a *API) filesSetStatus(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "BAD_JSON", err.Error())
 		return
 	}
-	f, err := a.files.SetStatus(r.Context(), a.writeActor(r), id, req.Status)
+	f, err := a.files.SetStatus(r.Context(), a.homeOwnerID(), id, req.Status)
 	if err != nil {
 		writeErr(w, http.StatusBadRequest, "STATUS_FAILED", err.Error())
 		return
@@ -312,13 +292,9 @@ func (a *API) filesSummary(w http.ResponseWriter, r *http.Request) {
 // 字段名 file（可多个，支持文件夹拖拽：每个文件可带同名 path 字段记录相对路径，如 "sub/a.md"，后端自动建目录链）；
 // 也支持 FormValue("path") 上传到指定路径（供 WebDAV 类接入）。
 func (a *API) filesUpload(w http.ResponseWriter, r *http.Request) {
-	// C3 修复：文件写操作仅 owner/admin/作者白名单（此前无守卫，任意登录用户可删改全站文件）
-	if !a.blogAuthorOnly(w, r) {
-		return
-	}
 	parent := r.URL.Query().Get("parent")
 	spaceID := a.homeSpaceID()
-	ownerID := a.writeActor(r)
+	ownerID := a.homeOwnerID()
 
 	// 单文件直传（流式，兼容 curl -F file=@x）与 multipart 多文件
 	if err := r.ParseMultipartForm(64 << 20); err != nil {
@@ -357,7 +333,7 @@ func (a *API) filesUpload(w http.ResponseWriter, r *http.Request) {
 				results = append(results, result{Err: err.Error()})
 				continue
 			}
-			file, err := a.files.Upload(r.Context(), ownerID, spaceID, targetParent, name, fh.Header.Get("Content-Type"), f, fh.Size, a.operatingSiteID(r))
+			file, err := a.files.Upload(r.Context(), ownerID, spaceID, targetParent, name, fh.Header.Get("Content-Type"), f, fh.Size)
 			f.Close()
 			if err == nil {
 				a.maybeAutoPublishBlogFile(r.Context(), file)
@@ -378,7 +354,7 @@ func (a *API) filesUpload(w http.ResponseWriter, r *http.Request) {
 			}
 			targetParent = pid
 		}
-		file, err := a.files.Upload(r.Context(), ownerID, spaceID, targetParent, name, r.Header.Get("Content-Type"), r.Body, r.ContentLength, a.operatingSiteID(r))
+		file, err := a.files.Upload(r.Context(), ownerID, spaceID, targetParent, name, r.Header.Get("Content-Type"), r.Body, r.ContentLength)
 		if err == nil {
 			a.maybeAutoPublishBlogFile(r.Context(), file)
 		}
@@ -391,10 +367,6 @@ func (a *API) filesUpload(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) filesMkdir(w http.ResponseWriter, r *http.Request) {
-	// C3 修复：文件写操作仅 owner/admin/作者白名单（此前无守卫，任意登录用户可删改全站文件）
-	if !a.blogAuthorOnly(w, r) {
-		return
-	}
 	var req struct {
 		ParentID string `json:"parent_id"`
 		Name     string `json:"name"`
@@ -403,7 +375,7 @@ func (a *API) filesMkdir(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "BAD_JSON", err.Error())
 		return
 	}
-	f, err := a.files.CreateDir(r.Context(), a.writeActor(r), a.homeSpaceID(), req.ParentID, req.Name, a.operatingSiteID(r))
+	f, err := a.files.CreateDir(r.Context(), a.homeOwnerID(), a.homeSpaceID(), req.ParentID, req.Name)
 	if err != nil {
 		writeErr(w, http.StatusBadRequest, "MKDIR_FAILED", err.Error())
 		return
@@ -413,10 +385,6 @@ func (a *API) filesMkdir(w http.ResponseWriter, r *http.Request) {
 
 // filesCreateDoc 新建文档：POST /api/v1/files/doc {parent_id, name, content}
 func (a *API) filesCreateDoc(w http.ResponseWriter, r *http.Request) {
-	// C3 修复：文件写操作仅 owner/admin/作者白名单（此前无守卫，任意登录用户可删改全站文件）
-	if !a.blogAuthorOnly(w, r) {
-		return
-	}
 	var req struct {
 		ParentID string `json:"parent_id"`
 		Name     string `json:"name"`
@@ -430,7 +398,7 @@ func (a *API) filesCreateDoc(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "DOC_NO_NAME", "name required")
 		return
 	}
-	f, err := a.files.CreateDoc(r.Context(), a.writeActor(r), a.homeSpaceID(), req.ParentID, req.Name, req.Content, a.operatingSiteID(r))
+	f, err := a.files.CreateDoc(r.Context(), a.homeOwnerID(), a.homeSpaceID(), req.ParentID, req.Name, req.Content)
 	if err != nil {
 		writeErr(w, http.StatusBadRequest, "DOC_CREATE_FAILED", err.Error())
 		return
@@ -440,10 +408,6 @@ func (a *API) filesCreateDoc(w http.ResponseWriter, r *http.Request) {
 
 // filesUpdateContent 更新文本文件内容：PUT /api/v1/files/{id}/content {content}
 func (a *API) filesUpdateContent(w http.ResponseWriter, r *http.Request) {
-	// C3 修复：文件写操作仅 owner/admin/作者白名单（此前无守卫，任意登录用户可删改全站文件）
-	if !a.blogAuthorOnly(w, r) {
-		return
-	}
 	id := r.PathValue("id")
 	var req struct {
 		Content string `json:"content"`
@@ -452,7 +416,7 @@ func (a *API) filesUpdateContent(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "BAD_JSON", err.Error())
 		return
 	}
-	f, err := a.files.UpdateContent(r.Context(), a.writeActor(r), id, req.Content)
+	f, err := a.files.UpdateContent(r.Context(), a.homeOwnerID(), id, req.Content)
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
 			writeErr(w, http.StatusNotFound, "FILE_NOT_FOUND", "file not found")
@@ -461,16 +425,10 @@ func (a *API) filesUpdateContent(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "UPDATE_CONTENT_FAILED", err.Error())
 		return
 	}
-	// B6：保存成功后投订阅通知 + 落 @提及（增值动作，失败不影响保存结果）
-	a.afterContentChange(r, id, a.curUserID(r), req.Content, f)
 	writeJSON(w, http.StatusOK, f)
 }
 
 func (a *API) filesMove(w http.ResponseWriter, r *http.Request) {
-	// C3 修复：文件写操作仅 owner/admin/作者白名单（此前无守卫，任意登录用户可删改全站文件）
-	if !a.blogAuthorOnly(w, r) {
-		return
-	}
 	id := r.PathValue("id")
 	// 博客目录保护：站点公开根，禁止移动/重命名（改名会破坏"目录即博客"心智）
 	if id == service.BlogDirID {
@@ -485,7 +443,7 @@ func (a *API) filesMove(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "BAD_JSON", err.Error())
 		return
 	}
-	f, err := a.files.Move(r.Context(), a.writeActor(r), id, req.ParentID, req.Name)
+	f, err := a.files.Move(r.Context(), a.homeOwnerID(), id, req.ParentID, req.Name)
 	if err != nil {
 		writeErr(w, http.StatusBadRequest, "MOVE_FAILED", err.Error())
 		return
@@ -494,10 +452,6 @@ func (a *API) filesMove(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) filesCopy(w http.ResponseWriter, r *http.Request) {
-	// C3 修复：文件写操作仅 owner/admin/作者白名单（此前无守卫，任意登录用户可删改全站文件）
-	if !a.blogAuthorOnly(w, r) {
-		return
-	}
 	id := r.PathValue("id")
 	var req struct {
 		ParentID string `json:"parent_id"`
@@ -507,7 +461,7 @@ func (a *API) filesCopy(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "BAD_JSON", err.Error())
 		return
 	}
-	f, err := a.files.Copy(r.Context(), a.writeActor(r), id, req.ParentID, req.Name)
+	f, err := a.files.Copy(r.Context(), a.homeOwnerID(), id, req.ParentID, req.Name)
 	if err != nil {
 		writeErr(w, http.StatusBadRequest, "COPY_FAILED", err.Error())
 		return
@@ -516,10 +470,6 @@ func (a *API) filesCopy(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) filesDelete(w http.ResponseWriter, r *http.Request) {
-	// C3 修复：文件写操作仅 owner/admin/作者白名单（此前无守卫，任意登录用户可删改全站文件）
-	if !a.blogAuthorOnly(w, r) {
-		return
-	}
 	id := r.PathValue("id")
 	// 博客目录保护：站点公开根，禁止软删（回收站也不允许——整站下线风险）
 	if id == service.BlogDirID {
@@ -528,7 +478,7 @@ func (a *API) filesDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	// 采集产物删除记忆：软删前提取 source_url 记墓碑，防"清理→重采→又回来"死循环
 	a.tombstoneCollectArtifact(r.Context(), id)
-	if err := a.files.Delete(r.Context(), a.writeActor(r), id); err != nil {
+	if err := a.files.Delete(r.Context(), a.homeOwnerID(), id); err != nil {
 		writeErr(w, http.StatusBadRequest, "DELETE_FAILED", err.Error())
 		return
 	}

@@ -139,7 +139,7 @@ func EnsureBlogSpace(ctx context.Context, db *sql.DB) error {
 		{"blog-meta-footer", "文章元信息", "文章页正文下显示分类/更新时间/大小（内置示例插件，演示博客插件协议）", `["post_bottom"]`, "blog-meta-footer"},
 		{"blog-tag-badges", "列表徽章", "公开首页文章列表项显示分类徽章（内置示例插件，挂载点 list_item）", `["list_item"]`, "blog-tag-badges"},
 		{"blog-meta-card", "文章信息卡", "文章页侧栏信息卡：分类/更新时间/大小（内置示例插件，挂载点 sidebar）", `["sidebar"]`, "blog-meta-card"},
-		{"blog-seo-meta", "SEO 元信息", "公开页注入 description/OG 标签（内置示例插件，挂载点 head）", `["head"]`, "blog-seo-meta"},
+		{"blog-seo-meta", "SEO Meta", "公开页注入 description/OG 标签（内置示例插件，挂载点 head）", `["head"]`, "blog-seo-meta"},
 		{"blog-comments", "文章评论", "文章页评论列表与发表（评论核 API 展示层；读公开写需登录，挂载点 post_bottom）", `["post_bottom"]`, "blog-comments"},
 		{"blog-related-posts", "相关推荐", "文章页相关推荐：同分类优先，按更新时间（挂载点 post_bottom）", `["post_bottom"]`, "blog-related-posts"},
 		{"blog-archives", "归档", "侧栏按月归档文章列表（挂载点 sidebar）", `["sidebar"]`, "blog-archives"},
@@ -147,7 +147,6 @@ func EnsureBlogSpace(ctx context.Context, db *sql.DB) error {
 		{"blog-cover", "封面图", "列表项封面：从正文预览提取首图（挂载点 list_item）", `["list_item"]`, "blog-cover"},
 		{"blog-reader-ai", "读者问答", "公开页读者 AI 问答（限公开文章上下文，挂载点 post_bottom）", `["post_bottom"]`, "blog-reader-ai"},
 		{"blog-stats", "访问统计", "文章 PV 本地计数（挂载点 post_bottom）", `["post_bottom"]`, "blog-stats"},
-		{"blog-voice-read", "语音朗读", "文章页标题下元信息行内联朗读按钮（复用 ai.tts 语音合成，挂载点 post_meta）", `["post_meta"]`, "blog-voice-read"},
 	}
 	for _, p := range plugins {
 		if _, err := db.ExecContext(ctx,
@@ -158,31 +157,7 @@ func EnsureBlogSpace(ctx context.Context, db *sql.DB) error {
 			return fmt.Errorf("seed blog plugin %s: %w", p.id, err)
 		}
 	}
-	// 内置展示名回填：上表是 INSERT OR IGNORE，改常量只影响全新库，已有库拿不到新名字。
-	// 仅当库里的当前值仍等于旧名时才改（站长若已自行改名则不覆盖）。
-	for _, r := range builtinNameBackfill {
-		if _, err := db.ExecContext(ctx,
-			`UPDATE blog_plugins SET name=?, updated_at=? WHERE id=? AND name=?`,
-			r.newName, now, r.id, r.oldName); err != nil {
-			return fmt.Errorf("backfill blog plugin name %s: %w", r.id, err)
-		}
-	}
-	// 内置插件挂载点回填：blog-voice-read 从文章底部（post_bottom）上移到标题下元信息行（post_meta）。
-	// 同样只改「仍等于旧值」的库，站长若已自行调整过挂载点则不覆盖。
-	if _, err := db.ExecContext(ctx,
-		`UPDATE blog_plugins SET mount_points=?, updated_at=? WHERE id=? AND mount_points=?`,
-		`["post_meta"]`, now, "blog-voice-read", `["post_bottom"]`); err != nil {
-		return fmt.Errorf("backfill blog plugin mount %s: %w", "blog-voice-read", err)
-	}
 	return nil
-}
-
-// builtinNameBackfill 内置插件展示名回填表（仅内置 id，不碰第三方包）。
-// 背景：应用中心「已装应用」列表原先把插件 id 当主标题、name 当副标题，
-// 导致站长先看到 blog-meta-footer 这类英文机器名。改为 name 主、id 次之后，
-// 少数早期种子里用英文名的条目（如 SEO Meta）就露了出来，这里一次性改成中文。
-var builtinNameBackfill = []struct{ id, oldName, newName string }{
-	{"blog-seo-meta", "SEO Meta", "SEO 元信息"},
 }
 
 // BlogDirIDOf 返回博客目录 ID（供 handler 查询博客源）。

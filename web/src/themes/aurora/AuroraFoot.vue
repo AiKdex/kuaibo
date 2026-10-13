@@ -6,18 +6,18 @@
         <p class="au-foot-p">{{ siteDesc }}</p>
       </div>
       <div class="au-foot-col">
-        <div class="au-foot-t">{{ $t('订阅') }}</div>
-        <a class="au-foot-link" :href="rssHref">{{ $t('RSS 订阅') }}</a>
+        <div class="au-foot-t">订阅</div>
+        <a class="au-foot-link" :href="rssHref">RSS 订阅</a>
       </div>
       <div class="au-foot-col">
-        <div class="au-foot-t">{{ $t('版本') }}</div>
-        <a class="au-foot-link" :href="listHref">{{ $t('交互版列表') }}</a>
-        <a class="au-foot-link" :href="ssrHref">{{ $t('静态页列表') }}</a>
+        <div class="au-foot-t">版本</div>
+        <a class="au-foot-link" :href="listHref">交互版列表</a>
+        <a class="au-foot-link" :href="ssrHref">静态页列表</a>
       </div>
     </div>
     <div class="au-foot-bar">
-      <span class="au-foot-note">{{ $t('极光 Aurora 主题 · Bento Grid') }}</span>
-      <span class="au-foot-note">{{ $t('目录即站点，文件即文章') }}</span>
+      <span class="au-foot-note">极光 Aurora 主题 · Bento Grid</span>
+      <span class="au-foot-note">目录即站点，文件即文章</span>
     </div>
   </footer>
 </template>

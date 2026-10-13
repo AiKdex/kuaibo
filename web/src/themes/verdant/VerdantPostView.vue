@@ -2,7 +2,7 @@
   <div class="vd-post">
     <!-- 面包屑：站内跳转一律用 postUrl / 相对路径，不手拼 hash -->
     <nav class="vd-crumb">
-      <a :href="listHref">{{ $t('首页') }}</a>
+      <a :href="listHref">首页</a>
       <span class="vd-crumb-sep">/</span>
       <template v-if="post.cat">
         <a :href="listHref">{{ post.cat }}</a>
@@ -20,7 +20,6 @@
           <span class="vd-post-author">{{ authorName }}</span>
           <span class="vd-post-date">{{ dateText }}</span>
         </span>
-        <BlogPluginSlot mount="post_meta" :ctx="pluginCtx" />
       </div>
     </header>
 
@@ -29,27 +28,27 @@
         <article class="vd-article" v-html="post.html"></article>
 
         <div class="vd-post-share">
-          <button class="vd-post-sbtn" type="button" @click="copyLink">{{ $t('复制链接') }}</button>
-          <button class="vd-post-sbtn" type="button" @click="shareWeibo">{{ $t('分享到微博') }}</button>
-          <a class="vd-post-sbtn" :href="ssrHref" target="_blank" rel="noopener">{{ $t('打开静态页') }}</a>
+          <button class="vd-post-sbtn" type="button" @click="copyLink">复制链接</button>
+          <button class="vd-post-sbtn" type="button" @click="shareWeibo">分享到微博</button>
+          <a class="vd-post-sbtn" :href="ssrHref" target="_blank" rel="noopener">打开静态页</a>
         </div>
 
         <div v-if="post.author" class="vd-post-authorcard">
           <span class="vd-ava vd-ava-lg">{{ avatarText }}</span>
           <div>
             <div class="vd-post-authorcard-n">{{ post.author }}</div>
-            <div class="vd-post-authorcard-s">{{ $t('本文作者') }}</div>
+            <div class="vd-post-authorcard-s">本文作者</div>
           </div>
         </div>
 
         <!-- 上下篇 -->
         <div v-if="prevPost || nextPost" class="vd-post-pn">
           <a v-if="prevPost" class="vd-pn-card" :href="postHref(prevPost)">
-            <span class="vd-pn-dir">{{ $t('← 上一篇') }}</span>
+            <span class="vd-pn-dir">← 上一篇</span>
             <span class="vd-pn-ttl">{{ postTitle(prevPost) }}</span>
           </a>
           <a v-if="nextPost" class="vd-pn-card" :href="postHref(nextPost)">
-            <span class="vd-pn-dir">{{ $t('下一篇 →') }}</span>
+            <span class="vd-pn-dir">下一篇 →</span>
             <span class="vd-pn-ttl">{{ postTitle(nextPost) }}</span>
           </a>
         </div>
@@ -62,7 +61,7 @@
 
       <aside class="vd-post-aside">
         <section v-if="tocList.length" class="vd-post-sb">
-          <h3 class="vd-post-sb-h">{{ $t('本篇目录') }}</h3>
+          <h3 class="vd-post-sb-h">本篇目录</h3>
           <ul class="vd-toc">
             <li v-for="(h, i) in tocList" :key="i" class="vd-toc-item" :class="{ sub: h.level === 3 }">
               <!-- 目录跳转用 button + scrollIntoView（规范 §3.2） -->
@@ -72,7 +71,7 @@
         </section>
 
         <section v-if="sameCatPosts.length" class="vd-post-sb">
-          <h3 class="vd-post-sb-h">{{ $t('同类文章') }}</h3>
+          <h3 class="vd-post-sb-h">同类文章</h3>
           <ul class="vd-toc">
             <li v-for="p in sameCatPosts" :key="p.token || p.path" class="vd-toc-item">
               <a class="vd-toc-btn" :href="postHref(p)">{{ postTitle(p) }}</a>
@@ -81,9 +80,9 @@
         </section>
 
         <section class="vd-post-cta">
-          <h3 class="vd-post-cta-h">{{ $t('收藏这个站点') }}</h3>
-          <p class="vd-post-cta-p">{{ $t("用 RSS 订阅，新文章发出时第一个收到。") }}</p>
-          <a class="vd-post-cta-btn" :href="rssHref">{{ $t('订阅 RSS') }}</a>
+          <h3 class="vd-post-cta-h">收藏这个站点</h3>
+          <p class="vd-post-cta-p">用 RSS 订阅，新文章发出时第一个收到。</p>
+          <a class="vd-post-cta-btn" :href="rssHref">订阅 RSS</a>
         </section>
       </aside>
     </div>
@@ -91,9 +90,9 @@
     <!-- 接着读（按同分类优先 + 其余补齐，纯时间序，不表达热度） -->
     <section v-if="related.length" class="vd-post-rel">
       <div class="vd-sect">
-        <h2 class="vd-sect-t">{{ $t('接着读') }}</h2>
+        <h2 class="vd-sect-t">接着读</h2>
         <span class="vd-rule"></span>
-        <span class="vd-sect-note">{{ $t('按系统顺序取其余文章') }}</span>
+        <span class="vd-sect-note">按系统顺序取其余文章</span>
       </div>
       <div class="vd-rel-grid">
         <a v-for="p in related" :key="p.token || p.path" class="vd-rel-card" :href="postHref(p)">
@@ -104,12 +103,9 @@
       </div>
     </section>
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import { t as i18t } from '@/i18n'
-import AskWidget from '../AskWidget.vue'
 /**
  * VerdantPostView —— 青野主题「文章内页」（entries.post）。
  * 宿主 BlogPostView 在主题声明 entries.post 时整页交给本组件渲染，
@@ -142,7 +138,7 @@ const authorName = computed(() => post.value.author || siteName.value)
 const avatarText = computed(() => (authorName.value || '?').slice(0, 1))
 const dateText = computed(() => {
   const d = postDate({ file: { updated_at: post.value.updatedAt } }, 'ymd')
-  return d ? d + i18t('发布') : ''
+  return d ? d + ' 发布' : ''
 })
 /* 分享 / SEO 场景用 SSR 静态页地址（规范 §2.3） */
 const ssrHref = computed(() => (ssrUrlFn.value ? ssrUrlFn.value(post.value) : '/blog'))

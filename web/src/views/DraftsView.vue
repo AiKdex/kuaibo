@@ -2,32 +2,32 @@
   <div class="drafts-view">
     <div class="dv-head">
       <div>
-        <h2>{{  $t('草稿箱')  }}</h2>
-        <p class="dv-sub">{{  $t('未发布的内容（新建文档默认进入；发布后转正，不再出现在这里）')  }}</p>
+        <h2>草稿箱</h2>
+        <p class="dv-sub">未发布的内容（新建文档默认进入；发布后转正，不再出现在这里）</p>
       </div>
       <button class="btn" @click="load" :disabled="loading">
-        <AikIcon name="refresh" :size="14" />{{  $t('刷新')  }}
+        <AikIcon name="refresh" :size="14" />刷新
       </button>
     </div>
 
-    <div v-if="loading" class="dv-empty">{{  $t('加载中…')  }}</div>
+    <div v-if="loading" class="dv-empty">加载中…</div>
 
     <div v-else-if="!items.length" class="dv-empty">
       <AikIcon name="fileText" :size="30" />
-      <p>{{  $t('草稿箱是空的')  }}</p>
-      <p class="muted">{{  $t('在文件库新建文档并保存，会作为草稿出现在这里；发布后移出')  }}</p>
+      <p>草稿箱是空的</p>
+      <p class="muted">在文件库新建文档并保存，会作为草稿出现在这里；发布后移出</p>
     </div>
 
     <div v-else class="dv-list">
       <div v-for="f in items" :key="f.id" class="dv-row" @dblclick="openFile(f)">
         <AikIcon name="fileText" :size="16" class="dv-ico" />
-        <button class="dv-name" :title="f.name" @click="openFile(f)">{{  f.name  }}</button>
-        <span class="dv-meta">{{  parentName(f)  }}</span>
-        <span class="dv-meta">{{  fmtSize(f.size)  }}</span>
-        <span class="dv-meta">{{  fmtTime(f.updated_at)  }}</span>
+        <button class="dv-name" :title="f.name" @click="openFile(f)">{{ f.name }}</button>
+        <span class="dv-meta">{{ parentName(f) }}</span>
+        <span class="dv-meta">{{ fmtSize(f.size) }}</span>
+        <span class="dv-meta">{{ fmtTime(f.updated_at) }}</span>
         <div class="dv-ops">
-          <button class="btn btn-sm" :title="$t('发布（转为正式内容，移出草稿箱）')" @click="publish(f)">{{  $t('发布')  }}</button>
-          <button class="btn btn-sm btn-danger" :title="$t('删除草稿')" @click="confirmRemove = f">{{  $t('删除')  }}</button>
+          <button class="btn btn-sm" title="发布（转为正式内容，移出草稿箱）" @click="publish(f)">发布</button>
+          <button class="btn btn-sm btn-danger" title="删除草稿" @click="confirmRemove = f">删除</button>
         </div>
       </div>
     </div>
@@ -35,8 +35,8 @@
     <!-- 应用内确认弹窗（替代系统级 confirm） -->
     <ConfirmDialog
       v-if="confirmRemove"
-      :title="$t('删除草稿')"
-      :message="$t('删除草稿「{v0}」？删除后可在回收站恢复。', { v0: confirmRemove.name })"
+      title="删除草稿"
+      :message="`删除草稿「${confirmRemove.name}」？删除后可在回收站恢复。`"
       confirm-text="删除"
       danger
       @confirm="doRemove(confirmRemove)"
@@ -53,7 +53,6 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import * as api from '@/api'
 import { useToastStore } from '@/stores/toast'
 import { useFilesStore } from '@/stores/files'
-import { t } from '@/i18n'
 
 const router = useRouter()
 const toast = useToastStore()
@@ -67,7 +66,7 @@ async function load() {
   try {
     items.value = await api.listDrafts()
   } catch (e) {
-    toast.push(t('加载草稿失败：') + (e.message || e))
+    toast.push('加载草稿失败：' + (e.message || e))
   } finally {
     loading.value = false
   }
@@ -75,7 +74,7 @@ async function load() {
 onMounted(load)
 
 function parentName(f) {
-  if (!f.parent_id) return t(t('我的空间'))
+  if (!f.parent_id) return '我的空间'
   const d = (filesStore.tree || []).find((x) => x.id === f.parent_id)
   return d ? d.name : '…'
 }
@@ -90,7 +89,7 @@ async function publish(f) {
     toast.push(`已发布「${f.name}」`)
     items.value = items.value.filter((x) => x.id !== f.id)
   } catch (e) {
-    toast.push(t('发布失败：') + (e.message || e))
+    toast.push('发布失败：' + (e.message || e))
   }
 }
 
@@ -101,10 +100,10 @@ function doRemove(f) {
   api
     .deleteFile(f.id)
     .then(() => {
-      toast.push(t('已删除草稿'))
+      toast.push('已删除草稿')
       items.value = items.value.filter((x) => x.id !== f.id)
     })
-    .catch((e) => toast.push(t('删除失败：') + (e.message || e)))
+    .catch((e) => toast.push('删除失败：' + (e.message || e)))
 }
 
 function fmtSize(n) {
@@ -124,9 +123,8 @@ function fmtTime(ts) {
 
 <style scoped>
 .drafts-view {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px 24px 40px;
+  padding: 24px 28px;
+  max-width: 1100px;
 }
 .dv-head {
   display: flex;

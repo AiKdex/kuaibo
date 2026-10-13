@@ -1,36 +1,36 @@
 <template>
   <div class="row-menu-pop" :style="pos" @click.self="emit('close')">
     <button class="menu-item" @click="emit('open')">
-      <AikIcon name="eye" :size="14" /><span>{{  f.kind === 'dir' ? $t('打开') : $t('打开阅读')  }}</span>
+      <AikIcon name="eye" :size="14" /><span>{{ f.kind === 'dir' ? '打开' : '打开阅读' }}</span>
     </button>
     <button class="menu-item" @click="emit('download')" :disabled="f.kind === 'dir'">
-      <AikIcon name="download" :size="14" /><span>{{  $t('下载')  }}</span>
+      <AikIcon name="download" :size="14" /><span>下载</span>
     </button>
     <div class="menu-sep"></div>
     <button class="menu-item" @click="emit('copy')">
-      <AikIcon name="copy" :size="14" /><span>{{  $t('复制')  }}</span>
+      <AikIcon name="copy" :size="14" /><span>复制</span>
     </button>
     <button class="menu-item" @click="emit('cut')">
-      <AikIcon name="cut" :size="14" /><span>{{  $t('剪切')  }}</span>
+      <AikIcon name="cut" :size="14" /><span>剪切</span>
     </button>
     <button class="menu-item" @click="emit('rename')">
-      <AikIcon name="edit" :size="14" /><span>{{  $t('重命名')  }}</span>
+      <AikIcon name="edit" :size="14" /><span>重命名</span>
     </button>
     <button v-if="f.kind !== 'dir'" class="menu-item" @click="emit('todraft')">
-      <AikIcon name="edit" :size="14" /><span>{{  $t('转为草稿')  }}</span>
+      <AikIcon name="edit" :size="14" /><span>转为草稿</span>
     </button>
     <button v-if="f.kind !== 'dir'" class="menu-item" @click="emit('tags')">
-      <AikIcon name="tag" :size="14" /><span>{{  $t('标签 / 分类')  }}</span>
+      <AikIcon name="tag" :size="14" /><span>标签 / 分类</span>
     </button>
     <div class="menu-sep"></div>
     <button class="menu-item" @click="emit('share')">
-      <AikIcon name="share" :size="14" /><span>{{  $t('分享 / 发布')  }}</span>
+      <AikIcon name="share" :size="14" /><span>分享 / 发布</span>
     </button>
     <button v-if="isImage" class="menu-item" @click="emit('ocr')">
-      <AikIcon name="file" :size="14" /><span>{{  $t('OCR 识别文字')  }}</span>
+      <AikIcon name="file" :size="14" /><span>OCR 识别文字</span>
     </button>
     <button class="menu-item danger" @click="emit('delete')">
-      <AikIcon name="trash" :size="14" /><span>{{  $t('删除')  }}</span>
+      <AikIcon name="trash" :size="14" /><span>删除</span>
     </button>
   </div>
 </template>

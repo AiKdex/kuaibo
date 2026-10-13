@@ -17,7 +17,7 @@
 .cxp-nav-a:hover{color:#1e1b4b;background:#fdf2f8}
 .cxp-status{text-align:center;padding:80px 28px;font-size:14px;color:#94a3b8}
 .cxp-content{padding-bottom:80px}
-.cxp-wrapper{min-width:0}
+.cxp-wrapper{max-width:800px;margin:0 auto;padding:0 28px}
 
 /* ── Post Header ───────────────────────────────────────────── */
 .cxp-head{padding:48px 0 32px}
@@ -67,11 +67,5 @@
 .cxp-footer{padding:40px 0;border-top:1px solid rgba(244,114,182,.1);text-align:center;font-size:12px;color:#94a3b8}
 
 /* ── Post Responsive ───────────────────────────────────────── */
-@media(max-width:768px){.cxp-head{padding:32px 0 24px}.cxp-h1{font-size:26px}.cxp-body{font-size:15px}.cxp-related-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:768px){.cxp-head{padding:32px 0 24px}.cxp-h1{font-size:26px}.cxp-body{font-size:15px}.cxp-related-grid{grid-template-columns:1fr 1fr}.cxp-wrapper{padding:0 16px}}
 @media(max-width:480px){.cxp-related-grid{grid-template-columns:1fr}.cxp-top-in{padding:0 16px}}
-
-/* ── 文章页两栏（正文 + 侧栏 SideWidget）── */
-.cx-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;max-width:1100px;margin:0 auto;align-items:start;padding:0 28px 80px}
-.cx-article{min-width:0}
-.cx-aside{position:sticky;top:20px}
-@media (max-width:860px){.cx-layout{grid-template-columns:1fr;padding:0 16px}.cx-aside{position:static;margin-top:20px}}

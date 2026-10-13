@@ -2,7 +2,7 @@
   <div class="bf-post" :class="{ 'is-dark': dark }">
     <!-- 面包屑（站内跳转一律用 postUrl / 相对路径，不手拼 hash） -->
     <nav class="bf-crumb">
-      <a :href="listHref">{{ $t('首页') }}</a>
+      <a :href="listHref">首页</a>
       <span class="bf-crumb-sep">/</span>
       <template v-if="post.cat">
         <span class="bf-crumb-cat">{{ post.cat }}</span>
@@ -24,7 +24,6 @@
             </span>
             <span v-if="dateText" class="bf-post-meta-i">{{ dateText }}</span>
             <span v-if="sizeText" class="bf-post-meta-i">{{ sizeText }}</span>
-            <BlogPluginSlot mount="post_meta" :ctx="pluginCtx" />
           </div>
         </header>
 
@@ -33,16 +32,16 @@
 
         <!-- 版权卡：Butterfly 标志性组件 -->
         <div class="bf-copyright">
-          <div class="bf-copyright-i"><b>{{ $t('文章作者') }}</b><span>{{ authorName }}</span></div>
-          <div class="bf-copyright-i"><b>{{ $t('文章标题') }}</b><span>{{ post.title }}</span></div>
-          <div class="bf-copyright-i"><b>{{ $t('文章链接') }}</b><span class="bf-copyright-url">{{ shareUrl }}</span></div>
-          <div class="bf-copyright-i"><b>{{ $t('版权声明') }}</b><span>{{ $t("本博客所有文章除特别声明外，均采用「署名 - 非商业性使用 - 相同方式共享」许可协议。转载请注明出处。") }}</span></div>
+          <div class="bf-copyright-i"><b>文章作者</b><span>{{ authorName }}</span></div>
+          <div class="bf-copyright-i"><b>文章标题</b><span>{{ post.title }}</span></div>
+          <div class="bf-copyright-i"><b>文章链接</b><span class="bf-copyright-url">{{ shareUrl }}</span></div>
+          <div class="bf-copyright-i"><b>版权声明</b><span>本博客所有文章除特别声明外，均采用「署名 - 非商业性使用 - 相同方式共享」许可协议。转载请注明出处。</span></div>
         </div>
 
         <div class="bf-share">
-          <button class="bf-share-btn" type="button" @click="copyLink">{{ $t('复制链接') }}</button>
-          <button class="bf-share-btn" type="button" @click="shareWeibo">{{ $t('分享到微博') }}</button>
-          <a class="bf-share-btn" :href="ssrHref" target="_blank" rel="noopener">{{ $t('打开静态页') }}</a>
+          <button class="bf-share-btn" type="button" @click="copyLink">复制链接</button>
+          <button class="bf-share-btn" type="button" @click="shareWeibo">分享到微博</button>
+          <a class="bf-share-btn" :href="ssrHref" target="_blank" rel="noopener">打开静态页</a>
         </div>
 
         <!-- 上下篇 -->
@@ -50,25 +49,25 @@
           <a v-if="prevPost" class="bf-pn-card" :href="postHref(prevPost)">
             <span class="bf-pn-dir">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6" /></svg>
-              {{ $t('上一篇') }}
+              上一篇
             </span>
             <span class="bf-pn-ttl">{{ postTitle(prevPost) }}</span>
           </a>
-          <span v-else class="bf-pn-empty">{{ $t('已是第一篇') }}</span>
+          <span v-else class="bf-pn-empty">已是第一篇</span>
 
           <a v-if="nextPost" class="bf-pn-card is-next" :href="postHref(nextPost)">
             <span class="bf-pn-dir">
-              {{ $t('下一篇') }}
+              下一篇
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" /></svg>
             </span>
             <span class="bf-pn-ttl">{{ postTitle(nextPost) }}</span>
           </a>
-          <span v-else class="bf-pn-empty">{{ $t('已是最后一篇') }}</span>
+          <span v-else class="bf-pn-empty">已是最后一篇</span>
         </nav>
 
         <!-- 相关阅读：同分类优先 + 其余补齐（纯时间序，不表达热度） -->
         <section v-if="related.length" class="bf-related">
-          <h3 class="bf-related-h">{{ $t('相关阅读') }}<span class="bf-related-note">{{ $t('同分类优先') }}</span></h3>
+          <h3 class="bf-related-h">相关阅读<span class="bf-related-note">同分类优先</span></h3>
           <div class="bf-related-grid">
             <a v-for="p in related" :key="p.token || p.path" class="bf-related-card" :href="postHref(p)">
               <span class="bf-related-art" :class="catTone(catName(p))"></span>
@@ -89,7 +88,7 @@
 
       <aside class="bf-post-aside">
         <section v-if="tocList.length" class="bf-post-sb">
-          <h3 class="bf-post-sb-h">{{ $t('本篇目录') }}</h3>
+          <h3 class="bf-post-sb-h">本篇目录</h3>
           <ul class="bf-post-toc">
             <li v-for="(h, i) in tocList" :key="i" class="bf-post-toc-i" :class="{ sub: h.level === 3 }">
               <!-- 目录跳转用 button + scrollIntoView（规范 §3.2） -->
@@ -99,17 +98,17 @@
         </section>
 
         <section class="bf-post-sb">
-          <h3 class="bf-post-sb-h">{{ $t('文章信息') }}</h3>
+          <h3 class="bf-post-sb-h">文章信息</h3>
           <ul class="bf-post-info">
-            <li><span>{{ $t('分类') }}</span><b>{{ post.cat || $t("未分类") }}</b></li>
-            <li v-if="dateText"><span>{{ $t('更新') }}</span><b>{{ postDate({ file: { updated_at: post.updatedAt } }) }}</b></li>
-            <li v-if="sizeText"><span>{{ $t('篇幅') }}</span><b>{{ sizeText }}</b></li>
-            <li><span>{{ $t('目录层级') }}</span><b>{{ tocList.length }} {{ $t('节') }}</b></li>
+            <li><span>分类</span><b>{{ post.cat || '未分类' }}</b></li>
+            <li v-if="dateText"><span>更新</span><b>{{ postDate({ file: { updated_at: post.updatedAt } }) }}</b></li>
+            <li v-if="sizeText"><span>篇幅</span><b>{{ sizeText }}</b></li>
+            <li><span>目录层级</span><b>{{ tocList.length }} 节</b></li>
           </ul>
         </section>
 
         <section v-if="sameCatPosts.length" class="bf-post-sb">
-          <h3 class="bf-post-sb-h">{{ $t('同类文章') }}</h3>
+          <h3 class="bf-post-sb-h">同类文章</h3>
           <ul class="bf-post-toc">
             <li v-for="p in sameCatPosts" :key="p.token || p.path" class="bf-post-toc-i">
               <a class="bf-post-toc-b" :href="postHref(p)">{{ postTitle(p) }}</a>
@@ -122,11 +121,9 @@
     <ButterflyFoot :site-name="siteName" :blog-url="listHref" :count="posts.length" />
     <ButterflyRight :dark="dark" :toc="tocList" @toggle-dark="toggleDark" @scroll-to="scrollToHeading" />
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import AskWidget from '../AskWidget.vue'
 /**
  * ButterflyPostView —— 蝶语主题「文章内页」（entries.post）。
  * 宿主 BlogPostView 在主题声明 entries.post 时整页交给本组件渲染，

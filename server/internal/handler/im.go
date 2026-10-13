@@ -11,9 +11,7 @@
 //   - 适配器（internal/im）只做 HTTP 出入，业务分发在本文件；
 //   - 动作复用现有服务层：/post → 在博客目录建文件并发布；/draft → 建文件存草稿；
 //     /search /list /get 直接查博客目录；开放请求 → Agent；
-//   - 身份映射（B7）：按 (platform, platform_user_id) 查 im_bindings 得到站内 user；
-//     **未绑定则回退系统 owner**（零破坏既有单用户部署），可选 allowed_chats 白名单；
-//     `/bind <码>` 消费网页端生成的绑定码，`/unbind` 解除；
+//   - 单用户阶段：chat_id 直接映射 owner，无绑定流程；可选 allowed_chats 白名单；
 //   - 回复异步发送，不阻塞 webhook 响应。
 package handler
 
@@ -91,8 +89,7 @@ func (a *API) imWebhook(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	intent := imRouter.Route(msg.Text)
-	actorID := a.imActor(ctx, msg)
-	reply := a.imDispatch(ctx, r, msg, intent, actorID)
+	reply := a.imDispatch(ctx, r, msg, intent)
 	// 记录幂等键（仅已成功处理的消息；入库失败不记，允许重试）
 	if reply.OK && msg.MsgID != "" {
 		fid := ""
@@ -108,7 +105,7 @@ func (a *API) imWebhook(w http.ResponseWriter, r *http.Request) {
 		bctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 		defer cancel()
 		if err := tgAdapter.Send(bctx, token, msg.ChatID, reply.Text); err != nil {
-			_, _ = a.aud.Append(context.Background(), actorID, "im.send_failed", msg.ChatID, map[string]any{
+			_, _ = a.aud.Append(context.Background(), a.homeOwnerID(), "im.send_failed", msg.ChatID, map[string]any{
 				"platform": "telegram", "err": err.Error(),
 			})
 		}
@@ -117,28 +114,18 @@ func (a *API) imWebhook(w http.ResponseWriter, r *http.Request) {
 }
 
 // imDispatch 意图分发：每个动作复用现有服务层。
-// actorID 是本条消息的**站内身份**（已绑定用户；未绑定时由 imActor 回退为系统 owner）。
-func (a *API) imDispatch(ctx context.Context, r *http.Request, msg *im.Msg, intent im.IntentResult, actorID string) *im.Reply {
-	// 语音消息（family.8.2）：不走文本意图路由——受理后异步转写（im_voice.go），
-	// family.enabled 时归档为人生事件；wecom 适配器暂不解析语音，仅 Telegram 语音会走到这里。
-	if msg != nil && msg.MsgType == "voice" {
-		return a.imVoiceIncoming(msg, actorID)
-	}
+func (a *API) imDispatch(ctx context.Context, r *http.Request, msg *im.Msg, intent im.IntentResult) *im.Reply {
 	switch intent.Type {
 	case im.IntentStart, im.IntentHelp:
 		return &im.Reply{Text: imHelpText(), OK: true}
-	case im.IntentBind: // B7：/bind <码> 绑定 IM 身份
-		return a.imBindCode(ctx, msg, intent.Params["query"])
-	case im.IntentUnbind: // B7：/unbind 解除绑定
-		return a.imUnbindIM(ctx, msg)
 	case im.IntentPost:
-		return a.imPost(ctx, r, intent.Params["query"], true, actorID)
+		return a.imPost(ctx, r, intent.Params["query"], true)
 	case im.IntentDraft:
-		return a.imPost(ctx, r, intent.Params["query"], false, actorID)
+		return a.imPost(ctx, r, intent.Params["query"], false)
 	case im.IntentText: // 兜底：未走前缀/正则的纯文本碎片 → 博客草稿
-		return a.imPost(ctx, r, intent.Params["query"], false, actorID)
+		return a.imPost(ctx, r, intent.Params["query"], false)
 	case im.IntentURL: // 裸链接 → 博客草稿（内容为链接）
-		return a.imPost(ctx, r, intent.Params["url"], false, actorID)
+		return a.imPost(ctx, r, intent.Params["url"], false)
 	case im.IntentSearch:
 		return a.imSearch(ctx, intent.Params["query"])
 	case im.IntentList:
@@ -149,15 +136,7 @@ func (a *API) imDispatch(ctx context.Context, r *http.Request, msg *im.Msg, inte
 		return a.imSummary(ctx, intent.Params["query"])
 	case im.IntentStatus:
 		return a.imStatus(ctx)
-	case im.IntentWorkflow: // 内容工作流命名空间（/wf <id> 或 /wf-<name>）
-		return a.imWorkflow(ctx, r, msg, intent)
 	case im.IntentAgent:
-		// 先看是否命中某个 workflow 的 im_command 前缀（站长自定义指令，如 /collect）。
-		// 既有固定指令在 Layer 1 已优先命中，所以走到这里的前缀必然是空闲的，
-		// 不会抢走 /post、/draft 等已有语义。
-		if wf, prefix := a.wfMatchPrefix(msg.Text); wf != nil {
-			return a.imRunWorkflow(ctx, r, msg, wf, wfStripTrigger(msg.Text, prefix))
-		}
 		return a.imAgent(ctx, msg.Text)
 	default:
 		return &im.Reply{Text: "我没理解你的意思，试试 /help", OK: false}
@@ -165,7 +144,7 @@ func (a *API) imDispatch(ctx context.Context, r *http.Request, msg *im.Msg, inte
 }
 
 // imPost 发博客：在博客目录建 .md 文件并发布/存草稿。
-func (a *API) imPost(ctx context.Context, r *http.Request, query string, publish bool, actorID string) *im.Reply {
+func (a *API) imPost(ctx context.Context, r *http.Request, query string, publish bool) *im.Reply {
 	query = strings.TrimSpace(query)
 	if query == "" {
 		return &im.Reply{Text: "要发布什么内容呢？用法：/post 正文  或  /draft 正文（存草稿）", OK: false}
@@ -175,18 +154,14 @@ func (a *API) imPost(ctx context.Context, r *http.Request, query string, publish
 	}
 	title := firstLine(query, 60)
 	name := sanitizeName(title) + ".md"
-	// B7：发文身份 = 本条消息的站内身份（已绑定用户）；空则回退系统 owner
-	owner := strings.TrimSpace(actorID)
-	if owner == "" {
-		owner = a.homeOwnerID()
-	}
+	owner := a.homeOwnerID()
 	space := a.homeSpaceID()
 	parentID := service.BlogDirID
-	doc, err := a.files.CreateDoc(ctx, owner, space, parentID, name, query, service.DefaultSiteID)
+	doc, err := a.files.CreateDoc(ctx, owner, space, parentID, name, query)
 	if err != nil {
 		// 重名：追加时分秒后缀重试一次
 		name = sanitizeName(title) + "-" + time.Now().Format("150405") + ".md"
-		doc, err = a.files.CreateDoc(ctx, owner, space, parentID, name, query, service.DefaultSiteID)
+		doc, err = a.files.CreateDoc(ctx, owner, space, parentID, name, query)
 		if err != nil {
 			return &im.Reply{Text: "发布失败：" + err.Error(), OK: false}
 		}
@@ -366,12 +341,7 @@ func (a *API) imAgent(ctx context.Context, text string) *im.Reply {
 }
 
 // imConfigStatus IM 配置状态：GET /api/v1/im/status。
-func (a *API) imConfigStatus(w http.ResponseWriter, r *http.Request) {
-	// M10 修复：IM 渠道凭据（bot token / 企微 secret）属站点级配置，仅 owner/admin 可读写
-	if !a.isAdmin(r) {
-		writeErr(w, http.StatusForbidden, "ADMIN_REQUIRED", "需要管理员权限")
-		return
-	}
+func (a *API) imConfigStatus(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"telegram": map[string]any{
 			"enabled": a.cfg.GetString("im.telegram.bot_token") != "",
@@ -387,11 +357,6 @@ func (a *API) imConfigStatus(w http.ResponseWriter, r *http.Request) {
 
 // imTelegramConfig 配置 Telegram Bot Token：PUT /api/v1/im/telegram/config {bot_token?, allowed_chats?}。
 func (a *API) imTelegramConfig(w http.ResponseWriter, r *http.Request) {
-	// M10 修复：IM 渠道凭据（bot token / 企微 secret）属站点级配置，仅 owner/admin 可读写
-	if !a.isAdmin(r) {
-		writeErr(w, http.StatusForbidden, "ADMIN_REQUIRED", "需要管理员权限")
-		return
-	}
 	var req struct {
 		BotToken     string `json:"bot_token"`
 		AllowedChats string `json:"allowed_chats"`
@@ -456,8 +421,7 @@ func (a *API) imWebhookWeCom(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	intent := imRouter.Route(msg.Text)
-	actorID := a.imActor(ctx, msg)
-	reply := a.imDispatch(ctx, r, msg, intent, actorID)
+	reply := a.imDispatch(ctx, r, msg, intent)
 	if reply.OK && msg.MsgID != "" {
 		fid := ""
 		if f, ok := reply.FileID.(string); ok {
@@ -476,7 +440,7 @@ func (a *API) imWebhookWeCom(w http.ResponseWriter, r *http.Request) {
 				serr = wecomAdapter.SendText(cfg.WebhookURL, reply.Text)
 			}
 			if serr != nil {
-				_, _ = a.aud.Append(context.Background(), actorID, "im.send_failed", msg.ChatID, map[string]any{
+				_, _ = a.aud.Append(context.Background(), a.homeOwnerID(), "im.send_failed", msg.ChatID, map[string]any{
 					"platform": "wecom", "err": serr.Error(),
 				})
 			}
@@ -487,11 +451,6 @@ func (a *API) imWebhookWeCom(w http.ResponseWriter, r *http.Request) {
 
 // imWeComConfig 配置企微：PUT /api/v1/im/wecom/config。
 func (a *API) imWeComConfig(w http.ResponseWriter, r *http.Request) {
-	// M10 修复：IM 渠道凭据（bot token / 企微 secret）属站点级配置，仅 owner/admin 可读写
-	if !a.isAdmin(r) {
-		writeErr(w, http.StatusForbidden, "ADMIN_REQUIRED", "需要管理员权限")
-		return
-	}
 	var req struct {
 		WebhookURL     string `json:"webhook_url"`
 		CorpID         string `json:"corp_id"`
@@ -572,85 +531,6 @@ func onOff(b bool) string {
 	return "未配置"
 }
 
-// imActor 解析本条 IM 消息对应的**站内身份**：
-// 已绑定 → 绑定用户；未绑定 → 系统 owner（回退，保证既有单用户部署行为完全不变）。
-func (a *API) imActor(ctx context.Context, msg *im.Msg) string {
-	if a.imBinds != nil && msg != nil {
-		if uid, ok := a.imBinds.ResolveUser(ctx, msg.Platform, msg.UserID); ok {
-			a.imBinds.Touch(ctx, msg.Platform, msg.UserID)
-			return uid
-		}
-	}
-	return a.homeOwnerID()
-}
-
-// imBindCode 消费绑定码（B7）：IM 端 `/bind <码>`。
-// 码由网页端「系统 → IM 绑定」生成，一次性、默认 10 分钟有效。
-func (a *API) imBindCode(ctx context.Context, msg *im.Msg, raw string) *im.Reply {
-	if a.imBinds == nil {
-		return &im.Reply{Text: "IM 绑定功能未启用。", OK: false}
-	}
-	if msg == nil || msg.UserID == "" {
-		return &im.Reply{Text: "没能识别你的 IM 身份，无法绑定。", OK: false}
-	}
-	fields := strings.Fields(strings.TrimSpace(raw))
-	if len(fields) == 0 {
-		return &im.Reply{
-			Text: "用法：/bind 绑定码\n\n绑定码获取：登录网页端 →「系统 → IM 绑定」→ 生成（10 分钟内有效）。",
-			OK:   false,
-		}
-	}
-	uid, err := a.imBinds.ConsumeCode(ctx, fields[0], msg.Platform, msg.UserID, msg.UserName, msg.ChatID)
-	if err != nil {
-		return &im.Reply{Text: "绑定失败：" + err.Error(), OK: false}
-	}
-	_, _ = a.aud.Append(ctx, uid, "im.bind", "im_bindings", map[string]any{
-		"platform": msg.Platform, "platform_user_id": msg.UserID,
-	})
-	return &im.Reply{
-		Text: fmt.Sprintf("✅ 绑定成功，当前身份：%s\n之后用这个 IM 账号发文/查询，都会记在该账号名下。\n（发送 /unbind 可解除）", a.imUserName(ctx, uid)),
-		OK:   true,
-	}
-}
-
-// imUnbindIM 解除当前 IM 身份与本账号的绑定（B7）：IM 端 `/unbind`。
-func (a *API) imUnbindIM(ctx context.Context, msg *im.Msg) *im.Reply {
-	if a.imBinds == nil {
-		return &im.Reply{Text: "IM 绑定功能未启用。", OK: false}
-	}
-	if msg == nil || msg.UserID == "" {
-		return &im.Reply{Text: "没能识别你的 IM 身份。", OK: false}
-	}
-	if _, ok := a.imBinds.ResolveUser(ctx, msg.Platform, msg.UserID); !ok {
-		return &im.Reply{Text: "当前 IM 身份尚未绑定任何站内账号。", OK: true}
-	}
-	uid, err := a.imBinds.UnbindIdentity(ctx, msg.Platform, msg.UserID)
-	if err != nil {
-		return &im.Reply{Text: "解绑失败：" + err.Error(), OK: false}
-	}
-	_, _ = a.aud.Append(ctx, uid, "im.unbind", "im_bindings", map[string]any{
-		"platform": msg.Platform, "platform_user_id": msg.UserID,
-	})
-	return &im.Reply{Text: "✅ 已解除绑定。之后消息按系统默认身份处理。\n（重新绑定：网页端生成新绑定码后发 /bind <码>）", OK: true}
-}
-
-// imUserName 取用户展示名（display_name 优先，回落 username，兜底 id）。
-func (a *API) imUserName(ctx context.Context, uid string) string {
-	var dn, un string
-	if err := a.db.QueryRowContext(ctx,
-		`SELECT COALESCE(display_name,''), COALESCE(username,'') FROM users WHERE id=?`, uid).
-		Scan(&dn, &un); err != nil {
-		return uid
-	}
-	if strings.TrimSpace(dn) != "" {
-		return dn
-	}
-	if un != "" {
-		return un
-	}
-	return uid
-}
-
 // imHelpText IM 助手帮助。
 func imHelpText() string {
 	return "🤖 AiKlog IM 助手 —— 用聊天发博客\n\n" +
@@ -661,9 +541,6 @@ func imHelpText() string {
 		"【查看】给我 文章名 / /get 文章名\n" +
 		"【总结】/summary 文章名\n" +
 		"【状态】/status\n" +
-		"【绑定】/bind 绑定码 → 把当前 IM 账号绑到站内账号\n" +
-		"【解绑】/unbind\n" +
-		"【语音】直接发语音给我 → 转写回传；家族传承开启时自动归档为人生事件\n" +
 		"【帮助】/help\n\n" +
 		"任何复杂请求直接说即可，我会调用 AI 助手完成。"
 }

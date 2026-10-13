@@ -44,20 +44,13 @@ type failWin struct {
 
 var loginThrottler = &loginThrottle{fail: map[string]*failWin{}}
 
-// clientIP 取客户端 IP（H8 修复：不再无条件信任 X-Forwarded-For）。
-// 默认直连场景取 RemoteAddr；仅当显式开启 security.trust_proxy（部署在可信反代后）时，
-// 才信任 X-Forwarded-For 首段 / X-Real-IP——防止攻击者伪造请求头绕过登录限流与审计溯源。
-func (a *API) clientIP(r *http.Request) string {
-	if a.cfg != nil && a.cfg.GetBool("security.trust_proxy") {
-		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-			if i := strings.IndexByte(xff, ','); i > 0 {
-				return strings.TrimSpace(xff[:i])
-			}
-			return strings.TrimSpace(xff)
+// clientIP 取客户端 IP（无代理信任问题：本机直连/反代按 X-Forwarded-For 首段）
+func clientIP(r *http.Request) string {
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		if i := strings.IndexByte(xff, ','); i > 0 {
+			return strings.TrimSpace(xff[:i])
 		}
-		if xr := r.Header.Get("X-Real-IP"); xr != "" {
-			return strings.TrimSpace(xr)
-		}
+		return strings.TrimSpace(xff)
 	}
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
@@ -66,31 +59,10 @@ func (a *API) clientIP(r *http.Request) string {
 	return host
 }
 
-// throttleMaxEntries loginThrottle.fail 最大条目数（攻击者可伪造海量 IP 撑爆内存，超限整体重建）
-const throttleMaxEntries = 5000
-
-// sweepLocked 清理过期窗口；条目数超上限时整体重建（防御性丢弃旧窗口）。
-// 调用方须持有 t.mu。
-func (t *loginThrottle) sweepLocked() {
-	if len(t.fail) < throttleMaxEntries {
-		return
-	}
-	now := time.Now().Unix()
-	for k, w := range t.fail {
-		if now-w.until >= int64(loginFailWin.Seconds()) {
-			delete(t.fail, k)
-		}
-	}
-	if len(t.fail) > throttleMaxEntries {
-		t.fail = map[string]*failWin{}
-	}
-}
-
 // allow 返回是否放行；被限流时返回剩余等待秒数（0 表示放行）。
 func (t *loginThrottle) allow(key string) (bool, int) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	t.sweepLocked()
 	now := time.Now().Unix()
 	w, ok := t.fail[key]
 	if !ok {
@@ -114,7 +86,6 @@ func (t *loginThrottle) allow(key string) (bool, int) {
 func (t *loginThrottle) hit(key string) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	t.sweepLocked()
 	now := time.Now().Unix()
 	w, ok := t.fail[key]
 	if !ok || now-w.until >= int64(loginFailWin.Seconds()) {
@@ -135,7 +106,7 @@ func (t *loginThrottle) reset(key string) {
 // authLogin 处理 POST /api/v1/auth/login
 func (a *API) authLogin(w http.ResponseWriter, r *http.Request) {
 	// 登录限流：IP 维度 + IP+账号 维度（任一超限即 429）
-	ip := a.clientIP(r)
+	ip := clientIP(r)
 	if ok, _ := loginThrottler.allow("ip:" + ip); !ok {
 		writeErr(w, http.StatusTooManyRequests, "LOGIN_RATE_LIMITED", "登录尝试过于频繁，请稍后再试")
 		return
@@ -170,20 +141,16 @@ func (a *API) authLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// 用户不存在与密码错误同响应（防用户名枚举）
 		loginThrottler.hit(userKey)
-		loginThrottler.hit("ip:" + ip) // 审计#2：IP 维度同计数，防换号撞库
-		writeErr(w, http.StatusUnauthorized, "AUTH_FAILED", "用户名或密码错误")
-		return
-	}
-	// M2 修复：先验密码再查状态——错误密码与"用户不存在"响应完全一致，
-	// 账号状态（禁用/待激活）仅在密码正确时才区分，缩小账号枚举面。
-	if !service.VerifyPassword(passHash, req.Password) {
-		loginThrottler.hit(userKey)
-		loginThrottler.hit("ip:" + ip) // 审计#2：IP 维度同计数，防换号撞库
 		writeErr(w, http.StatusUnauthorized, "AUTH_FAILED", "用户名或密码错误")
 		return
 	}
 	if status != "active" {
 		writeErr(w, http.StatusForbidden, "ACCOUNT_DISABLED", "账号已被禁用")
+		return
+	}
+	if !service.VerifyPassword(passHash, req.Password) {
+		loginThrottler.hit(userKey)
+		writeErr(w, http.StatusUnauthorized, "AUTH_FAILED", "用户名或密码错误")
 		return
 	}
 	token, err := newSessionToken()
@@ -200,7 +167,6 @@ func (a *API) authLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	loginThrottler.reset(userKey)
-	loginThrottler.reset("ip:" + ip)
 	_, _ = a.aud.Append(r.Context(), id, "auth.login", "sessions", map[string]any{"ok": true})
 	// 双轨：HttpOnly cookie（浏览器自动携带，防 XSS 窃取）+ JSON token（API 客户端/第三方用）
 	setSessionCookie(w, r, token)
@@ -226,11 +192,7 @@ func (a *API) authLogout(w http.ResponseWriter, r *http.Request) {
 
 // authPassword 处理 POST /api/v1/auth/password（改密：旧密校验 → 新密写入 → 吊销其他会话）
 func (a *API) authPassword(w http.ResponseWriter, r *http.Request) {
-	uid, ok := ctxUID(r)
-	if !ok {
-		writeErr(w, http.StatusUnauthorized, "AUTH_REQUIRED", "请先登录")
-		return
-	}
+	uid := r.Context().Value(ctxUserID).(string)
 	var req struct {
 		OldPassword string `json:"old_password"`
 		NewPassword string `json:"new_password"`
@@ -273,11 +235,7 @@ func (a *API) authPassword(w http.ResponseWriter, r *http.Request) {
 
 // authMe 处理 GET /api/v1/auth/me
 func (a *API) authMe(w http.ResponseWriter, r *http.Request) {
-	uid, ok := ctxUID(r)
-	if !ok {
-		writeErr(w, http.StatusUnauthorized, "AUTH_REQUIRED", "请先登录")
-		return
-	}
+	uid := r.Context().Value(ctxUserID).(string)
 	var username, display, role string
 	err := a.db.QueryRowContext(r.Context(),
 		`SELECT username, display_name, role FROM users WHERE id=?`, uid).

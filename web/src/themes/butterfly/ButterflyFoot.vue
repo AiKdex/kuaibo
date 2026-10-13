@@ -18,17 +18,17 @@
       </div>
 
       <nav class="bf-foot-nav">
-        <a :href="blogUrl">{{ $t('全部文章') }}</a>
-        <button type="button" @click="$emit('go-archive')">{{ $t('归档') }}</button>
-        <button type="button" @click="$emit('go-search')">{{ $t('检索') }}</button>
+        <a :href="blogUrl">全部文章</a>
+        <button type="button" @click="$emit('go-archive')">归档</button>
+        <button type="button" @click="$emit('go-search')">检索</button>
         <a :href="rssHref" target="_blank" rel="noopener">RSS</a>
-        <a href="/blog">{{ $t('静态页') }}</a>
+        <a href="/blog">静态页</a>
       </nav>
 
       <p class="bf-foot-meta">
-        <span>{{ count }} {{ $t('篇文章') }}</span>
+        <span>{{ count }} 篇文章</span>
         <span class="bf-foot-sep">·</span>
-        <span>{{ $t('目录即站点，文件即文章') }}</span>
+        <span>目录即站点，文件即文章</span>
       </p>
     </div>
   </footer>

@@ -20,17 +20,17 @@
       <nav class="bf-menu">
         <button class="bf-menu-i" :class="{ 'is-on': mode === 'list' && !catActive }" type="button" @click="$emit('go-list')">
           <svg class="bf-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8" /><path d="M5 9.5V20h14V9.5" /></svg>
-          <span>{{ $t('首页') }}</span>
+          <span>首页</span>
         </button>
 
         <button class="bf-menu-i" :class="{ 'is-on': mode === 'archive' }" type="button" @click="$emit('go-archive')">
           <svg class="bf-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18v4H3z" /><path d="M5 8v12h14V8" /><path d="M9.5 12.5h5" /></svg>
-          <span>{{ $t('归档') }}</span>
+          <span>归档</span>
         </button>
 
         <button class="bf-menu-i" :class="{ 'is-on': mode === 'search' }" type="button" @click="$emit('go-search')">
           <svg class="bf-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7.5" /><path d="M21 21l-4.4-4.4" /></svg>
-          <span>{{ $t('搜索') }}</span>
+          <span>搜索</span>
         </button>
 
         <a class="bf-menu-i" :href="rssHref" target="_blank" rel="noopener">
@@ -40,7 +40,7 @@
 
         <ThemeSwitch />
 
-        <button class="bf-menu-i bf-menu-dark" type="button" :title="dark ? $t('切换到日间模式') : $t('切换到夜间模式')" @click="$emit('toggle-dark')">
+        <button class="bf-menu-i bf-menu-dark" type="button" :title="dark ? '切换到日间模式' : '切换到夜间模式'" @click="$emit('toggle-dark')">
           <svg v-if="dark" class="bf-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.6" /><path d="M12 1.8v2.6M12 19.6v2.6M4.4 4.4l1.9 1.9M17.7 17.7l1.9 1.9M1.8 12h2.6M19.6 12h2.6M4.4 19.6l1.9-1.9M17.7 6.3l1.9-1.9" /></svg>
           <svg v-else class="bf-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
         </button>

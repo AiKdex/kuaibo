@@ -1,9 +1,9 @@
 <template>
   <aside v-if="items.length" class="rp-card">
-    <h4 class="rp-title">{{ $t('相关推荐') }}</h4>
+    <h4 class="rp-title">相关推荐</h4>
     <ul class="rp-list">
       <li v-for="(p, i) in items" :key="i">
-        <a :href="href(p)">{{ titleOf(p) }}</a>
+        <a :href="href(p)">{{ title(p) }}</a>
         <span v-if="cat(p)" class="rp-cat">{{ cat(p) }}</span>
       </li>
     </ul>
@@ -11,8 +11,7 @@
 </template>
 
 <script setup>
-import { computed, inject, ref, watch } from 'vue'
-import { publicBlogRelated } from '@/api'
+import { computed, inject } from 'vue'
 
 const props = defineProps({
   ctx: { type: Object, default: () => ({}) },
@@ -21,29 +20,7 @@ const props = defineProps({
 const raw = inject('themeContext')
 const tctx = computed(() => raw?.value || raw || { posts: [] })
 
-// 语义推荐（后端向量）：非空则优先，否则降级到同分类+时间排序。
-const vecItems = ref([])
-async function loadRelated(slug) {
-  if (!slug) return
-  try {
-    const r = await publicBlogRelated(slug, 5)
-    const arr = (r && r.items) || []
-    if (Array.isArray(arr) && arr.length) vecItems.value = arr
-  } catch {
-    vecItems.value = [] // 失败降级，不影响文章页
-  }
-}
-watch(() => props.ctx?.slug, (s) => loadRelated(s), { immediate: true })
-
-function titleOf(it) {
-  // 向量结果已带 title；回退项是主题 post 对象
-  return it.title || title(it)
-}
-
 const items = computed(() => {
-  // 1) 语义推荐命中：直接用（已按相似度降序）
-  if (vecItems.value.length) return vecItems.value
-  // 2) 降级：同分类优先 + 时间排序（冷启动/无向量）
   const all = tctx.value.posts || []
   if (!all.length) return []
   const curPath = props.ctx?.path || ''
@@ -55,6 +32,7 @@ const items = computed(() => {
     if (title(p) === curTitle && curTitle) return false
     return true
   })
+  // 同分类优先，再按更新时间
   const same = rest.filter((p) => cat(p) && cat(p) === curCat)
   const other = rest.filter((p) => !same.includes(p))
   const byTime = (a, b) => (b.file?.updated_at || 0) - (a.file?.updated_at || 0)
@@ -71,13 +49,6 @@ function cat(p) {
 }
 function href(p) {
   try {
-    // 语义推荐项：后端已给 slug/path，博客分享 token 固定为 'blog'
-    if (p.slug && !p.token) {
-      const qs = new URLSearchParams()
-      if (p.path) qs.set('path', p.path)
-      qs.set('slug', p.slug)
-      return `#/post/blog?${qs.toString()}`
-    }
     return tctx.value.postUrl ? tctx.value.postUrl(p) : `#/p/${p.token}`
   } catch {
     return '#/blog?view=public'

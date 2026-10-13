@@ -2,9 +2,9 @@
   <div class="eforum-root">
     <EmforumHead :site-name="siteName" :site-desc="siteDesc" :blog-url="blogUrl">
       <template #stats>
-        <span><b>{{ posts.length }}</b> {{ $t('主题') }}</span>
-        <span><b>{{ boards.length }}</b> {{ $t('版块') }}</span>
-        <span v-if="lastDate"><b>{{ lastDate }}</b> {{ $t('最近更新') }}</span>
+        <span><b>{{ posts.length }}</b> 主题</span>
+        <span><b>{{ boards.length }}</b> 版块</span>
+        <span v-if="lastDate"><b>{{ lastDate }}</b> 最近更新</span>
       </template>
       <template #boardbar>
         <!-- 版块页签条：客户端按分类（path 首段）过滤 -->
@@ -26,25 +26,25 @@
     </EmforumHead>
 
     <!-- 三态：加载中 / 错误 / 空态（规范 §4.1） -->
-    <div v-if="loading" class="ef-state">{{ $t('正在加载文章…') }}</div>
+    <div v-if="loading" class="ef-state">正在加载文章…</div>
     <div v-else-if="error" class="ef-state ef-state-err">{{ error }}</div>
-    <div v-else-if="!posts.length" class="ef-state">{{ $t('还没有公开文章') }}</div>
+    <div v-else-if="!posts.length" class="ef-state">还没有公开文章</div>
 
     <div v-else class="ef-wrap">
       <!-- 当前版块信息条 -->
       <div class="ef-board-info">
         <div>
           <div class="ef-board-name">{{ activeName.icon }} {{ activeName.name }}</div>
-          <div class="ef-board-desc">{{ $t('共') }} {{ filtered.length }} {{ $t('个主题 · 点击标题阅读全文') }}</div>
+          <div class="ef-board-desc">共 {{ filtered.length }} 个主题 · 点击标题阅读全文</div>
         </div>
         <div class="ef-board-actions">
           <label class="ef-sort-label">
-            {{ $t('排序') }}
+            排序
             <select v-model="sortBy" class="ef-sortsel" @change="page = 1">
-              <option value="system">{{ $t('默认（置顶优先）') }}</option>
-              <option value="newest">{{ $t('按更新时间') }}</option>
-              <option value="oldest">{{ $t('按时间正序') }}</option>
-              <option value="title">{{ $t('按标题') }}</option>
+              <option value="system">默认（置顶优先）</option>
+              <option value="newest">按更新时间</option>
+              <option value="oldest">按时间正序</option>
+              <option value="title">按标题</option>
             </select>
           </label>
         </div>
@@ -53,11 +53,11 @@
       <div class="ef-layout">
         <main class="ef-list">
           <div class="ef-list-head">
-            <span class="ef-feed">{{ activeName.name }} {{ $t('· 第') }} {{ page }} / {{ totalPages }} {{ $t('页') }}</span>
+            <span class="ef-feed">{{ activeName.name }} · 第 {{ page }} / {{ totalPages }} 页</span>
             <span v-if="totalPages > 1" class="ef-pager">
-              <button type="button" :disabled="page === 1" @click="page--">{{ $t('‹ 上一页') }}</button>
+              <button type="button" :disabled="page === 1" @click="page--">‹ 上一页</button>
               <span class="ef-page-on">{{ page }}</span>
-              <button type="button" :disabled="page === totalPages" @click="page++">{{ $t('下一页 ›') }}</button>
+              <button type="button" :disabled="page === totalPages" @click="page++">下一页 ›</button>
             </span>
           </div>
 
@@ -67,7 +67,7 @@
             :href="postHref(ctx, post)"
             class="ef-thread"
           >
-            <span class="ef-avatar" :class="boardColor(postCat(post) || $t('未分类'))">{{ avaText(post) }}</span>
+            <span class="ef-avatar" :class="boardColor(postCat(post) || '未分类')">{{ avaText(post) }}</span>
             <span class="ef-thread-main">
               <span class="ef-row1">
                 <span v-if="postCat(post)" class="ef-tagline">{{ postCat(post) }}</span>
@@ -104,7 +104,6 @@
     </div>
 
     <EmforumFoot :site-name="siteName" :blog-url="blogUrl" />
-    <EmforumAsk />
   </div>
 </template>
 
@@ -113,7 +112,6 @@ import { computed, ref, watch } from 'vue'
 import EmforumHead from './EmforumHead.vue'
 import EmforumSide from './EmforumSide.vue'
 import EmforumFoot from './EmforumFoot.vue'
-import EmforumAsk from './EmforumAsk.vue'
 import './style.css'
 import {
   boardColor,

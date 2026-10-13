@@ -80,7 +80,7 @@ func (a *API) blogManage(w http.ResponseWriter, r *http.Request) {
 	// 2) 文章（博客目录全部非草稿文件，带相对 path + 公开稳定链接 slug）
 	// 先为无 slug 的文件补齐（懒生成：首次管理/发布可见时固定，之后改名不碎链）
 	_ = service.EnsureDirSlugs(r.Context(), a.db, dirID)
-	files, err := a.collectDirFilesAdmin(r.Context(), dirID, "")
+	files, err := a.collectDirFilesAdmin(r.Context(), dirID)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "BLOG_MANAGE_FAILED", err.Error())
 		return
@@ -102,30 +102,28 @@ func (a *API) blogManage(w http.ResponseWriter, r *http.Request) {
 		ph := strings.TrimSuffix(strings.Repeat("?,", len(ids)), ",")
 		prows, err := a.db.QueryContext(r.Context(),
 			`SELECT id, publish_at, view_count, CASE WHEN COALESCE(access_pwd,'')<>'' THEN 1 ELSE 0 END,
-			    COALESCE(cover,''), COALESCE(excerpt,''), COALESCE(seo_title,''), COALESCE(seo_desc,''),
-			    COALESCE(content_state,'')
+			    COALESCE(cover,''), COALESCE(excerpt,''), COALESCE(seo_title,''), COALESCE(seo_desc,'')
 			 FROM files WHERE id IN (`+ph+`)`, ids...)
 		if err == nil {
 			for prows.Next() {
-			var id string
-			var pa, vc any
-			var hp int
-			var cover, excerpt, seoT, seoD, cs string
-			if prows.Scan(&id, &pa, &vc, &hp, &cover, &excerpt, &seoT, &seoD, &cs) == nil {
-				for _, p := range posts {
-					if p["id"] == id {
-						p["publish_at"] = pa
-						p["view_count"] = vc
-						p["has_pwd"] = hp > 0
-						p["cover"] = cover
-						p["excerpt"] = excerpt
-						p["seo_title"] = seoT
-						p["seo_desc"] = seoD
-						p["content_state"] = cs
-						break
+				var id string
+				var pa, vc any
+				var hp int
+				var cover, excerpt, seoT, seoD string
+				if prows.Scan(&id, &pa, &vc, &hp, &cover, &excerpt, &seoT, &seoD) == nil {
+					for _, p := range posts {
+						if p["id"] == id {
+							p["publish_at"] = pa
+							p["view_count"] = vc
+							p["has_pwd"] = hp > 0
+							p["cover"] = cover
+							p["excerpt"] = excerpt
+							p["seo_title"] = seoT
+							p["seo_desc"] = seoD
+							break
+						}
 					}
 				}
-			}
 			}
 			prows.Close()
 		}
@@ -311,23 +309,19 @@ type queryRower interface {
 	QueryRow(query string, args ...any) *sql.Row
 }
 
-// blogPostMeta POST /api/v1/blog/posts/meta {"id","cover","excerpt","seo_title","seo_desc","node_type","fields"}
+// blogPostMeta POST /api/v1/blog/posts/meta {"id","cover","excerpt","seo_title","seo_desc"}
 // 保存单篇元数据：封面图（文件 URL/file_id 引用）、自定义摘要、单篇 SEO 标题/描述。
-// 另支持 A-G 生产站底座：node_type（内容类型）+ fields（自定义业务字段），存入 content_state（与上游契约一致）。
 // 空字符串 = 清除；缺省字段 = 保持不变（只更新出现的键，用指针判存）。
 func (a *API) blogPostMeta(w http.ResponseWriter, r *http.Request) {
 	if !a.blogAdminOnly(w, r) {
 		return
 	}
 	var req struct {
-		ID       string         `json:"id"`
-		Cover    *string        `json:"cover"`
-		Excerpt  *string        `json:"excerpt"`
-		SeoTitle *string        `json:"seo_title"`
-		SeoDesc  *string        `json:"seo_desc"`
-		NodeType *string        `json:"node_type"`
-		Fields   map[string]any `json:"fields"`
-		Growth   *string        `json:"growth"`
+		ID       string  `json:"id"`
+		Cover    *string `json:"cover"`
+		Excerpt  *string `json:"excerpt"`
+		SeoTitle *string `json:"seo_title"`
+		SeoDesc  *string `json:"seo_desc"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.ID == "" {
 		writeErr(w, http.StatusBadRequest, "BAD_REQ", "id 必填")
@@ -351,42 +345,6 @@ func (a *API) blogPostMeta(w http.ResponseWriter, r *http.Request) {
 	if req.SeoDesc != nil {
 		sets, args = append(sets, "seo_desc=?"), append(args, clip(*req.SeoDesc, 400))
 	}
-	// A-G 内容类型 + 自定义字段：合并进 content_state（visibility/status 等既有键不受影响）
-	csExpr, csArgs := "", []any{}
-	if req.NodeType != nil {
-		nt := clip(*req.NodeType, 64)
-		csExpr = "json_set(COALESCE(content_state,'{}'), '$.node_type', ?)"
-		csArgs = append(csArgs, nt)
-	}
-	if req.Fields != nil {
-		fb, _ := json.Marshal(req.Fields)
-		if csExpr == "" {
-			csExpr = "json_set(COALESCE(content_state,'{}'), '$.fields', ?)"
-		} else {
-			csExpr = "json_set(" + csExpr + ", '$.fields', ?)"
-		}
-		csArgs = append(csArgs, string(fb))
-	}
-	// B3 生长策略：allow（允许评论收录，默认）| collect（+采集线索）| auto（全自动）| frozen（冻结）。
-	// 非法值一律回落 allow（避免写入无意义状态）；frozen 时收录端点返回 INGEST_FROZEN。
-	if req.Growth != nil {
-		g := clip(*req.Growth, 16)
-		switch g {
-		case "allow", "collect", "auto", "frozen":
-		default:
-			g = "allow"
-		}
-		if csExpr == "" {
-			csExpr = "json_set(COALESCE(content_state,'{}'), '$.growth', ?)"
-		} else {
-			csExpr = "json_set(" + csExpr + ", '$.growth', ?)"
-		}
-		csArgs = append(csArgs, g)
-	}
-	if csExpr != "" {
-		sets = append(sets, "content_state="+csExpr)
-		args = append(args, csArgs...)
-	}
 	if len(sets) == 0 {
 		writeErr(w, http.StatusBadRequest, "NOTHING_TO_UPDATE", "未提供任何可更新字段")
 		return
@@ -399,105 +357,6 @@ func (a *API) blogPostMeta(w http.ResponseWriter, r *http.Request) {
 	_, _ = a.aud.Append(r.Context(), a.curUserID(r), "blog.posts_meta", "files",
 		map[string]any{"id": req.ID, "fields": len(sets)})
 	writeJSON(w, http.StatusOK, map[string]any{"ok": true})
-}
-
-// blogPostsBatch POST /api/v1/blog/posts/batch
-// A-G 批量编辑：对一组文章批量设置 node_type / fields / cover / excerpt / seo_title / seo_desc。
-// 每篇独立执行与 blogPostMeta 相同的 json_set 合并（content_state 既有键不受影响），
-// 单条失败不影响其余，返回逐条结果。
-func (a *API) blogPostsBatch(w http.ResponseWriter, r *http.Request) {
-	if !a.blogAdminOnly(w, r) {
-		return
-	}
-	var req struct {
-		Items []struct {
-			ID       string         `json:"id"`
-			Cover    *string        `json:"cover"`
-			Excerpt  *string        `json:"excerpt"`
-			SeoTitle *string        `json:"seo_title"`
-			SeoDesc  *string        `json:"seo_desc"`
-			NodeType *string        `json:"node_type"`
-			Fields   map[string]any `json:"fields"`
-		} `json:"items"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || len(req.Items) == 0 {
-		writeErr(w, http.StatusBadRequest, "BAD_REQ", "items 必填且非空")
-		return
-	}
-	if len(req.Items) > 200 {
-		writeErr(w, http.StatusBadRequest, "TOO_MANY", "单次最多 200 篇")
-		return
-	}
-	clip := func(s string, max int) string { s = strings.TrimSpace(s); if len(s) > max { s = s[:max] }; return s }
-	type itemRes struct {
-		ID    string `json:"id"`
-		OK    bool   `json:"ok"`
-		Error string `json:"error,omitempty"`
-	}
-	results := make([]itemRes, 0, len(req.Items))
-	okCount := 0
-	for _, it := range req.Items {
-		r0 := itemRes{ID: it.ID}
-		if it.ID == "" {
-			r0.Error = "id 为空"
-			results = append(results, r0)
-			continue
-		}
-		if !a.isBlogPostFile(a.db, it.ID, service.BlogDirID) {
-			r0.Error = "文章不存在或不属于博客"
-			results = append(results, r0)
-			continue
-		}
-		sets, args := []string{}, []any{}
-		if it.Cover != nil {
-			sets, args = append(sets, "cover=?"), append(args, clip(*it.Cover, 1024))
-		}
-		if it.Excerpt != nil {
-			sets, args = append(sets, "excerpt=?"), append(args, clip(*it.Excerpt, 600))
-		}
-		if it.SeoTitle != nil {
-			sets, args = append(sets, "seo_title=?"), append(args, clip(*it.SeoTitle, 200))
-		}
-		if it.SeoDesc != nil {
-			sets, args = append(sets, "seo_desc=?"), append(args, clip(*it.SeoDesc, 400))
-		}
-		csExpr, csArgs := "", []any{}
-		if it.NodeType != nil {
-			nt := clip(*it.NodeType, 64)
-			csExpr = "json_set(COALESCE(content_state,'{}'), '$.node_type', ?)"
-			csArgs = append(csArgs, nt)
-		}
-		if it.Fields != nil {
-			fb, _ := json.Marshal(it.Fields)
-			if csExpr == "" {
-				csExpr = "json_set(COALESCE(content_state,'{}'), '$.fields', ?)"
-			} else {
-				csExpr = "json_set(" + csExpr + ", '$.fields', ?)"
-			}
-			csArgs = append(csArgs, string(fb))
-		}
-		if csExpr != "" {
-			sets = append(sets, "content_state="+csExpr)
-			args = append(args, csArgs...)
-		}
-		if len(sets) == 0 {
-			r0.Error = "未提供任何可更新字段"
-			results = append(results, r0)
-			continue
-		}
-		args = append(args, time.Now().UnixMilli(), it.ID)
-		if _, err := a.db.Exec(`UPDATE files SET `+strings.Join(sets, ", ")+`, updated_at=? WHERE id=?`, args...); err != nil {
-			r0.Error = err.Error()
-			results = append(results, r0)
-			continue
-		}
-		r0.OK = true
-		okCount++
-		results = append(results, r0)
-	}
-	_, _ = a.aud.Append(r.Context(), a.curUserID(r), "blog.posts_batch", "files",
-		map[string]any{"count": len(req.Items), "ok": okCount})
-	writeJSON(w, http.StatusOK, map[string]any{"ok": true, "ok_count": okCount, "results": results})
 }
 
 // blogStats GET /api/v1/blog/stats —— 统计看板聚合。

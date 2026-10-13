@@ -2,89 +2,89 @@
   <div class="impex-view">
     <div class="iv-head">
       <div>
-        <h2>{{  $t('导入导出中心')  }}</h2>
-        <p class="iv-sub">{{  $t('统一入口 · 异步任务 · 进度可见 · 失败清单可重试')  }}</p>
+        <h2>导入导出中心</h2>
+        <p class="iv-sub">统一入口 · 异步任务 · 进度可见 · 失败清单可重试</p>
       </div>
       <button class="btn" :disabled="loading" @click="loadAll">
-        <AikIcon name="refresh" :size="14" />{{  $t('刷新')  }}
+        <AikIcon name="refresh" :size="14" />刷新
       </button>
     </div>
 
     <!-- 页签：导入 / 导出 -->
     <div class="iv-tabs">
       <button class="iv-tab" :class="{ active: tab === 'import' }" @click="tab = 'import'">
-        <AikIcon name="upload" :size="15" />{{  $t('导入')  }}
+        <AikIcon name="upload" :size="15" />导入
       </button>
       <button class="iv-tab" :class="{ active: tab === 'export' }" @click="tab = 'export'">
-        <AikIcon name="download" :size="15" />{{  $t('导出')  }}
+        <AikIcon name="download" :size="15" />导出
       </button>
     </div>
 
     <!-- 目标目录（导入/文件夹导出共用） -->
     <div v-if="tab === 'import' || expSource === 'folder' || expSource === 'obsidian'" class="iv-field">
-      <label>{{  $t('目标目录')  }}</label>
+      <label>目标目录</label>
       <select v-model="parent">
-        <option value="">{{  $t('根目录（我的空间）')  }}</option>
-        <option v-for="d in dirOptions" :key="d.id" :value="d.id">{{  d.label  }}</option>
+        <option value="">根目录（我的空间）</option>
+        <option v-for="d in dirOptions" :key="d.id" :value="d.id">{{ d.label }}</option>
       </select>
     </div>
 
     <!-- 导入面板 -->
     <div v-if="tab === 'import'" class="iv-grid">
       <div class="iv-card">
-        <div class="iv-card-h"><AikIcon name="fileArchive" :size="16" /><span>{{  $t('ZIP 批量导入')  }}</span></div>
-        <p class="iv-card-p">{{  $t('上传 ZIP 包，自动解压并按目录结构递归入库')  }}</p>
+        <div class="iv-card-h"><AikIcon name="fileArchive" :size="16" /><span>ZIP 批量导入</span></div>
+        <p class="iv-card-p">上传 ZIP 包，自动解压并按目录结构递归入库</p>
         <div class="iv-row">
           <select v-model="zipConflict">
-            <option value="rename">{{  $t('同名：自动重命名')  }}</option>
-            <option value="skip">{{  $t('同名：跳过')  }}</option>
-            <option value="overwrite">{{  $t('同名：覆盖')  }}</option>
+            <option value="rename">同名：自动重命名</option>
+            <option value="skip">同名：跳过</option>
+            <option value="overwrite">同名：覆盖</option>
           </select>
         </div>
         <label class="iv-file">
           <input type="file" accept=".zip" @change="onPickZip('zip', $event)" />
-          <span>{{  $t('选择 ZIP 并导入')  }}</span>
+          <span>选择 ZIP 并导入</span>
         </label>
       </div>
 
       <div class="iv-card">
-        <div class="iv-card-h"><AikIcon name="book" :size="16" /><span>{{  $t('Obsidian vault 导入')  }}</span></div>
-        <p class="iv-card-p">{{  $t('解析')  }} <code>{{  $t('[[双链]]')  }}</code> {{  $t('与 frontmatter 标签 → 映射到标签')  }}</p>
+        <div class="iv-card-h"><AikIcon name="book" :size="16" /><span>Obsidian vault 导入</span></div>
+        <p class="iv-card-p">解析 <code>[[双链]]</code> 与 frontmatter 标签 → 映射到标签</p>
         <div class="iv-row">
           <select v-model="obsConflict">
-            <option value="rename">{{  $t('同名：自动重命名')  }}</option>
-            <option value="skip">{{  $t('同名：跳过')  }}</option>
-            <option value="overwrite">{{  $t('同名：覆盖')  }}</option>
+            <option value="rename">同名：自动重命名</option>
+            <option value="skip">同名：跳过</option>
+            <option value="overwrite">同名：覆盖</option>
           </select>
         </div>
         <label class="iv-file">
           <input type="file" accept=".zip" @change="onPickZip('obsidian', $event)" />
-          <span>{{  $t('选择 vault ZIP 并导入')  }}</span>
+          <span>选择 vault ZIP 并导入</span>
         </label>
       </div>
 
       <div class="iv-card">
-        <div class="iv-card-h"><AikIcon name="link" :size="16" /><span>{{  $t('URL 网页抓取')  }}</span></div>
-        <p class="iv-card-p">{{  $t('抓取网页正文 → 转为 Markdown 入库')  }}</p>
+        <div class="iv-card-h"><AikIcon name="link" :size="16" /><span>URL 网页抓取</span></div>
+        <p class="iv-card-p">抓取网页正文 → 转为 Markdown 入库</p>
         <div class="iv-row">
           <input v-model="url" placeholder="https://example.com/article" @keydown.enter="doImportURL" />
-          <button class="btn btn-primary" :disabled="busy || !url.trim()" @click="doImportURL">{{  $t('抓取')  }}</button>
+          <button class="btn btn-primary" :disabled="busy || !url.trim()" @click="doImportURL">抓取</button>
         </div>
       </div>
 
       <div class="iv-card">
-        <div class="iv-card-h"><AikIcon name="clipboard" :size="16" /><span>{{  $t('剪贴板粘贴')  }}</span></div>
-        <p class="iv-card-p">{{  $t('文本（支持图片，直接 Ctrl+V 粘贴到下方）')  }}</p>
+        <div class="iv-card-h"><AikIcon name="clipboard" :size="16" /><span>剪贴板粘贴</span></div>
+        <p class="iv-card-p">文本（支持图片，直接 Ctrl+V 粘贴到下方）</p>
         <div class="iv-paste" tabindex="0" @paste.prevent="onPaste" @click="$event.currentTarget.focus()">
           <template v-if="!clipText">
             <AikIcon name="clipboard" :size="20" />
-            <span>{{  $t('点击后按 Ctrl+V 粘贴文本或图片')  }}</span>
+            <span>点击后按 Ctrl+V 粘贴文本或图片</span>
           </template>
-          <span v-else class="iv-paste-text">{{  clipText.slice(0, 160)  }}{{  clipText.length > 160 ? '…' : ''  }}</span>
+          <span v-else class="iv-paste-text">{{ clipText.slice(0, 160) }}{{ clipText.length > 160 ? '…' : '' }}</span>
         </div>
         <div class="iv-row">
-          <input v-model="clipName" :placeholder="t('文件名（默认 剪贴板粘贴.md）')" />
-          <button class="btn btn-primary" :disabled="busy || !clipText.trim()" @click="doImportClipboard">{{ $t('入库') }}</button>
+          <input v-model="clipName" :placeholder="'文件名（默认 剪贴板粘贴.md）'" />
+          <button class="btn btn-primary" :disabled="busy || !clipText.trim()" @click="doImportClipboard">入库</button>
         </div>
       </div>
     </div>
@@ -92,46 +92,46 @@
     <!-- 导出面板 -->
     <div v-else class="iv-grid">
       <div class="iv-card">
-        <div class="iv-card-h"><AikIcon name="folder" :size="16" /><span>{{ $t('文件夹 ZIP 打包') }}</span></div>
-        <p class="iv-card-p">{{ $t('选中目录 → 生成 ZIP（保留子目录结构）') }}</p>
+        <div class="iv-card-h"><AikIcon name="folder" :size="16" /><span>文件夹 ZIP 打包</span></div>
+        <p class="iv-card-p">选中目录 → 生成 ZIP（保留子目录结构）</p>
         <div class="iv-row">
-          <button class="btn btn-primary" :disabled="busy" @click="doExport('folder', parent, t('文件夹导出'))">
-            <AikIcon name="download" :size="14" />{{ $t('打包下载') }}
+          <button class="btn btn-primary" :disabled="busy" @click="doExport('folder', parent, '文件夹导出')">
+            <AikIcon name="download" :size="14" />打包下载
           </button>
         </div>
       </div>
 
       <div class="iv-card">
-        <div class="iv-card-h"><AikIcon name="book" :size="16" /><span>{{ $t('Obsidian vault 导出') }}</span></div>
-        <p class="iv-card-p">{{ $t('生成') }} <code>{{ $t('[[双链]]') }}</code> {{ $t('+ frontmatter 标签 +') }} <code>.obsidian</code> {{ $t('配置') }}</p>
+        <div class="iv-card-h"><AikIcon name="book" :size="16" /><span>Obsidian vault 导出</span></div>
+        <p class="iv-card-p">生成 <code>[[双链]]</code> + frontmatter 标签 + <code>.obsidian</code> 配置</p>
         <div class="iv-row">
-          <button class="btn btn-primary" :disabled="busy" @click="doExport('obsidian', parent, t('vault 导出'))">
-            <AikIcon name="download" :size="14" />{{ $t('导出 vault') }}
+          <button class="btn btn-primary" :disabled="busy" @click="doExport('obsidian', parent, 'vault 导出')">
+            <AikIcon name="download" :size="14" />导出 vault
           </button>
         </div>
       </div>
 
       <div class="iv-card">
-        <div class="iv-card-h"><AikIcon name="tag" :size="16" /><span>{{ $t('按标签批量导出') }}</span></div>
-        <p class="iv-card-p">{{ $t('按标签筛选 → Markdown 批量打包') }}</p>
+        <div class="iv-card-h"><AikIcon name="tag" :size="16" /><span>按标签批量导出</span></div>
+        <p class="iv-card-p">按标签筛选 → Markdown 批量打包</p>
         <div class="iv-row">
           <select v-model="expTag">
-            <option value="" disabled>{{ $t('选择标签…') }}</option>
-            <option v-for="t in tags" :key="t.id" :value="t.id">{{  t.path  }}（{{  t.count  }}）</option>
+            <option value="" disabled>选择标签…</option>
+            <option v-for="t in tags" :key="t.id" :value="t.id">{{ t.path }}（{{ t.count }}）</option>
           </select>
-          <button class="btn btn-primary" :disabled="busy || !expTag" @click="doExport('tag', expTag, t('标签导出'))">{{ $t('导出') }}</button>
+          <button class="btn btn-primary" :disabled="busy || !expTag" @click="doExport('tag', expTag, '标签导出')">导出</button>
         </div>
       </div>
 
       <div class="iv-card">
-        <div class="iv-card-h"><AikIcon name="grid" :size="16" /><span>{{ $t('按集合批量导出') }}</span></div>
-        <p class="iv-card-p">{{ $t('按集合筛选 → Markdown 批量打包') }}</p>
+        <div class="iv-card-h"><AikIcon name="grid" :size="16" /><span>按集合批量导出</span></div>
+        <p class="iv-card-p">按集合筛选 → Markdown 批量打包</p>
         <div class="iv-row">
           <select v-model="expCollection">
-            <option value="" disabled>{{ $t('选择集合…') }}</option>
-            <option v-for="c in collections" :key="c.id" :value="c.id">{{  c.name  }}</option>
+            <option value="" disabled>选择集合…</option>
+            <option v-for="c in collections" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
-          <button class="btn btn-primary" :disabled="busy || !expCollection" @click="doExport('collection', expCollection, t('集合导出'))">{{ $t('导出') }}</button>
+          <button class="btn btn-primary" :disabled="busy || !expCollection" @click="doExport('collection', expCollection, '集合导出')">导出</button>
         </div>
       </div>
     </div>
@@ -139,15 +139,15 @@
     <!-- 任务中心 -->
     <div class="iv-jobs">
       <div class="iv-jobs-h">
-        <h3>{{ $t('任务中心') }}<span class="iv-count">{{  shownJobs.length  }}</span></h3>
+        <h3>任务中心<span class="iv-count">{{ shownJobs.length }}</span></h3>
       </div>
 
-      <div v-if="loading && !shownJobs.length" class="iv-empty">{{ $t('加载中…') }}</div>
+      <div v-if="loading && !shownJobs.length" class="iv-empty">加载中…</div>
 
       <div v-else-if="!shownJobs.length" class="iv-empty">
         <AikIcon :name="tab === 'import' ? 'upload' : 'download'" :size="28" />
-        <p>{{ $t('暂无') }}{{  tab === 'import' ? $t('导入') : $t('导出')  }}{{ $t('任务') }}</p>
-        <p class="iv-muted">{{ $t('从上方选择一种方式开始') }}</p>
+        <p>暂无{{ tab === 'import' ? '导入' : '导出' }}任务</p>
+        <p class="iv-muted">从上方选择一种方式开始</p>
       </div>
 
       <div v-else class="iv-list">
@@ -156,17 +156,17 @@
             <AikIcon :name="j.kind === 'import' ? 'upload' : 'download'" :size="16" class="iv-job-ico" />
             <div class="iv-job-info">
               <div class="iv-job-title">
-                <span class="iv-job-src">{{  srcLabel(j)  }}</span>
-                <span class="iv-badge" :class="'st-' + j.status">{{  statusText(j.status)  }}</span>
-                <span class="iv-job-time">{{  fmtTime(j.created_at)  }}</span>
+                <span class="iv-job-src">{{ srcLabel(j) }}</span>
+                <span class="iv-badge" :class="'st-' + j.status">{{ statusText(j.status) }}</span>
+                <span class="iv-job-time">{{ fmtTime(j.created_at) }}</span>
               </div>
               <div class="iv-bar"><div class="iv-bar-fill" :style="{ width: j.percent + '%' }"></div></div>
               <div class="iv-job-meta">
-                <span>{{ $t('进度') }} {{  j.percent  }}%</span>
-                <span v-if="j.total">{{ $t('· 共') }} {{  j.total  }} {{ $t('项') }}</span>
-                <span v-if="j.succeeded">{{ $t('· 成功') }} {{  j.succeeded  }}</span>
-                <span v-if="j.failed" class="iv-danger">{{ $t('· 失败') }} {{  j.failed  }}</span>
-                <span v-if="j.last_error" class="iv-danger" :title="j.last_error">· {{  j.last_error.slice(0, 60)  }}</span>
+                <span>进度 {{ j.percent }}%</span>
+                <span v-if="j.total">· 共 {{ j.total }} 项</span>
+                <span v-if="j.succeeded">· 成功 {{ j.succeeded }}</span>
+                <span v-if="j.failed" class="iv-danger">· 失败 {{ j.failed }}</span>
+                <span v-if="j.last_error" class="iv-danger" :title="j.last_error">· {{ j.last_error.slice(0, 60) }}</span>
               </div>
             </div>
             <div class="iv-job-ops">
@@ -174,20 +174,20 @@
                 v-if="j.kind === 'export' && (j.status === 'done' || j.status === 'partial')"
                 class="btn btn-primary btn-sm"
                 @click.prevent="doDownload(j.id)"
-              >{{ $t('下载') }}</a>
+              >下载</a>
               <button v-if="j.failed" class="btn btn-sm" @click="toggleExpand(j.id)">
-                {{  expanded === j.id ? $t('收起') : $t('失败清单')  }}
+                {{ expanded === j.id ? '收起' : '失败清单' }}
               </button>
               <button v-if="j.status === 'failed' || j.status === 'partial'" class="btn btn-sm" @click="doRetry(j)">
-                {{ $t('重试') }}
+                重试
               </button>
             </div>
           </div>
           <div v-if="expanded === j.id && j.fail_list && j.fail_list.length" class="iv-fails">
             <div v-for="(f, i) in j.fail_list" :key="i" class="iv-fail">
               <AikIcon name="close" :size="12" />
-              <span class="iv-fail-item">{{  f.item  }}</span>
-              <span class="iv-fail-err">{{  f.error  }}</span>
+              <span class="iv-fail-item">{{ f.item }}</span>
+              <span class="iv-fail-err">{{ f.error }}</span>
             </div>
           </div>
         </div>
@@ -195,7 +195,7 @@
     </div>
 
     <!-- 上传进度提示 -->
-    <div v-if="uploadPct > 0 && uploadPct < 100" class="iv-uploading">{{ $t('上传中…') }} {{  uploadPct  }}%</div>
+    <div v-if="uploadPct > 0 && uploadPct < 100" class="iv-uploading">上传中… {{ uploadPct }}%</div>
   </div>
 </template>
 
@@ -204,7 +204,6 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import AikIcon from '@/components/AikIcon.vue'
 import * as api from '@/api'
 import { useToastStore } from '@/stores/toast'
-import { t } from '@/i18n'
 
 const toast = useToastStore()
 
@@ -251,19 +250,19 @@ const dirOptions = computed(() => {
 const shownJobs = computed(() => (tab.value === 'import' ? imports.value : exports.value))
 
 const SRC = {
-  zip: t('ZIP 批量导入'),
-  clipboard: t('剪贴板粘贴'),
-  url: t('URL 网页抓取'),
-  folder: t('文件夹打包'),
-  tag: t('按标签导出'),
-  collection: t('按集合导出')
+  zip: 'ZIP 批量导入',
+  clipboard: '剪贴板粘贴',
+  url: 'URL 网页抓取',
+  folder: '文件夹打包',
+  tag: '按标签导出',
+  collection: '按集合导出'
 }
 function srcLabel(j) {
-  if (j.source === 'obsidian') return j.kind === 'export' ? t('Obsidian 导出') : t('Obsidian 导入')
+  if (j.source === 'obsidian') return j.kind === 'export' ? 'Obsidian 导出' : 'Obsidian 导入'
   return SRC[j.source] || j.source
 }
 
-const ST = { pending: t('等待中'), running: t('进行中'), done: t('完成'), partial: t('部分完成'), failed: t('失败') }
+const ST = { pending: '等待中', running: '进行中', done: '完成', partial: '部分完成', failed: '失败' }
 function statusText(s) {
   return ST[s] || s
 }
@@ -282,7 +281,7 @@ async function doDownload(id) {
   try {
     await api.impexDownload(id)
   } catch (err) {
-    showToast(err.message || t('下载失败'))
+    showToast(err.message || '下载失败')
   }
 }
 
@@ -311,7 +310,7 @@ async function loadAll() {
     collections.value = col
     ensurePolling()
   } catch (e) {
-    toast.push(t('加载失败：') + (e.message || e))
+    toast.push('加载失败：' + (e.message || e))
   } finally {
     loading.value = false
   }
@@ -352,11 +351,11 @@ async function onPickZip(source, e) {
       onConflict: source === 'obsidian' ? obsConflict.value : zipConflict.value,
       onProgress: (p) => (uploadPct.value = p)
     })
-    toast.push(source === 'obsidian' ? t('Obsidian 导入任务已创建') : t('ZIP 导入任务已创建'))
+    toast.push(source === 'obsidian' ? 'Obsidian 导入任务已创建' : 'ZIP 导入任务已创建')
     await loadJobs()
     if (job && job.id) expanded.value = ''
   } catch (err) {
-    toast.push(t('导入失败：') + (err.message || err))
+    toast.push('导入失败：' + (err.message || err))
   } finally {
     uploadPct.value = 0
     busy.value = false
@@ -369,11 +368,11 @@ async function doImportURL() {
   busy.value = true
   try {
     await api.impexImportURL(u, { parent: parent.value })
-    toast.push(t('URL 抓取任务已创建'))
+    toast.push('URL 抓取任务已创建')
     url.value = ''
     await loadJobs()
   } catch (e) {
-    toast.push(t('创建失败：') + (e.message || e))
+    toast.push('创建失败：' + (e.message || e))
   } finally {
     busy.value = false
   }
@@ -390,11 +389,11 @@ function onPaste(e) {
       busy.value = true
       try {
         await api.impexImportClipboard({ parent: parent.value, name: clipName.value, image: String(reader.result) })
-        toast.push(t('图片粘贴任务已创建'))
+        toast.push('图片粘贴任务已创建')
         clipText.value = ''
         await loadJobs()
       } catch (err) {
-        toast.push(t('创建失败：') + (err.message || err))
+        toast.push('创建失败：' + (err.message || err))
       } finally {
         busy.value = false
       }
@@ -411,12 +410,12 @@ async function doImportClipboard() {
   busy.value = true
   try {
     await api.impexImportClipboard({ parent: parent.value, name: clipName.value, text: clipText.value })
-    toast.push(t('粘贴任务已创建'))
+    toast.push('粘贴任务已创建')
     clipText.value = ''
     clipName.value = ''
     await loadJobs()
   } catch (e) {
-    toast.push(t('创建失败：') + (e.message || e))
+    toast.push('创建失败：' + (e.message || e))
   } finally {
     busy.value = false
   }
@@ -428,11 +427,11 @@ async function doExport(source, targetId, name) {
   expSource.value = source
   try {
     await api.impexCreateExport(source, targetId, name)
-    toast.push(t('导出任务已创建'))
+    toast.push('导出任务已创建')
     tab.value = 'export'
     await loadJobs()
   } catch (e) {
-    toast.push(t('创建失败：') + (e.message || e))
+    toast.push('创建失败：' + (e.message || e))
   } finally {
     busy.value = false
   }
@@ -441,10 +440,10 @@ async function doExport(source, targetId, name) {
 async function doRetry(j) {
   try {
     await api.impexRetry(j.kind, j.id)
-    toast.push(t('已重试失败项'))
+    toast.push('已重试失败项')
     await loadJobs()
   } catch (e) {
-    toast.push(t('重试失败：') + (e.message || e))
+    toast.push('重试失败：' + (e.message || e))
   }
 }
 
@@ -457,9 +456,8 @@ onMounted(loadAll)
 
 <style scoped>
 .impex-view {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px 24px 40px;
+  padding: 24px 28px;
+  max-width: 1100px;
 }
 .iv-head {
   display: flex;

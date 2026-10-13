@@ -58,55 +58,6 @@ func (a *API) licenseStatus(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, a.licenseInfo())
 }
 
-// licenseVerifyResp 在线验签响应（REQ-007：AiKlog 等壳激活时回源校验；7bea3b9 移植）。
-type licenseVerifyResp struct {
-	Valid     bool     `json:"valid"`                // key 有效且（若传 shell）覆盖目标壳
-	Edition   string   `json:"edition"`              // community|pro
-	Scopes    []string `json:"scopes,omitempty"`     // payload.scopes（含 feature:/shell:）
-	Jti       string   `json:"jti,omitempty"`        // 密钥唯一标识
-	Subject   string   `json:"subject,omitempty"`    // payload.sub（实例绑定，弱绑定）
-	ExpiresAt string   `json:"expires_at,omitempty"` // 到期时间（RFC3339）
-	Reason    string   `json:"reason,omitempty"`     // 无效原因
-}
-
-// licenseVerify POST /api/v1/license/verify {key, shell}：在线验签端点（REQ-007）。
-// 各壳激活付费应用时可回源校验：入参 key + shell 标识，返回 valid/edition/scopes/exp。
-// 公开端点（publicPath 白名单）：仅验签，不写状态，无副作用。
-func (a *API) licenseVerify(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		Key   string `json:"key"`
-		Shell string `json:"shell,omitempty"` // 目标壳标识（如 aiklog）；空=只验签不判壳
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeErr(w, http.StatusBadRequest, "LICENSE_BAD_REQ", "无效请求体")
-		return
-	}
-	key := strings.TrimSpace(req.Key)
-	if key == "" {
-		writeJSON(w, http.StatusOK, licenseVerifyResp{Valid: false, Reason: "key 为空"})
-		return
-	}
-	p, err := entitle.Validate(key)
-	if err != nil {
-		writeJSON(w, http.StatusOK, licenseVerifyResp{Valid: false, Reason: err.Error()})
-		return
-	}
-	resp := licenseVerifyResp{
-		Valid:   p.Edition == "pro" && (strings.TrimSpace(req.Shell) == "" || p.HasScope(strings.TrimSpace(req.Shell))),
-		Edition: p.Edition,
-		Scopes:  p.Scopes,
-		Jti:     p.Jti,
-		Subject: p.Sub,
-	}
-	if p.Exp > 0 {
-		resp.ExpiresAt = time.Unix(p.Exp, 0).UTC().Format(time.RFC3339)
-	}
-	if !resp.Valid && strings.TrimSpace(req.Shell) != "" {
-		resp.Reason = "edition 或 scope 未覆盖目标壳（需 pro 且 scopes 含 shell:" + strings.TrimSpace(req.Shell) + " 或 all）"
-	}
-	writeJSON(w, http.StatusOK, resp)
-}
-
 // licenseInfo 组装状态（供本文件与市场安装门禁共用）。
 func (a *API) licenseInfo() licenseInfo {
 	key := strings.TrimSpace(a.cfg.GetString(licenseKeyCfg))
@@ -144,11 +95,6 @@ func (a *API) licenseInfo() licenseInfo {
 // licenseActivate POST /api/v1/license {key}：激活许可证（登录；幂等）。
 // 激活即验签：无效 key 直接 422，不落库。
 func (a *API) licenseActivate(w http.ResponseWriter, r *http.Request) {
-	// M10 修复：许可证 key 写入（商业权益）仅 owner/admin 可操作
-	if !a.isAdmin(r) {
-		writeErr(w, http.StatusForbidden, "ADMIN_REQUIRED", "需要管理员权限")
-		return
-	}
 	var req struct {
 		Key string `json:"key"`
 	}
@@ -183,11 +129,6 @@ func (a *API) licenseActivate(w http.ResponseWriter, r *http.Request) {
 
 // licenseDeactivate DELETE /api/v1/license：吊销/清除许可证（登录）。
 func (a *API) licenseDeactivate(w http.ResponseWriter, r *http.Request) {
-	// M10 修复：吊销许可证仅 owner/admin 可操作
-	if !a.isAdmin(r) {
-		writeErr(w, http.StatusForbidden, "ADMIN_REQUIRED", "需要管理员权限")
-		return
-	}
 	if err := a.cfg.Delete(r.Context(), licenseKeyCfg); err != nil {
 		writeErr(w, http.StatusInternalServerError, "LICENSE_CLEAR_FAILED", err.Error())
 		return

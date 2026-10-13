@@ -1,6 +1,6 @@
 <template>
   <aside v-if="tags.length" class="tc-card">
-    <h4 class="tc-title">{{ $t('分类') }}</h4>
+    <h4 class="tc-title">分类</h4>
     <div class="tc-cloud">
       <a
         v-for="t in tags"

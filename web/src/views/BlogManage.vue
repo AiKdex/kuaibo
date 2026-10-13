@@ -3,81 +3,81 @@
     <!-- 说明条：博客目录在存储层不挂载 -->
     <div class="bm-tip">
       <AikIcon name="info" :size="16" />
-      <span>{{  $t('「博客」目录已对文件管理可见：可在此管理，也可在文件库直接拖拽 md 到博客目录发布。根目录「博客」不可删除/改名。')  }}</span>
+      <span>「博客」目录已对文件管理可见：可在此管理，也可在文件库直接拖拽 md 到博客目录发布。根目录「博客」不可删除/改名。</span>
     </div>
 
     <!-- 博客状态 -->
     <div class="bm-status" v-if="status">
       <span class="bm-status-dot" :class="{ off: !status.active }"></span>
-      <span>{{  status.active ? $t('博客公开中') : $t('博客已关闭')  }}</span>
-      <button v-if="status.active" class="btn btn-sm bm-toggle" :disabled="busy" @click="toggleBlog(false)">{{  $t('关闭博客')  }}</button>
-      <button v-else class="btn btn-sm bm-toggle on" :disabled="busy" @click="toggleBlog(true)">{{  $t('开启博客')  }}</button>
-      <a class="bm-open" :href="status.url" target="_blank">{{  $t('打开博客')  }}</a>
+      <span>{{ status.active ? '博客公开中' : '博客已关闭' }}</span>
+      <button v-if="status.active" class="btn btn-sm bm-toggle" :disabled="busy" @click="toggleBlog(false)">关闭博客</button>
+      <button v-else class="btn btn-sm bm-toggle on" :disabled="busy" @click="toggleBlog(true)">开启博客</button>
+      <a class="bm-open" :href="status.url" target="_blank">打开博客</a>
     </div>
 
     <!-- 顶部功能标签（?tab= 深链可直达） -->
     <nav class="bm-nav-tabs">
       <button v-for="t in navTabs" :key="t.key" class="bm-tab-btn" :class="{ on: tab === t.key }" @click="switchTab(t.key)">
-        {{  t.label  }}<span v-if="t.count" class="bm-tab-count">{{  t.count  }}</span>
+        {{ t.label }}<span v-if="t.count" class="bm-tab-count">{{ t.count }}</span>
       </button>
     </nav>
 
     <!-- 站点设置（博客名称/简介/页脚/SEO 默认描述；RSS/OG/公开页同源） -->
     <section v-show="tab === 'overview'" class="bm-panel bm-site">
       <div class="bm-panel-head">
-        <h3>{{  $t('站点设置')  }}</h3>
-        <button class="btn btn-sm" :disabled="busy || !siteDirty" @click="saveSite">{{  $t('保存站点设置')  }}</button>
+        <h3>站点设置</h3>
+        <button class="btn btn-sm" :disabled="busy || !siteDirty" @click="saveSite">保存站点设置</button>
       </div>
       <div class="bm-site-grid">
         <label class="bm-field">
-          <span>{{  $t('博客名称（站点标题）')  }}</span>
-          <input v-model="site.title" class="bm-input" maxlength="60" :placeholder="$t('爱库录博客')" @input="siteDirty = true" />
+          <span>博客名称（站点标题）</span>
+          <input v-model="site.title" class="bm-input" maxlength="60" placeholder="爱库录博客" @input="siteDirty = true" />
         </label>
         <label class="bm-field">
-          <span>{{  $t('站点简介')  }}</span>
-          <input v-model="site.description" class="bm-input" maxlength="200" :placeholder="$t('由爱库录知识库发布的公开文章')" @input="siteDirty = true" />
+          <span>站点简介</span>
+          <input v-model="site.description" class="bm-input" maxlength="200" placeholder="由爱库录知识库发布的公开文章" @input="siteDirty = true" />
         </label>
         <label class="bm-field">
-          <span>{{  $t('页脚文案')  }}</span>
-          <input v-model="site.footer" class="bm-input" maxlength="200" :placeholder="$t('由爱库录发布 · 数据主权在发布者')" @input="siteDirty = true" />
+          <span>页脚文案</span>
+          <input v-model="site.footer" class="bm-input" maxlength="200" placeholder="由爱库录发布 · 数据主权在发布者" @input="siteDirty = true" />
         </label>
         <label class="bm-field">
-          <span>{{  $t('SEO 默认描述（留空=站点简介）')  }}</span>
-          <input v-model="site.seo_default" class="bm-input" maxlength="300" :placeholder="$t('留空则使用站点简介')" @input="siteDirty = true" />
+          <span>SEO 默认描述（留空=站点简介）</span>
+          <input v-model="site.seo_default" class="bm-input" maxlength="300" placeholder="留空则使用站点简介" @input="siteDirty = true" />
         </label>
         <label class="bm-field bm-field-full">
-          <span>{{  $t('自定义 CSS（前台公开页全主题生效）')  }}</span>
-          <textarea v-model="site.custom_css" class="bm-input bm-textarea" rows="3" maxlength="20000" :placeholder="$t('直接粘贴 CSS，如 .ph-title { color: #e5484d }')" @input="siteDirty = true"></textarea>
+          <span>自定义 CSS（前台公开页全主题生效）</span>
+          <textarea v-model="site.custom_css" class="bm-input bm-textarea" rows="3" maxlength="20000" placeholder="直接粘贴 CSS，如 .ph-title { color: #e5484d }" @input="siteDirty = true"></textarea>
         </label>
         <label class="bm-field bm-field-full">
-          <span>{{  $t('自定义 JS（前台公开页全主题生效）')  }}</span>
-          <textarea v-model="site.custom_js" class="bm-input bm-textarea" rows="3" maxlength="20000" :placeholder="$t('直接粘贴 JS（如统计脚本），公开页加载时执行')" @input="siteDirty = true"></textarea>
+          <span>自定义 JS（前台公开页全主题生效）</span>
+          <textarea v-model="site.custom_js" class="bm-input bm-textarea" rows="3" maxlength="20000" placeholder="直接粘贴 JS（如统计脚本），公开页加载时执行" @input="siteDirty = true"></textarea>
         </label>
         <label class="bm-field">
-          <span>{{  $t('站点基础域名（RSS/canonical/OG 用；留空=跟随请求域）')  }}</span>
+          <span>站点基础域名（RSS/canonical/OG 用；留空=跟随请求域）</span>
           <input v-model="site.base_url" class="bm-input" maxlength="200" placeholder="https://blog.example.com" @input="siteDirty = true" />
         </label>
         <label class="bm-field">
-          <span>{{  $t('站点语言（RSS language / 前端 locale 同源）')  }}</span>
+          <span>站点语言（RSS language / 前端 locale 同源）</span>
           <input v-model="site.locale" class="bm-input" maxlength="20" placeholder="zh-cn" @input="siteDirty = true" />
         </label>
         <label class="bm-field bm-field-check">
-          <span>{{  $t('上传后自动发布')  }}</span>
+          <span>上传后自动发布</span>
           <input type="checkbox" v-model="autoPublish" @change="saveAutoPublish" />
-          <span class="bm-check-hint">{{  $t('开启：拖拽 md 上传即公开；关闭：先存草稿，确认后再发')  }}</span>
+          <span class="bm-check-hint">开启：拖拽 md 上传即公开；关闭：先存草稿，确认后再发</span>
         </label>
         <label class="bm-field bm-field-check">
-          <span>{{  $t('访客评论（免登录）')  }}</span>
+          <span>访客评论（免登录）</span>
           <input type="checkbox" v-model="guestComments" @change="saveGuestComments" />
-          <span class="bm-check-hint">{{  $t('开启：未登录读者可评论（默认待审核，通过后展示；IP 限流防刷）；关闭：仅登录用户可评论')  }}</span>
+          <span class="bm-check-hint">开启：未登录读者可评论（默认待审核，通过后展示；IP 限流防刷）；关闭：仅登录用户可评论</span>
         </label>
         <label class="bm-field">
-          <span>{{  $t('默认主题（访客默认看到，可自行切换）')  }}</span>
+          <span>默认主题（访客默认看到，可自行切换）</span>
           <!-- 动态渲染：主题选项来自注册表（themes/*/index.js 注册即出现，无需改此处） -->
           <select v-model="site.theme" class="bm-input" @change="siteDirty = true">
-            <option v-for="t in themeOptions" :key="t.id" :value="t.id">{{  t.label  }}</option>
+            <option v-for="t in themeOptions" :key="t.id" :value="t.id">{{ t.label }}</option>
           </select>
-          <span class="bm-check-hint" style="font-size:12px;color:var(--text-3)">{{ $t('访客默认看到该主题；访客可用页头切换器换成自己习惯的主题（仅本机记住，不影响其他访客）。仅作用于交互版公开页；静态页 /blog 固定阅读壳（SEO）。外置主题部署到服务器 data/themes/<id>/ 即自动出现在本下拉，无需改白名单或重编译') }}</span>
+          <span class="bm-check-hint" style="font-size:12px;color:var(--text-3)">访客默认看到该主题；访客可用页头切换器换成自己习惯的主题（仅本机记住，不影响其他访客）。仅作用于交互版公开页；静态页 /blog 固定阅读壳（SEO）。外置主题部署到服务器 data/themes/&lt;id&gt;/ 即自动出现在本下拉，无需改白名单或重编译</span>
         </label>
       </div>
     </section>
@@ -87,12 +87,12 @@
       <!-- 左：分类 -->
       <section class="bm-panel bm-cats">
         <div class="bm-panel-head">
-          <h3>{{  $t('分类（子目录）')  }}</h3>
-          <button class="btn btn-sm" :disabled="busy || savingOrder" @click="saveCatOrder">{{  $t('保存顺序')  }}</button>
+          <h3>分类（子目录）</h3>
+          <button class="btn btn-sm" :disabled="busy || savingOrder" @click="saveCatOrder">保存顺序</button>
         </div>
         <div class="bm-cat-filter">
-          <button class="bm-cat-mini" :class="{ active: curCat === '' }" @click="curCat = ''">{{  $t('全部')  }}</button>
-          <button class="bm-cat-mini" :class="{ active: curCat === '__none' }" @click="curCat = '__none'">{{  $t('未分类')  }}</button>
+          <button class="bm-cat-mini" :class="{ active: curCat === '' }" @click="curCat = ''">全部</button>
+          <button class="bm-cat-mini" :class="{ active: curCat === '__none' }" @click="curCat = '__none'">未分类</button>
         </div>
         <div class="bm-cat-list">
           <div
@@ -107,54 +107,40 @@
             @drop.prevent="onDrop(c)"
             @dragend="onDragEnd"
           >
-            <span class="bm-cat-handle" :title="$t('拖拽调整顺序')">⠿</span>
-            <button class="bm-cat" :class="{ active: curCat === c.id }" @click="curCat = c.id">{{  c.name  }}</button>
-            <span class="bm-cat-n">{{  catCount(c)  }}</span>
-<span class="bm-cat-so" :title="c.sort_order >= 0 ? $t('手动权重 ') + c.sort_order : $t('未设置（按最新活动动态排序）')">{{ c.sort_order >= 0 ? '#' + c.sort_order : $t('自动') }}</span>
-            <span class="bm-cat-la" :title="$t('该分类最近一篇文章更新时间')">{{  fmtDate(c.last_activity)  }}</span>
+            <span class="bm-cat-handle" title="拖拽调整顺序">⠿</span>
+            <button class="bm-cat" :class="{ active: curCat === c.id }" @click="curCat = c.id">{{ c.name }}</button>
+            <span class="bm-cat-n">{{ catCount(c) }}</span>
+            <span class="bm-cat-so" :title="c.sort_order >= 0 ? '手动权重 ' + c.sort_order : '未设置（按最新活动动态排序）'">{{ c.sort_order >= 0 ? '#' + c.sort_order : '自动' }}</span>
+            <span class="bm-cat-la" :title="'该分类最近一篇文章更新时间'">{{ fmtDate(c.last_activity) }}</span>
           </div>
         </div>
         <div class="bm-cat-actions">
-          <button class="btn btn-sm bm-reset" :disabled="busy || savingOrder" @click="resetCatOrder">{{  $t('恢复动态排序')  }}</button>
+          <button class="btn btn-sm bm-reset" :disabled="busy || savingOrder" @click="resetCatOrder">恢复动态排序</button>
         </div>
         <div class="bm-cat-new">
-          <input v-model="newCat" class="bm-input" :placeholder="$t('新分类名称，如：设计')" @keyup.enter="addCat" />
-          <button class="btn btn-sm" :disabled="busy" @click="addCat">{{  $t('新建')  }}</button>
+          <input v-model="newCat" class="bm-input" placeholder="新分类名称，如：设计" @keyup.enter="addCat" />
+          <button class="btn btn-sm" :disabled="busy" @click="addCat">新建</button>
         </div>
       </section>
 
       <!-- 右：文章 -->
       <section class="bm-panel bm-posts">
         <div class="bm-panel-head">
-          <h3>{{  $t('文章')  }}</h3>
-          <span class="bm-count">{{  shownPosts.length  }} {{  $t('篇')  }}</span>
-        </div>
-
-        <!-- 批量编辑（A-G 批量编辑入口）：多选后统一设置内容类型 -->
-        <div class="bm-batch-bar" v-if="shownPosts.length">
-          <label class="bm-cbx"><input type="checkbox" :checked="allSelected" @change="toggleAll" /> {{  $t('全选本页')  }}</label>
-          <span class="bm-batch-n">{{  $t('已选')  }} {{  selectedCount  }} {{  $t('篇')  }}</span>
-          <select v-model="batchNodeType" class="bm-input bm-select">
-            <option value="">{{  $t('内容类型（不选=不改）')  }}</option>
-            <option value="article">{{  $t('文章')  }}</option>
-            <option value="resource">{{  $t('资源')  }}</option>
-            <option value="link">{{  $t('外链')  }}</option>
-          </select>
-          <button class="btn btn-sm bm-primary" :disabled="busy || !selectedCount || !batchNodeType" @click="applyBatch">{{  $t('批量设置类型')  }}</button>
-          <button class="btn btn-sm" :disabled="busy || !selectedCount" @click="clearSel">{{  $t('清除选择')  }}</button>
+          <h3>文章</h3>
+          <span class="bm-count">{{ shownPosts.length }} 篇</span>
         </div>
 
         <div class="bm-new">
           <div class="bm-new-row">
-            <input v-model="newTitle" class="bm-input" :placeholder="$t('文章标题（不含扩展名）')" />
+            <input v-model="newTitle" class="bm-input" placeholder="文章标题（不含扩展名）" />
             <select v-model="newCatFor" class="bm-input bm-select">
-              <option value="">{{  $t('博客根（未分类）')  }}</option>
-              <option v-for="c in cats" :key="c.id" :value="c.id">{{  c.name  }}</option>
+              <option value="">博客根（未分类）</option>
+              <option v-for="c in cats" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </div>
-          <textarea v-model="newBody" class="bm-textarea" rows="5" :placeholder="$t('Markdown 正文…')"></textarea>
+          <textarea v-model="newBody" class="bm-textarea" rows="5" placeholder="Markdown 正文…"></textarea>
           <div class="bm-new-actions">
-            <button class="btn btn-sm bm-primary" :disabled="busy" @click="addPost">{{  $t('发布')  }}</button>
+            <button class="btn btn-sm bm-primary" :disabled="busy" @click="addPost">发布</button>
           </div>
         </div>
 
@@ -168,51 +154,49 @@
         >
           <div class="bm-upzone-inner">
             <AikIcon name="upload" :size="20" />
-            <span class="bm-upzone-text">{{  $t('拖拽文件 / 文件夹到此处上传')  }}</span>
-            <span class="bm-upzone-sep">{{  $t('或')  }}</span>
+            <span class="bm-upzone-text">拖拽文件 / 文件夹到此处上传</span>
+            <span class="bm-upzone-sep">或</span>
             <label class="btn btn-sm bm-up">
-              <input type="file" multiple @change="onPick" />{{  $t('选文件')  }}
+              <input type="file" multiple @change="onPick" />选文件
             </label>
             <label class="btn btn-sm bm-up">
-              <input type="file" webkitdirectory @change="onPickDir" />{{  $t('选文件夹')  }}
+              <input type="file" webkitdirectory @change="onPickDir" />选文件夹
             </label>
           </div>
           <div class="bm-upzone-meta">
-            <span v-if="dragOver" class="bm-upzone-hint">{{  $t('松开即上传')  }}</span>
-            <span v-else-if="autoPublish">{{  $t('上传至：')  }}{{  uploadTargetLabel  }} {{  $t('· md 将自动发布')  }}</span>
-            <span v-else>{{  $t('上传至：')  }}{{  uploadTargetLabel  }} {{  $t('· 默认草稿（可在站点设置开启自动发布）')  }}</span>
-            <span v-if="upQueue.length" class="bm-upzone-q">{{  upQueue.length  }} {{  $t('个文件待上传…')  }}</span>
+            <span v-if="dragOver" class="bm-upzone-hint">松开即上传</span>
+            <span v-else-if="autoPublish">上传至：{{ uploadTargetLabel }} · md 将自动发布</span>
+            <span v-else>上传至：{{ uploadTargetLabel }} · 默认草稿（可在站点设置开启自动发布）</span>
+            <span v-if="upQueue.length" class="bm-upzone-q">{{ upQueue.length }} 个文件待上传…</span>
           </div>
         </div>
 
-        <div v-if="loading" class="bm-hint">{{  $t('加载中…')  }}</div>
-        <div v-else-if="err" class="bm-hint err">{{  err  }}</div>
-        <div v-else-if="!shownPosts.length" class="bm-hint">{{  $t('当前分类还没有文章')  }}</div>
+        <div v-if="loading" class="bm-hint">加载中…</div>
+        <div v-else-if="err" class="bm-hint err">{{ err }}</div>
+        <div v-else-if="!shownPosts.length" class="bm-hint">当前分类还没有文章</div>
         <div v-else class="bm-post-list">
           <div v-for="p in shownPosts" :key="p.id" class="bm-post">
-            <input type="checkbox" class="bm-row-cbx" :checked="!!selMap[p.id]" @change="onSel(p, $event)" :title="$t('选择 {name}', { name: p.name })" />
-            <a class="bm-post-name" :title="p.path" :href="'#/p/blog?path=' + encodeURIComponent(p.path)" target="_blank">{{  p.name  }}</a>
-            <span v-if="nodeTypeOf(p)" class="bm-type-tag" :title="$t('内容类型：{type}', { type: nodeTypeOf(p) })">{{  typeLabel(nodeTypeOf(p))  }}</span>
-            <span class="bm-post-meta">{{  p.path  }}</span>
-            <span class="bm-post-meta bm-views" :title="$t('累计阅读（PV，1 小时内同一读者不重复计数）')">{{  $t('阅读')  }} {{  p.view_count ?? 0  }}</span>
-            <span class="bm-pin" :title="$t('置顶范围：无 / 分类置顶 / 全站置顶')">
+            <a class="bm-post-name" :title="p.path" :href="'#/p/blog?path=' + encodeURIComponent(p.path)" target="_blank">{{ p.name }}</a>
+            <span class="bm-post-meta">{{ p.path }}</span>
+            <span class="bm-post-meta bm-views" title="累计阅读（PV，1 小时内同一读者不重复计数）">阅读 {{ p.view_count ?? 0 }}</span>
+            <span class="bm-pin" title="置顶范围：无 / 分类置顶 / 全站置顶">
               <select v-model="pinDraft[p.id].scope" :disabled="busy">
-                <option value="none">{{  $t('不置顶')  }}</option>
-                <option value="category">{{  $t('分类置顶')  }}</option>
-                <option value="global">{{  $t('全站置顶')  }}</option>
+                <option value="none">不置顶</option>
+                <option value="category">分类置顶</option>
+                <option value="global">全站置顶</option>
               </select>
-              <input type="number" min="0" v-model.number="pinDraft[p.id].order" :disabled="busy" :placeholder="$t('序')" :title="$t('置顶顺序（越小越前，留空=按更新时间）')" />
-              <button class="bm-pin-apply" :disabled="busy" @click="applyPin(p)" :title="$t('保存置顶设置')">{{  $t('置顶')  }}</button>
+              <input type="number" min="0" v-model.number="pinDraft[p.id].order" :disabled="busy" placeholder="序" title="置顶顺序（越小越前，留空=按更新时间）" />
+              <button class="bm-pin-apply" :disabled="busy" @click="applyPin(p)" title="保存置顶设置">置顶</button>
             </span>
-            <span class="bm-pin" :title="pwdDraft[p.id] ? $t('设置文章访问密码（留空=清除）') : ''">
-              <input :type="pwdDraft[p.id] === '' && p.has_pwd ? 'text' : 'password'" v-model="pwdDraft[p.id]" :disabled="busy" :placeholder="p.has_pwd ? $t('已加密') : $t('密码')" :title="$t('文章访问密码（留空保存=清除）')" />
-              <button class="bm-pin-apply" :disabled="busy" @click="applyPwd(p)" :title="$t('保存访问密码')">{{  $t('密码')  }}</button>
+            <span class="bm-pin" :title="pwdDraft[p.id] ? '设置文章访问密码（留空=清除）' : ''">
+              <input :type="pwdDraft[p.id] === '' && p.has_pwd ? 'text' : 'password'" v-model="pwdDraft[p.id]" :disabled="busy" :placeholder="p.has_pwd ? '已加密' : '密码'" title="文章访问密码（留空保存=清除）" />
+              <button class="bm-pin-apply" :disabled="busy" @click="applyPwd(p)" title="保存访问密码">密码</button>
             </span>
-            <span class="bm-pin" :title="$t('定时发布（{state}）', { state: p.publish_at ? $t('已定时') : $t('留空=立即发布') })">
-              <input type="datetime-local" v-model="schDraft[p.id]" :disabled="busy" :title="$t('定时发布（留空保存=立即发布）')" />
-              <button class="bm-pin-apply" :disabled="busy" @click="applySch(p)" :title="$t('保存定时发布')">{{  $t('定时')  }}</button>
+            <span class="bm-pin" :title="'定时发布（' + (p.publish_at ? '已定时' : '留空=立即发布') + '）'">
+              <input type="datetime-local" v-model="schDraft[p.id]" :disabled="busy" title="定时发布（留空保存=立即发布）" />
+              <button class="bm-pin-apply" :disabled="busy" @click="applySch(p)" title="保存定时发布">定时</button>
             </span>
-            <button class="bm-del" :title="$t('删除（文章下线）')" @click="askDel(p)">{{  $t('删除')  }}</button>
+            <button class="bm-del" title="删除（文章下线）" @click="askDel(p)">删除</button>
           </div>
         </div>
       </section>
@@ -221,37 +205,37 @@
     <!-- 统计看板（浏览/评论/分类/标签聚合；Chart.js 按需分包加载，切入统计标签时自动加载） -->
     <section v-show="tab === 'stats'" class="bm-panel bm-stats">
       <div class="bm-panel-head">
-        <h3>{{  $t('统计看板')  }}</h3>
-        <span class="bm-hook-hint">{{  $t('基于文章浏览、评论、标签聚合（无逐日流水）')  }}</span>
+        <h3>统计看板</h3>
+        <span class="bm-hook-hint">基于文章浏览、评论、标签聚合（无逐日流水）</span>
         <span class="bm-spacer"></span>
       </div>
       <template v-if="statsOpen">
-        <div v-if="statsLoading && !stats" class="bm-hint">{{  $t('统计加载中…')  }}</div>
+        <div v-if="statsLoading && !stats" class="bm-hint">统计加载中…</div>
         <template v-else-if="stats">
           <div class="bm-stat-cards">
-            <div class="bm-stat-card"><span class="n">{{  stats.totals.posts  }}</span><span class="l">{{  $t('文章')  }}</span></div>
-            <div class="bm-stat-card"><span class="n">{{  stats.totals.published  }}</span><span class="l">{{  $t('已发布')  }}</span></div>
-            <div class="bm-stat-card"><span class="n">{{  stats.totals.views  }}</span><span class="l">{{  $t('总浏览')  }}</span></div>
-            <div class="bm-stat-card"><span class="n">{{  stats.totals.comments_total  }}</span><span class="l">{{  $t('评论')  }}</span></div>
-            <div class="bm-stat-card"><span class="n">{{  stats.totals.comments_pending  }}</span><span class="l">{{  $t('待审')  }}</span></div>
+            <div class="bm-stat-card"><span class="n">{{ stats.totals.posts }}</span><span class="l">文章</span></div>
+            <div class="bm-stat-card"><span class="n">{{ stats.totals.published }}</span><span class="l">已发布</span></div>
+            <div class="bm-stat-card"><span class="n">{{ stats.totals.views }}</span><span class="l">总浏览</span></div>
+            <div class="bm-stat-card"><span class="n">{{ stats.totals.comments_total }}</span><span class="l">评论</span></div>
+            <div class="bm-stat-card"><span class="n">{{ stats.totals.comments_pending }}</span><span class="l">待审</span></div>
           </div>
           <div v-if="stats.categories.length" class="bm-stat-charts">
             <canvas ref="catChartEl"></canvas>
           </div>
           <div class="bm-stat-cols">
             <div class="bm-stat-col">
-              <p class="bm-stat-sub">{{  $t('热门文章 TOP10')  }}</p>
-              <div v-if="!stats.top_posts.length" class="bm-hint">{{  $t('暂无数据')  }}</div>
+              <p class="bm-stat-sub">热门文章 TOP10</p>
+              <div v-if="!stats.top_posts.length" class="bm-hint">暂无数据</div>
               <div v-for="t in stats.top_posts" :key="t.id" class="bm-top-row">
-                <span class="bm-top-name" :title="t.name">{{  (t.name || '').replace(/\.(md|markdown)$/i, '')  }}</span>
-                <span class="bm-top-n">{{  t.views  }} {{  $t('浏览')  }}</span>
+                <span class="bm-top-name" :title="t.name">{{ (t.name || '').replace(/\.(md|markdown)$/i, '') }}</span>
+                <span class="bm-top-n">{{ t.views }} 浏览</span>
               </div>
             </div>
             <div class="bm-stat-col">
-              <p class="bm-stat-sub">{{  $t('热门标签')  }}</p>
-              <div v-if="!stats.tags.length" class="bm-hint">{{  $t('暂无标签')  }}</div>
+              <p class="bm-stat-sub">热门标签</p>
+              <div v-if="!stats.tags.length" class="bm-hint">暂无标签</div>
               <div class="bm-tag-cloud">
-                <span v-for="t in stats.tags" :key="t.name" class="bm-tag-chip2">#{{  t.name  }}<i>{{  t.count  }}</i></span>
+                <span v-for="t in stats.tags" :key="t.name" class="bm-tag-chip2">#{{ t.name }}<i>{{ t.count }}</i></span>
               </div>
             </div>
           </div>
@@ -262,72 +246,22 @@
     <!-- 评论管理（待审/已通过；访客评论审核） -->
     <section v-show="tab === 'comments'" class="bm-panel bm-cmts">
       <div class="bm-panel-head">
-        <h3>{{ $t('评论管理') }}</h3>
+        <h3>评论管理</h3>
         <span class="bm-cmt-filter">
-          <button class="bm-cat-mini" :class="{ active: cmtFilter === 'pending' }" @click="cmtFilter = 'pending'; loadCmts()">{{ $t('待审') }}</button>
-          <button class="bm-cat-mini" :class="{ active: cmtFilter === 'approved' }" @click="cmtFilter = 'approved'; loadCmts()">{{ $t('已通过') }}</button>
-          <button class="bm-cat-mini" :class="{ active: cmtFilter === '' }" @click="cmtFilter = ''; loadCmts()">{{ $t('全部') }}</button>
+          <button class="bm-cat-mini" :class="{ active: cmtFilter === 'pending' }" @click="cmtFilter = 'pending'; loadCmts()">待审</button>
+          <button class="bm-cat-mini" :class="{ active: cmtFilter === 'approved' }" @click="cmtFilter = 'approved'; loadCmts()">已通过</button>
+          <button class="bm-cat-mini" :class="{ active: cmtFilter === '' }" @click="cmtFilter = ''; loadCmts()">全部</button>
         </span>
       </div>
-      <div v-if="cmtSel.length" class="bm-cmt-bar">
-        <span class="bm-hint">{{ $t('已选') }} {{  cmtSel.length  }} {{ $t('条已通过评论') }}</span>
-        <button class="btn btn-sm bm-primary" :disabled="busy" @click="fuseSelected">{{ $t('AI 融合收录（') }}{{  cmtSel.length  }}）</button>
-        <button class="bm-cat-mini" :disabled="busy" @click="cmtSel = []">{{ $t('清空') }}</button>
-        <span class="bm-hint">{{ $t('融合式：AI 只把多条回复整理成一段，先出草稿、确认后才写入正文') }}</span>
-      </div>
-      <div v-if="!cmts.length" class="bm-hint">{{  cmtFilter === 'pending' ? $t('没有待审评论') : $t('暂无评论')  }}</div>
+      <div v-if="!cmts.length" class="bm-hint">{{ cmtFilter === 'pending' ? '没有待审评论' : '暂无评论' }}</div>
       <div v-else class="bm-cmt-list">
         <div v-for="c in cmts" :key="c.id" class="bm-cmt-row">
-          <input v-if="c.status === 'approved'" v-model="cmtSel" class="bm-cmt-ck" type="checkbox" :value="c.id" />
-          <span v-else class="bm-cmt-ck-ph"></span>
-          <span class="bm-cmt-status" :class="c.status">{{  c.status === 'pending' ? $t('待审') : $t('已通过')  }}</span>
-          <span class="bm-cmt-author">{{  c.author  }}</span>
-          <span class="bm-cmt-body" :title="c.body">{{  c.body  }}</span>
-          <span class="bm-cmt-file" :title="c.file_name">{{  c.file_name  }}</span>
-          <button v-if="c.status === 'approved'" class="btn btn-sm" :disabled="busy" @click="ingestCmt(c)">{{ $t('收录') }}</button>
-          <button v-if="c.status === 'pending'" class="btn btn-sm" :disabled="busy" @click="approveCmt(c)">{{ $t('通过') }}</button>
-          <button class="bm-del" :disabled="busy" @click="delCmt(c)">{{ $t('删除') }}</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- 收录（B3 内容引用与归因：评论带署名与回指链接补录进正文）
-         后端 7 端点：quote / fuse-draft / {id}/accept / {id}·DELETE / list / my-count / pending -->
-    <section v-show="tab === 'ingest'" class="bm-panel bm-ingests">
-      <div class="bm-panel-head">
-        <h3>{{ $t('收录') }}</h3>
-        <span class="bm-hint">{{ $t('评论区高价值内容带署名 + 回指原评论链接补录进正文（旧文自生长；只追加、不改既有人工内容）') }}</span>
-        <button class="bm-cat-mini" :disabled="busy" @click="loadIngests()">{{ $t('刷新') }}</button>
-      </div>
-
-      <div class="bm-ingest-block">
-        <div class="bm-ingest-sub">{{ $t('待采纳的 AI 融合草稿（') }}{{  ingestPendings.length  }}）</div>
-        <div v-if="!ingestPendings.length" class="bm-hint">{{ $t('没有待采纳草稿。到「评论」页勾选同篇文章的已通过评论 → 「AI 融合收录」即生成。') }}</div>
-        <div v-else class="bm-cmt-list">
-          <div v-for="g in ingestPendings" :key="g.id" class="bm-ingest-card">
-            <div class="bm-ingest-card-head">
-              <span class="bm-ingest-tag">{{ $t('融合草稿') }}</span>
-              <span class="bm-cmt-file" :title="g.title">{{  g.title || $t('（文章）')  }}</span>
-              <span class="bm-ingest-time">{{  fmtIngestTime(g.created_at)  }}</span>
-              <button class="btn btn-sm bm-primary" :disabled="busy" @click="acceptIngest(g)">{{ $t('采纳写入正文') }}</button>
-              <button class="bm-del" :disabled="busy" @click="discardIngest(g)">{{ $t('放弃') }}</button>
-            </div>
-            <pre class="bm-ingest-draft">{{  g.draft  }}</pre>
-          </div>
-        </div>
-      </div>
-
-      <div class="bm-ingest-block">
-        <div class="bm-ingest-sub">{{ $t('收录记录（最近 100 条）') }}</div>
-        <div v-if="!ingestRecords.length" class="bm-hint">{{ $t('暂无收录记录') }}</div>
-        <div v-else class="bm-cmt-list">
-          <div v-for="g in ingestRecords" :key="g.id" class="bm-cmt-row">
-            <span class="bm-cmt-status" :class="ingestStatusClass(g.status)">{{  ingestStatusText(g.status)  }}</span>
-            <span class="bm-ingest-tag">{{  g.mode === 'fuse' ? $t('融合') : $t('引用')  }}</span>
-            <span class="bm-cmt-author">{{  g.title || '—'  }}</span>
-            <span class="bm-cmt-body">{{  (g.comments || []).length  }} {{ $t('条评论 · v') }}{{  g.version_before  }}→v{{  g.version_after  }} · {{  fmtIngestTime(g.created_at)  }}</span>
-            <button v-if="g.status === 'accepted'" class="bm-del" :disabled="busy" @click="revertIngest(g)">{{ $t('撤销') }}</button>
-          </div>
+          <span class="bm-cmt-status" :class="c.status">{{ c.status === 'pending' ? '待审' : '已通过' }}</span>
+          <span class="bm-cmt-author">{{ c.author }}</span>
+          <span class="bm-cmt-body" :title="c.body">{{ c.body }}</span>
+          <span class="bm-cmt-file" :title="c.file_name">{{ c.file_name }}</span>
+          <button v-if="c.status === 'pending'" class="btn btn-sm" :disabled="busy" @click="approveCmt(c)">通过</button>
+          <button class="bm-del" :disabled="busy" @click="delCmt(c)">删除</button>
         </div>
       </div>
     </section>
@@ -335,25 +269,25 @@
     <!-- Webhook 推送（事件契约 v1 投递器：发文/评论等事件外发） -->
     <section v-show="tab === 'webhook'" class="bm-panel bm-hooks">
       <div class="bm-panel-head">
-        <h3>{{ $t('Webhook 推送') }}</h3>
-        <span class="bm-hook-hint">{{ $t('订阅内核事件（发文、评论…），HMAC 签名投递到你的地址') }}</span>
+        <h3>Webhook 推送</h3>
+        <span class="bm-hook-hint">订阅内核事件（发文、评论…），HMAC 签名投递到你的地址</span>
       </div>
       <div class="bm-hook-new">
-        <input v-model="hookForm.url" class="bm-input" :placeholder="$t('https://your-server.com/hook（接收 POST）')" />
-        <input v-model="hookForm.secret" class="bm-input bm-hook-secret" :placeholder="$t('签名密钥（可空）')" maxlength="128" />
+        <input v-model="hookForm.url" class="bm-input" placeholder="https://your-server.com/hook（接收 POST）" />
+        <input v-model="hookForm.secret" class="bm-input bm-hook-secret" placeholder="签名密钥（可空）" maxlength="128" />
         <select v-model="hookForm.topic" class="bm-input bm-select">
-          <option v-for="t in kernelTopics" :key="t" :value="t">{{  t  }}</option>
+          <option v-for="t in kernelTopics" :key="t" :value="t">{{ t }}</option>
         </select>
-        <button class="btn btn-sm bm-primary" :disabled="busy" @click="addHook">{{ $t('添加') }}</button>
+        <button class="btn btn-sm bm-primary" :disabled="busy" @click="addHook">添加</button>
       </div>
-      <div v-if="!hooks.length" class="bm-hint">{{ $t('尚未配置 webhook') }}</div>
+      <div v-if="!hooks.length" class="bm-hint">尚未配置 webhook</div>
       <div v-else class="bm-cmt-list">
         <div v-for="h in hooks" :key="h.id" class="bm-cmt-row">
-          <span class="bm-cmt-status approved" :class="{ off: !h.enabled }">{{  h.enabled ? $t('启用') : $t('停用')  }}</span>
-          <span class="bm-cmt-body" :title="h.url">{{  h.url  }}</span>
-          <span class="bm-cmt-file">{{  (h.topics || []).join(', ')  }}</span>
-          <button class="btn btn-sm" :disabled="busy" @click="testHook(h)">{{ $t('测试') }}</button>
-          <button class="bm-del" :disabled="busy" @click="delHook(h)">{{ $t('删除') }}</button>
+          <span class="bm-cmt-status approved" :class="{ off: !h.enabled }">{{ h.enabled ? '启用' : '停用' }}</span>
+          <span class="bm-cmt-body" :title="h.url">{{ h.url }}</span>
+          <span class="bm-cmt-file">{{ (h.topics || []).join(', ') }}</span>
+          <button class="btn btn-sm" :disabled="busy" @click="testHook(h)">测试</button>
+          <button class="bm-del" :disabled="busy" @click="delHook(h)">删除</button>
         </div>
       </div>
     </section>
@@ -361,8 +295,8 @@
     <!-- 删除确认（自定义弹窗，替代系统 confirm） -->
     <ConfirmDialog
       v-if="delTarget"
-      :title="$t('删除文章')"
-      :message="$t('删除「{v0}」？文章将从博客下线（可在回收站恢复）。', { v0: delTarget.name })"
+      title="删除文章"
+      :message="`删除「${delTarget.name}」？文章将从博客下线（可在回收站恢复）。`"
       confirm-text="删除"
       cancel-text="取消"
       danger
@@ -373,41 +307,30 @@
 </template>
 
 <script setup>
-import { t as i18t } from '@/i18n'
 import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AikIcon from '@/components/AikIcon.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useToastStore } from '@/stores/toast'
-import { requestJSON, mkdir, createDoc, uploadFiles, deleteFile, setFileStatus, blogPostsBatch } from '@/api'
-import { listThemes, applyServerTheme, themeCatalog } from '@/themes' // 主题选项：注册表 + catalog（含未安装懒主题）
-import { ensureThemeInstalled } from '@/utils/themeInstall.js'
-import { t } from '@/i18n'
-const tr = t // 别名：部分作用域用 t 作局部变量（theme 对象/类型键），避免遮蔽
+import { requestJSON, mkdir, createDoc, uploadFiles, deleteFile, setFileStatus } from '@/api'
+import { listThemes, applyServerTheme } from '@/themes' // 主题选项来自注册表（BlogView 已静态 import 全部主题）
 
 const BLOG_DIR = '00000000-0000-0000-0000-000000000010'
 
 // ===== 顶部功能标签（概览/内容/统计/评论/Webhook；?tab= 深链直达） =====
 const route = useRoute()
 const router = useRouter()
-const BM_TAB_KEYS = ['overview', 'content', 'stats', 'comments', 'ingest', 'webhook']
+const BM_TAB_KEYS = ['overview', 'content', 'stats', 'comments', 'webhook']
 const tab = ref(BM_TAB_KEYS.includes(route.query.tab) ? route.query.tab : 'overview')
 function switchTab(k) {
   tab.value = k
   router.replace({ query: { ...route.query, tab: k } })
 }
-
-// ===== 收录（B3 内容引用与归因：评论区 → 正文；只 append 不 mutate）=====
-const ingestPendings = ref([]) // 待采纳的 AI 融合草稿（GET /ingests/pending）
-const ingestRecords = ref([]) // 收录记录（GET /ingests，跨文章、站点隔离）
-const cmtSel = ref([]) // 评论页多选（仅「已通过」可选，用于 AI 融合）
-
 const navTabs = computed(() => [
-  { key: 'overview', label: t('概览') },
-  { key: 'content', label: t(i18t('内容')) },
-  { key: 'stats', label: t('统计') },
-  { key: 'comments', label: t('评论') },
-  { key: 'ingest', label: t('收录'), count: ingestPendings.value.length || 0 },
+  { key: 'overview', label: '概览' },
+  { key: 'content', label: '内容' },
+  { key: 'stats', label: '统计' },
+  { key: 'comments', label: '评论' },
   { key: 'webhook', label: 'Webhook', count: hooks.value.length || 0 }
 ])
 
@@ -418,31 +341,20 @@ const autoPublish = ref(false)
 
 // 主题下拉选项：由服务端 /public/site 的 theme_options 驱动
 // （内置白名单 ∪ data/themes 下已安装外置主题）——装主题包即出现，无需改前端或重新编译。
-// 改版（2026-10-09）：SPA 主题改为应用中心按需安装，此处补齐 catalog 中未安装项（标注「未安装」），
-// 保存时经 ensureThemeInstalled 自动安装。
+// 交互版（SPA）主题须随主系统构建注册；外置主题仅作用于公网静态页 /blog。
 const srvThemeOptions = ref(null)
 const themeOptions = computed(() => {
   const reg = listThemes()
   const list = srvThemeOptions.value
-  let out = []
   if (Array.isArray(list) && list.length) {
-    out = list.map((o) => {
+    return list.map((o) => {
       const t = reg.find((x) => x.id === o.id)
-      const desc = t ? (t.desc || t.id) : tr(i18t('外置主题 · 仅静态页 /blog（交互版回退默认）'))
+      const desc = t ? (t.desc || t.id) : '外置主题 · 仅静态页 /blog（交互版回退默认）'
       return { id: o.id, label: `${o.title || o.id}（${desc}）` }
     })
-  } else {
-    // 兜底：服务端未返回候选时退回本地注册表
-    out = reg.map((t) => ({ id: t.id, label: `${t.title}（${t.desc || t.id}）` }))
   }
-  // 补齐 catalog 中未安装的懒主题（保存时自动安装）
-  const seen = new Set(out.map((o) => o.id))
-  for (const c of themeCatalog()) {
-    if (!seen.has(c.id)) {
-      out.push({ id: c.id, label: `${c.title}（${i18t('未安装 · 保存时自动安装')}）` })
-    }
-  }
-  return out
+  // 兜底：服务端未返回候选时退回本地注册表
+  return reg.map((t) => ({ id: t.id, label: `${t.title}（${t.desc || t.id}）` }))
 })
 
 async function loadSite() {
@@ -476,9 +388,9 @@ async function saveAutoPublish() {
         value: autoPublish.value ? 'true' : 'false',
       }),
     })
-    toast.success(autoPublish.value ? t('已开启：上传 md 将自动发布') : t('已关闭：上传后保持草稿'))
+    toast.success(autoPublish.value ? '已开启：上传 md 将自动发布' : '已关闭：上传后保持草稿')
   } catch (e) {
-    toast.error(t('保存失败：') + (e.message || e))
+    toast.error('保存失败：' + (e.message || e))
   }
 }
 
@@ -498,7 +410,7 @@ async function loadStats() {
     stats.value = await requestJSON('/blog/stats')
     nextTick(renderCatChart)
   } catch (e) {
-    toast.error(t('统计加载失败：') + (e.message || e))
+    toast.error('统计加载失败：' + (e.message || e))
   } finally {
     statsLoading.value = false
   }
@@ -515,8 +427,8 @@ async function renderCatChart() {
       data: {
         labels: s.categories.map((c) => c.name),
         datasets: [
-          { label: t('文章数'), data: s.categories.map((c) => c.posts), backgroundColor: 'rgba(79,124,255,.72)', borderRadius: 4 },
-          { label: t('浏览量'), data: s.categories.map((c) => c.views), backgroundColor: 'rgba(46,168,122,.72)', borderRadius: 4 }
+          { label: '文章数', data: s.categories.map((c) => c.posts), backgroundColor: 'rgba(79,124,255,.72)', borderRadius: 4 },
+          { label: '浏览量', data: s.categories.map((c) => c.views), backgroundColor: 'rgba(46,168,122,.72)', borderRadius: 4 }
         ]
       },
       options: {
@@ -542,14 +454,13 @@ async function saveGuestComments() {
       method: 'PUT',
       body: JSON.stringify({ key: 'blog.comments_guest', value: guestComments.value ? 'true' : 'false' }),
     })
-    toast.success(guestComments.value ? t('已开放访客评论（默认待审）') : t('已关闭访客评论（仅登录可评）'))
+    toast.success(guestComments.value ? '已开放访客评论（默认待审）' : '已关闭访客评论（仅登录可评）')
   } catch (e) {
-    toast.error(t('保存失败：') + (e.message || e))
+    toast.error('保存失败：' + (e.message || e))
   }
 }
 
 async function loadCmts() {
-  cmtSel.value = [] // 过滤/刷新后旧选择失效，避免对着看不见的行做融合
   try {
     const d = await requestJSON('/blog/comments?status=' + encodeURIComponent(cmtFilter.value) + '&limit=200')
     cmts.value = d?.items || []
@@ -561,155 +472,20 @@ async function loadCmts() {
 async function approveCmt(c) {
   try {
     await requestJSON(`/blog/comments/${c.id}/approve`, { method: 'POST' })
-    toast.success(t('评论已通过并公开'))
+    toast.success('评论已通过并公开')
     loadCmts()
   } catch (e) {
-    toast.error(t('审核失败：') + (e.message || e))
+    toast.error('审核失败：' + (e.message || e))
   }
 }
 
 async function delCmt(c) {
   try {
     await requestJSON(`/blog/comments/${c.id}`, { method: 'DELETE' })
-    toast.success(t('评论已删除'))
+    toast.success('评论已删除')
     loadCmts()
   } catch (e) {
-    toast.error(t(i18t('删除失败：')) + (e.message || e))
-  }
-}
-
-// ===== 收录（B3 内容引用与归因）=====
-const INGEST_STATUS_TEXT = { draft: i18t('草稿'), accepted: t('已收录'), reverted: t('已撤销'), discarded: t('已放弃') }
-
-function ingestStatusText(s) {
-  return INGEST_STATUS_TEXT[s] || s
-}
-function ingestStatusClass(s) {
-  if (s === 'accepted') return 'approved'
-  if (s === 'draft') return 'pending'
-  return 'off'
-}
-function fmtIngestTime(ms) {
-  if (!ms) return ''
-  const d = new Date(Number(ms))
-  if (isNaN(d.getTime())) return ''
-  const p = (n) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`
-}
-
-async function loadIngests() {
-  try {
-    const d = await requestJSON('/ingests/pending')
-    ingestPendings.value = d?.items || []
-  } catch (_) {
-    ingestPendings.value = []
-  }
-  try {
-    const d2 = await requestJSON('/ingests')
-    ingestRecords.value = d2?.items || []
-  } catch (_) {
-    ingestRecords.value = []
-  }
-}
-
-// 引用式：单条已通过评论一键收录（原文照录 + 归因区块 append 进正文）
-// 注：request() 抛的是后端中文 message（非错误码），故按文案判别分支。
-async function ingestCmt(c) {
-  if (busy.value) return
-  busy.value = true
-  try {
-    await requestJSON('/ingests/quote', {
-      method: 'POST',
-      body: JSON.stringify({ file_id: c.file_id, comment_id: c.id })
-    })
-    toast.success(t('已带署名与回指链接补录进正文'))
-    loadIngests()
-  } catch (e) {
-    const m = String(e?.message || e)
-    if (m.includes('已被收录')) toast.error(i18t('该评论已被收录过'))
-    else if (m.includes('冻结收录')) toast.error(i18t('该文章已冻结收录（生长策略=frozen）'))
-    else if (m.includes('仅文本')) toast.error(i18t('仅文本文章可收录'))
-    else toast.error(t('收录失败：') + m)
-  } finally {
-    busy.value = false
-  }
-}
-
-// 融合式：多条评论 → AI 草稿（两段式，先草稿；站长确认才写正文）
-async function fuseSelected() {
-  if (busy.value || !cmtSel.value.length) return
-  if (cmtSel.value.length > 8) {
-    toast.error(t(i18t('AI 融合一次最多 8 条评论')))
-    return
-  }
-  // 后端按单个 file_id 取素材 —— 必须同一篇文章
-  const picked = cmts.value.filter((c) => cmtSel.value.includes(c.id))
-  const fileIds = [...new Set(picked.map((c) => c.file_id))]
-  if (fileIds.length !== 1) {
-    toast.error(i18t('AI 融合只能选同一篇文章下的评论'))
-    return
-  }
-  busy.value = true
-  try {
-    const d = await requestJSON('/ingests/fuse-draft', {
-      method: 'POST',
-      body: JSON.stringify({ file_id: fileIds[0], comment_ids: cmtSel.value })
-    })
-    cmtSel.value = []
-    await loadIngests()
-    switchTab('ingest')
-    toast.success(`已生成融合草稿（${d?.comments ?? 0} 条评论），确认后再写入正文`)
-  } catch (e) {
-    const m = String(e?.message || e)
-    if (m.includes('AI 模型未配置')) toast.error(i18t('AI 模型未配置，融合式不可用（可改用逐条「收录」）'))
-    else if (m.includes('最多聚合')) toast.error(i18t('AI 融合一次最多 8 条评论'))
-    else toast.error(t('生成草稿失败：') + m)
-  } finally {
-    busy.value = false
-  }
-}
-
-async function acceptIngest(g) {
-  if (busy.value) return
-  busy.value = true
-  try {
-    await requestJSON(`/ingests/${g.id}/accept`, { method: 'POST' })
-    toast.success(t('已采纳并写入正文'))
-    loadIngests()
-  } catch (e) {
-    toast.error(t('采纳失败：') + (e.message || e))
-  } finally {
-    busy.value = false
-  }
-}
-
-async function discardIngest(g) {
-  if (busy.value) return
-  busy.value = true
-  try {
-    await requestJSON(`/ingests/${g.id}`, { method: 'DELETE' })
-    toast.success(t('已放弃草稿'))
-    loadIngests()
-  } catch (e) {
-    toast.error(t('放弃失败：') + (e.message || e))
-  } finally {
-    busy.value = false
-  }
-}
-
-async function revertIngest(g) {
-  if (busy.value) return
-  busy.value = true
-  try {
-    await requestJSON(`/ingests/${g.id}`, { method: 'DELETE' })
-    toast.success(t('已撤销收录（正文按锚点精确摘除）'))
-    loadIngests()
-  } catch (e) {
-    const m = String(e?.message || e)
-    if (m.includes('锚点缺失')) toast.error(i18t('正文锚点已丢失，请人工处理'))
-    else toast.error(t('撤销失败：') + m)
-  } finally {
-    busy.value = false
+    toast.error('删除失败：' + (e.message || e))
   }
 }
 
@@ -731,7 +507,7 @@ async function loadHooks() {
 async function addHook() {
   const url = (hookForm.value.url || '').trim()
   if (!url) {
-    toast.error(t('请填写 webhook 地址'))
+    toast.error('请填写 webhook 地址')
     return
   }
   try {
@@ -739,40 +515,35 @@ async function addHook() {
       method: 'POST',
       body: JSON.stringify({ url, secret: hookForm.value.secret, topics: [hookForm.value.topic] }),
     })
-    toast.success(t('Webhook 已添加'))
+    toast.success('Webhook 已添加')
     hookForm.value = { url: '', secret: '', topic: hookForm.value.topic }
     loadHooks()
   } catch (e) {
-    toast.error(t('添加失败：') + (e.message || e))
+    toast.error('添加失败：' + (e.message || e))
   }
 }
 
 async function delHook(h) {
   try {
     await requestJSON(`/blog/webhooks/${h.id}`, { method: 'DELETE' })
-    toast.success(t('Webhook 已删除'))
+    toast.success('Webhook 已删除')
     loadHooks()
   } catch (e) {
-    toast.error(t(i18t('删除失败：')) + (e.message || e))
+    toast.error('删除失败：' + (e.message || e))
   }
 }
 
 async function testHook(h) {
   try {
     const d = await requestJSON(`/blog/webhooks/${h.id}/test`, { method: 'POST' })
-    if (d?.ok) toast.success(t('测试事件已投递成功（topic: ') + d.topic + '）')
-    else toast.error(t('投递失败：') + (d?.error || t('目标无响应')))
+    if (d?.ok) toast.success('测试事件已投递成功（topic: ' + d.topic + '）')
+    else toast.error('投递失败：' + (d?.error || '目标无响应'))
   } catch (e) {
-    toast.error(t('测试失败：') + (e.message || e))
+    toast.error('测试失败：' + (e.message || e))
   }
 }
 
 async function saveSite() {
-  // 主题改版（2026-10-09）：选中未安装主题 → 保存前自动走应用中心安装（内置源码主题免 zip）
-  if (!(await ensureThemeInstalled(site.value.theme || 'aiklog'))) {
-    toast.error(t('主题自动安装失败，请到应用中心手动安装后再保存'))
-    return
-  }
   const pairs = [
     ['blog.title', site.value.title],
     ['blog.description', site.value.description],
@@ -796,7 +567,7 @@ async function saveSite() {
   // 立即生效：清掉本地预览覆盖，套用刚保存的站点主题
   applyServerTheme(site.value.theme || 'aiklog', { force: true })
   siteDirty.value = false
-  toast.success(t('站点设置已保存'))
+  toast.success('站点设置已保存')
 }
 
 const loading = ref(true)
@@ -821,58 +592,6 @@ const pinDraft = ref({})
 const pwdDraft = ref({})
 const schDraft = ref({})
 
-// A-G 批量编辑：多选 + 批量设置内容类型底座
-const selMap = ref({})
-const batchNodeType = ref('')
-const selectedCount = computed(() => Object.values(selMap.value).filter(Boolean).length)
-const allSelected = computed(() => shownPosts.value.length > 0 && shownPosts.value.every((p) => selMap.value[p.id]))
-function onSel(p, e) {
-  const v = e.target.checked
-  const m = { ...selMap.value }
-  if (v) m[p.id] = true
-  else delete m[p.id]
-  selMap.value = m
-}
-function toggleAll(e) {
-  const v = e.target.checked
-  const m = {}
-  if (v) for (const p of shownPosts.value) m[p.id] = true
-  selMap.value = m
-}
-function clearSel() {
-  selMap.value = {}
-}
-// content_state → node_type（旧 visibility/status 双轨兼容）
-function nodeTypeOf(p) {
-  try {
-    const cs = p.content_state ? JSON.parse(p.content_state) : {}
-    return cs && cs.node_type ? cs.node_type : ''
-  } catch (_) {
-    return ''
-  }
-}
-function typeLabel(t) {
-  return { article: tr(i18t('文章')), resource: tr(i18t('资源')), link: tr(i18t('外链')) }[t] || t
-}
-async function applyBatch() {
-  if (busy.value || !selectedCount.value || !batchNodeType.value) return
-  busy.value = true
-  try {
-    const ids = shownPosts.value.filter((p) => selMap.value[p.id]).map((p) => p.id)
-    const items = ids.map((id) => ({ id, node_type: batchNodeType.value }))
-    const r = await blogPostsBatch(items)
-    const ok = (r && r.ok_count) || 0
-    toast.success(`批量设置完成：成功 ${ok} / ${items.length} 篇`)
-    selMap.value = {}
-    batchNodeType.value = ''
-    await load()
-  } catch (e) {
-    toast.error(t('批量设置失败：') + (e.message || e))
-  } finally {
-    busy.value = false
-  }
-}
-
 // 毫秒时间戳 → 本地 datetime-local 值（YYYY-MM-DDTHH:mm）
 function localDT(ms) {
   if (!ms) return ''
@@ -889,9 +608,9 @@ function dtToMs(v) {
 const uploadTargetLabel = computed(() => {
   if (curCat.value && curCat.value !== '__none') {
     const c = cats.value.find((x) => x.id === curCat.value)
-    return c ? i18t('分类：') + c.name : t('分类')
+    return c ? '分类：' + c.name : '分类'
   }
-  return t('博客根（未分类）')
+  return '博客根（未分类）'
 })
 
 function uploadParent() {
@@ -899,7 +618,7 @@ function uploadParent() {
 }
 
 const catOptions = computed(() => {
-  const opts = [{ v: '', label: t('全部') }, { v: '__none', label: t('未分类') }]
+  const opts = [{ v: '', label: '全部' }, { v: '__none', label: '未分类' }]
   for (const c of cats.value) {
     opts.push({ v: c.id, label: c.name, n: posts.value.filter((p) => catOf(p) === c.id).length })
   }
@@ -963,10 +682,10 @@ async function saveCatOrder() {
   try {
     const orders = cats.value.map((c, i) => ({ id: c.id, sort_order: i * 10 }))
     await requestJSON('/blog/categories/sort', { method: 'POST', body: JSON.stringify({ orders }) })
-    toast.success(t('分类顺序已保存'))
+    toast.success('分类顺序已保存')
     await load()
   } catch (e) {
-    toast.error(t('保存失败：') + (e.message || e))
+    toast.error('保存失败：' + (e.message || e))
   } finally {
     savingOrder.value = false
   }
@@ -977,10 +696,10 @@ async function resetCatOrder() {
   try {
     const orders = cats.value.map((c) => ({ id: c.id, sort_order: null }))
     await requestJSON('/blog/categories/sort', { method: 'POST', body: JSON.stringify({ orders }) })
-    toast.success(t('已恢复为动态排序（按最新活动）'))
+    toast.success('已恢复为动态排序（按最新活动）')
     await load()
   } catch (e) {
-    toast.error(t('操作失败：') + (e.message || e))
+    toast.error('操作失败：' + (e.message || e))
   } finally {
     savingOrder.value = false
   }
@@ -993,7 +712,6 @@ async function load() {
     const d = await requestJSON('/blog/manage')
     cats.value = d.categories || []
     posts.value = d.posts || []
-    selMap.value = {}
     status.value = d.blog_status || null
     autoPublish.value = !!d.auto_publish_on_upload
     guestComments.value = !!d.comments_guest
@@ -1012,7 +730,7 @@ async function load() {
       schDraft.value[p.id] = p.publish_at ? localDT(p.publish_at) : ''
     }
   } catch (e) {
-    err.value = t('加载失败：') + (e.message || e)
+    err.value = '加载失败：' + (e.message || e)
   } finally {
     loading.value = false
   }
@@ -1027,9 +745,9 @@ async function toggleBlog(open) {
       body: JSON.stringify({ key: 'blog.open', value: open ? 'true' : 'false' }),
     })
     await load()
-    toast.success(open ? t('博客已开启') : t('博客已关闭（公开页/RSS 下线，数据保留）'))
+    toast.success(open ? '博客已开启' : '博客已关闭（公开页/RSS 下线，数据保留）')
   } catch (e) {
-    toast.error(t('切换失败：') + (e.message || e))
+    toast.error('切换失败：' + (e.message || e))
   } finally {
     busy.value = false
   }
@@ -1044,12 +762,12 @@ async function applyPin(p) {
       method: 'POST',
       body: JSON.stringify({ id: p.id, scope: pinDraft.value[p.id].scope, order: pinDraft.value[p.id].order }),
     })
-    if (!r || !r.ok) throw new Error((r && r.error) || t('置顶设置失败'))
+    if (!r || !r.ok) throw new Error((r && r.error) || '置顶设置失败')
     p.pin_scope = pinDraft.value[p.id].scope
     p.pin_order = pinDraft.value[p.id].order
-    toast.success(t('已保存置顶设置'))
+    toast.success('已保存置顶设置')
   } catch (e) {
-    toast.error(t('置顶设置失败：') + (e.message || e))
+    toast.error('置顶设置失败：' + (e.message || e))
   } finally {
     busy.value = false
   }
@@ -1062,16 +780,16 @@ async function applyPwd(p) {
   try {
     const v = (pwdDraft.value[p.id] || '').trim()
     if (!v && !p.has_pwd) {
-      toast.error(t('未输入新密码（留空保存仅用于清除已有密码）'))
+      toast.error('未输入新密码（留空保存仅用于清除已有密码）')
       return
     }
     const r = await requestJSON('/blog/posts/access', { method: 'POST', body: JSON.stringify({ id: p.id, password: v }) })
-    if (!r || !r.ok) throw new Error((r && r.error) || t('密码设置失败'))
+    if (!r || !r.ok) throw new Error((r && r.error) || '密码设置失败')
     p.has_pwd = v !== ''
     pwdDraft.value[p.id] = ''
-    toast.success(v ? t('已设置访问密码') : t('已清除访问密码'))
+    toast.success(v ? '已设置访问密码' : '已清除访问密码')
   } catch (e) {
-    toast.error(t('密码设置失败：') + (e.message || e))
+    toast.error('密码设置失败：' + (e.message || e))
   } finally {
     busy.value = false
   }
@@ -1084,15 +802,15 @@ async function applySch(p) {
   try {
     const ms = dtToMs(schDraft.value[p.id])
     if (ms && ms <= Date.now()) {
-      toast.error(t('定时时间必须晚于当前时间（立即发布请留空）'))
+      toast.error('定时时间必须晚于当前时间（立即发布请留空）')
       return
     }
     const r = await requestJSON('/blog/posts/schedule', { method: 'POST', body: JSON.stringify({ id: p.id, publish_at: ms }) })
-    if (!r || !r.ok) throw new Error((r && r.error) || t('定时设置失败'))
+    if (!r || !r.ok) throw new Error((r && r.error) || '定时设置失败')
     p.publish_at = ms
-    toast.success(ms ? t('已设置定时发布') : t('已设为立即发布'))
+    toast.success(ms ? '已设置定时发布' : '已设为立即发布')
   } catch (e) {
-    toast.error(t('定时设置失败：') + (e.message || e))
+    toast.error('定时设置失败：' + (e.message || e))
   } finally {
     busy.value = false
   }
@@ -1106,7 +824,7 @@ async function addCat() {  const name = newCat.value.trim()
     newCat.value = ''
     await load()
   } catch (e) {
-    toast.error(t('新建分类失败：') + (e.message || e))
+    toast.error('新建分类失败：' + (e.message || e))
   } finally {
     busy.value = false
   }
@@ -1124,7 +842,7 @@ async function addPost() {
     newBody.value = ''
     await load()
   } catch (e) {
-    toast.error(t(i18t('发布失败：')) + (e.message || e))
+    toast.error('发布失败：' + (e.message || e))
   } finally {
     busy.value = false
   }
@@ -1252,7 +970,7 @@ async function doUpload(list) {
       }
     }
   } catch (e) {
-    toast.error(t('上传失败：') + (e.message || e))
+    toast.error('上传失败：' + (e.message || e))
   } finally {
     busy.value = false
     upQueue.value = []
@@ -1273,7 +991,7 @@ async function doDel() {
     await deleteFile(p.id)
     await load()
   } catch (e) {
-    toast.error(t(i18t('删除失败：')) + (e.message || e))
+    toast.error('删除失败：' + (e.message || e))
   } finally {
     busy.value = false
   }
@@ -1284,7 +1002,6 @@ onMounted(() => {
   loadSite()
   loadCmts()
   loadHooks()
-  loadIngests()
   // 深链直达统计标签（?tab=stats）时 watch 不触发，这里补一次加载
   if (statsOpen.value && !stats.value) loadStats()
 })
@@ -1293,9 +1010,9 @@ onMounted(() => {
 <style scoped>
 .bm-view {
   width: 100%;
-  max-width: 1200px;
+  max-width: 920px;
   margin: 0 auto;
-  padding: 20px 24px 40px;
+  padding: 16px 24px 48px;
   font-size: 14px;
 }
 /* 顶部功能标签栏 */
@@ -1653,57 +1370,6 @@ onMounted(() => {
   border-bottom: 1px solid var(--border, #eef0f3);
 }
 
-/* A-G 批量编辑：多选工具栏 / 行内勾选 / 内容类型角标 */
-.bm-batch-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 8px 10px;
-  margin-bottom: 10px;
-  background: var(--bg-2, #f7f9fb);
-  border: 1px solid var(--border, #e6e9ee);
-  border-radius: 8px;
-  font-size: 13px;
-  color: var(--text-3, #6b7280);
-}
-
-.bm-cbx {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.bm-batch-n {
-  font-variant-numeric: tabular-nums;
-}
-
-.bm-select {
-  width: auto;
-  min-width: 150px;
-}
-
-.bm-row-cbx {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  accent-color: var(--accent, #4c7df0);
-  cursor: pointer;
-}
-
-.bm-type-tag {
-  flex: none;
-  font-size: 11px;
-  line-height: 1;
-  padding: 3px 7px;
-  border-radius: 999px;
-  background: rgba(76, 125, 240, 0.12);
-  color: var(--accent, #4c7df0);
-  font-weight: 600;
-}
-
 .bm-post-name {
   flex-shrink: 0;
   max-width: 260px;
@@ -1918,79 +1584,6 @@ onMounted(() => {
   white-space: nowrap;
   font-size: 12px;
   color: var(--text-3, #8a919f);
-}
-.bm-cmt-ck {
-  flex: none;
-  width: 14px;
-  height: 14px;
-  margin: 0;
-  cursor: pointer;
-}
-.bm-cmt-ck-ph {
-  flex: none;
-  width: 14px;
-}
-.bm-cmt-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 8px 10px;
-  margin-bottom: 8px;
-  border: 1px dashed var(--border, #e3e6eb);
-  border-radius: 8px;
-  background: var(--bg-3, #f7f8fa);
-}
-/* ===== 收录（B3 内容引用与归因）===== */
-.bm-ingests {
-  margin-top: 16px;
-}
-.bm-ingest-block {
-  margin-top: 14px;
-}
-.bm-ingest-sub {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-2, #4b5563);
-  margin-bottom: 8px;
-}
-.bm-ingest-card {
-  border: 1px solid var(--border, #e3e6eb);
-  border-radius: 8px;
-  padding: 10px;
-}
-.bm-ingest-card-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.bm-ingest-tag {
-  flex: none;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--bg-3, #f0f1f3);
-  color: var(--text-3, #8a919f);
-}
-.bm-ingest-time {
-  flex: none;
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-3, #8a919f);
-}
-.bm-ingest-draft {
-  margin: 0;
-  padding: 8px 10px;
-  border-radius: 6px;
-  background: var(--bg-3, #f7f8fa);
-  font-size: 12.5px;
-  line-height: 1.7;
-  white-space: pre-wrap;
-  word-break: break-word;
-  color: var(--text-2, #4b5563);
-  max-height: 240px;
-  overflow: auto;
 }
 .bm-hook-hint {
   font-size: 12px;

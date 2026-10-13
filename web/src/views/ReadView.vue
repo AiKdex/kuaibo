@@ -2,70 +2,55 @@
   <div ref="rootRef" class="read-view" :style="readingCssVars" :class="{ zen: zenMode }" @click="onBodyClick">
     <!-- 极简顶栏（阅读模式） -->
     <div v-if="isReadingMode" class="read-topbar">
-      <button class="icon-btn" :title="$t('返回')" @click="goBack">
+      <button class="icon-btn" title="返回" @click="goBack">
         <AikIcon name="arrowLeft" :size="18" />
       </button>
-      <span class="read-title">{{  file?.name || $t('阅读')  }}</span>
+      <span class="read-title">{{ file?.name || '阅读' }}</span>
       <div class="read-tools">
         <button
           v-if="isText && !editMode"
           class="icon-btn"
           :class="{ active: findOpen }"
-          :title="$t('页内查找（Ctrl+F）')"
+          title="页内查找（Ctrl+F）"
           @click="toggleFind"
         ><AikIcon name="search" :size="16" /></button>
         <button
           v-if="isText && !editMode"
           class="icon-btn btn-edit"
-          :title="$t('编辑文档')"
+          title="编辑文档"
           @click="startEdit"
         ><AikIcon name="edit" :size="16" /></button>
         <button
           v-if="isText && !editMode"
           class="icon-btn"
-          :class="{ active: versionsOpen }"
-          :title="$t('版本历史（保存前的旧内容会自动留快照）')"
-          @click="openVersions"
-        ><AikIcon name="clock" :size="16" /></button>
-        <button
-          v-if="isText && !editMode"
-          class="icon-btn"
           :class="{ active: linksOpen }"
-          :title="$t('双链 / 反向链接')"
+          title="双链 / 反向链接"
           @click="openLinks"
         ><AikIcon name="link" :size="16" /></button>
         <button
-          v-if="file && !editMode"
-          class="icon-btn"
-          :class="{ active: subscribed }"
-          :disabled="subBusy"
-          :title="subscribed ? $t('已订阅：这篇文章更新时会通知你（点击取消）') : $t('订阅：这篇文章更新时通知我')"
-          @click="toggleSubscribe"
-        ><AikIcon name="star" :size="16" /></button>
-        <button
           v-if="editMode"
           class="btn btn-sm btn-primary"
-          :title="$t('保存（保存后自动重新解读进入知识库）')"
+          title="保存（保存后自动重新解读进入知识库）"
           :disabled="saving"
           @click="saveEdit"
-        ><AikIcon name="check" :size="14" /> {{  saving ? $t('保存中…') : $t('保存')  }}</button>
+        ><AikIcon name="check" :size="14" /> {{ saving ? '保存中…' : '保存' }}</button>
         <button
           v-if="editMode"
           class="btn btn-sm"
-          :title="$t('取消编辑')"
+          title="取消编辑"
           :disabled="saving"
           @click="cancelEdit"
-        ><AikIcon name="close" :size="14" /> {{  $t('取消')  }}</button>
+        ><AikIcon name="close" :size="14" /> 取消</button>
         <button
           class="icon-btn"
           :class="{ active: showReadingSettings }"
-          :title="$t('阅读设置')"
+          title="阅读设置"
           @click="showReadingSettings = !showReadingSettings"
         ><AikIcon name="settings" :size="17" /></button>
-        <button class="icon-btn" :title="zenMode ? $t('退出禅模式') : $t('禅模式')" @click="zenMode = !zenMode">
+        <button class="icon-btn" :title="zenMode ? '退出禅模式' : '禅模式'" @click="zenMode = !zenMode">
           <AikIcon name="fullscreen" :size="16" />
         </button>
-        <button class="icon-btn" :title="$t('退出阅读模式')" @click="exitReading">
+        <button class="icon-btn" title="退出阅读模式" @click="exitReading">
           <AikIcon name="close" :size="17" />
         </button>
       </div>
@@ -78,45 +63,45 @@
         ref="findInputRef"
         v-model="findQuery"
         class="find-input"
-        :placeholder="$t('在本文中查找…')"
+        placeholder="在本文中查找…"
         @input="runFind(1, true)"
         @keydown.enter.exact.prevent="runFind(1)"
         @keydown.shift.enter.prevent="runFind(-1)"
         @keydown.esc="closeFind"
       />
-      <span class="find-count">{{  findTotal ? `${findIndex + 1}/${findTotal}` : '0/0'  }}</span>
-      <button class="icon-btn find-nav" :title="$t('上一个（Shift+Enter）')" @click="runFind(-1)"><AikIcon name="chevronUp" :size="14" /></button>
-      <button class="icon-btn find-nav" :title="$t('下一个（Enter）')" @click="runFind(1)"><AikIcon name="chevronDown" :size="14" /></button>
-      <button class="icon-btn find-close" :title="$t('关闭（Esc）')" @click="closeFind"><AikIcon name="close" :size="14" /></button>
+      <span class="find-count">{{ findTotal ? `${findIndex + 1}/${findTotal}` : '0/0' }}</span>
+      <button class="icon-btn find-nav" title="上一个（Shift+Enter）" @click="runFind(-1)"><AikIcon name="chevronUp" :size="14" /></button>
+      <button class="icon-btn find-nav" title="下一个（Enter）" @click="runFind(1)"><AikIcon name="chevronDown" :size="14" /></button>
+      <button class="icon-btn find-close" title="关闭（Esc）" @click="closeFind"><AikIcon name="close" :size="14" /></button>
     </div>
 
     <!-- 双链 / 反向链接面板 -->
     <div v-if="linksOpen" class="links-panel">
         <div class="links-head">
-          <span>{{  $t('双链 / 反向链接')  }}</span>
-          <button class="icon-btn" :title="$t('关闭')" @click="linksOpen = false"><AikIcon name="close" :size="14" /></button>
+          <span>双链 / 反向链接</span>
+          <button class="icon-btn" title="关闭" @click="linksOpen = false"><AikIcon name="close" :size="14" /></button>
         </div>
-        <div v-if="linksLoading" class="links-empty muted-3">{{  $t('加载中…')  }}</div>
+        <div v-if="linksLoading" class="links-empty muted-3">加载中…</div>
         <template v-else>
           <div class="links-group">
-            <div class="links-title">{{  $t('出链 · 本文引用')  }}</div>
-            <div v-if="!links.outgoing.length" class="links-empty muted-3">{{  $t('本文没有引用其他文档')  }}</div>
+            <div class="links-title">出链 · 本文引用</div>
+            <div v-if="!links.outgoing.length" class="links-empty muted-3">本文没有引用其他文档</div>
             <button
               v-for="l in links.outgoing"
               :key="'out' + l.id + (l.anchor || '')"
               class="links-item"
               @click="goLink(l)"
-            ><AikIcon name="file" :size="13" /> <span class="links-name">{{  l.name  }}</span><span v-if="l.anchor" class="links-anchor">#{{  l.anchor  }}</span></button>
+            ><AikIcon name="file" :size="13" /> <span class="links-name">{{ l.name }}</span><span v-if="l.anchor" class="links-anchor">#{{ l.anchor }}</span></button>
           </div>
           <div class="links-group">
-            <div class="links-title">{{  $t('入链 · 引用本文')  }}</div>
-            <div v-if="!links.incoming.length" class="links-empty muted-3">{{  $t('暂无文档引用本文')  }}</div>
+            <div class="links-title">入链 · 引用本文</div>
+            <div v-if="!links.incoming.length" class="links-empty muted-3">暂无文档引用本文</div>
             <button
               v-for="l in links.incoming"
               :key="'in' + l.id + (l.anchor || '')"
               class="links-item"
               @click="goLink(l)"
-            ><AikIcon name="file" :size="13" /> <span class="links-name">{{  l.name  }}</span><span v-if="l.anchor" class="links-anchor">#{{  l.anchor  }}</span></button>
+            ><AikIcon name="file" :size="13" /> <span class="links-name">{{ l.name }}</span><span v-if="l.anchor" class="links-anchor">#{{ l.anchor }}</span></button>
           </div>
         </template>
       </div>
@@ -125,12 +110,12 @@
     <Transition name="fade">
       <div v-if="dirtyModal" class="modal-mask" @click.self="dirtyModal = null">
         <div class="modal modal-sm">
-          <h3>{{ $t('有未保存的修改') }}</h3>
-          <p class="modal-desc">{{ $t('当前文档有未保存的修改，保存后才会重新进入知识库解读。') }}</p>
+          <h3>有未保存的修改</h3>
+          <p class="modal-desc">当前文档有未保存的修改，保存后才会重新进入知识库解读。</p>
           <div class="modal-actions">
-            <button class="btn" @click="dirtyModal = null">{{ $t('继续编辑') }}</button>
-            <button class="btn btn-danger-ghost" @click="dirtyDiscard">{{ $t('放弃修改') }}</button>
-            <button class="btn btn-primary" @click="dirtySaveAndExit">{{ $t('保存') }}</button>
+            <button class="btn" @click="dirtyModal = null">继续编辑</button>
+            <button class="btn btn-danger-ghost" @click="dirtyDiscard">放弃修改</button>
+            <button class="btn btn-primary" @click="dirtySaveAndExit">保存</button>
           </div>
         </div>
       </div>
@@ -138,50 +123,39 @@
 
     <!-- 编辑态提示条 -->
     <div v-if="editMode" class="edit-bar">
-      <span>{{ $t('编辑中 — 保存后自动重新解读并进入知识库') }}</span>
-      <span v-if="savedMsg" class="edit-saved">{{  savedMsg  }}</span>
-    </div>
-
-    <!-- 博客文章编辑：封面图（仅博客目录下的文章显示；点保存时随元数据接口写入，不影响摘要/SEO） -->
-    <div v-if="editMode && isBlogPost" class="edit-cover-bar">
-      <span class="ecb-label">{{ $t('封面图') }}</span>
-      <input v-model="blogCover" class="ecb-input" :placeholder="$t('https://… 或站内可公开访问的图片地址（留空不设）')" />
-      <label class="btn btn-sm ecb-up">
-        {{  blogCoverUploading ? $t('上传中…') : $t('上传封面')  }}
-        <input type="file" accept="image/*" hidden @change="rvUploadCover" />
-      </label>
-      <img v-if="blogCover" :src="blogCover" class="ecb-thumb" :alt="$t('封面预览')" @error="$event.target.style.display='none'" />
+      <span>编辑中 — 保存后自动重新解读并进入知识库</span>
+      <span v-if="savedMsg" class="edit-saved">{{ savedMsg }}</span>
     </div>
 
     <!-- 阅读设置抽屉 -->
     <Transition name="slide">
       <div v-if="showReadingSettings" class="reading-panel">
-        <div class="rp-title">{{ $t('阅读设置') }}</div>
+        <div class="rp-title">阅读设置</div>
         <div class="rp-group">
-          <span class="rp-label">{{ $t('字号') }}</span>
+          <span class="rp-label">字号</span>
           <div class="rp-row">
             <button class="btn btn-sm" @click="reading.setSize(reading.size - 1)">A−</button>
-            <span class="rp-value">{{  reading.size  }}px</span>
+            <span class="rp-value">{{ reading.size }}px</span>
             <button class="btn btn-sm" @click="reading.setSize(reading.size + 1)">A+</button>
           </div>
         </div>
         <div class="rp-group">
-          <span class="rp-label">{{ $t('行高') }}</span>
+          <span class="rp-label">行高</span>
           <div class="rp-row">
             <button class="btn btn-sm" @click="reading.setLineHeight(+(reading.lineHeight - 0.1).toFixed(1))">−</button>
-            <span class="rp-value">{{  reading.lineHeight.toFixed(1)  }}</span>
+            <span class="rp-value">{{ reading.lineHeight.toFixed(1) }}</span>
             <button class="btn btn-sm" @click="reading.setLineHeight(+(reading.lineHeight + 0.1).toFixed(1))">+</button>
           </div>
         </div>
         <div class="rp-group">
-          <span class="rp-label">{{ $t('字体') }}</span>
+          <span class="rp-label">字体</span>
           <div class="rp-row rp-switch">
-            <button class="btn btn-sm" :class="{ active: reading.font === 'sans' }" @click="reading.setFont('sans')">{{ $t('无衬线') }}</button>
-            <button class="btn btn-sm" :class="{ active: reading.font === 'serif' }" @click="reading.setFont('serif')">{{ $t('衬线') }}</button>
+            <button class="btn btn-sm" :class="{ active: reading.font === 'sans' }" @click="reading.setFont('sans')">无衬线</button>
+            <button class="btn btn-sm" :class="{ active: reading.font === 'serif' }" @click="reading.setFont('serif')">衬线</button>
           </div>
         </div>
         <div class="rp-group">
-          <span class="rp-label">{{ $t('背景') }}</span>
+          <span class="rp-label">背景</span>
           <div class="rp-bg-row">
             <button
               v-for="b in BGS"
@@ -195,61 +169,23 @@
           </div>
         </div>
         <div class="rp-group">
-          <span class="rp-label">{{ $t('页面宽度') }}</span>
+          <span class="rp-label">页面宽度</span>
           <div class="rp-row rp-switch">
-            <button class="btn btn-sm" :class="{ active: reading.width === 'standard' }" @click="reading.setWidth('standard')">{{ $t('标准') }}</button>
-            <button class="btn btn-sm" :class="{ active: reading.width === 'wide' }" @click="reading.setWidth('wide')">{{ $t('宽') }}</button>
-            <button class="btn btn-sm" :class="{ active: reading.width === 'auto' }" @click="reading.setWidth('auto')">{{ $t('自适应') }}</button>
-          </div>
-        </div>
-      </div>
-    </Transition>
-
-    <!-- 版本历史抽屉（B5 写作增强） -->
-    <Transition name="slide">
-      <div v-if="versionsOpen" class="versions-panel">
-        <div class="vp-title">
-          <span>{{ $t('版本历史') }}</span>
-          <button class="vp-close" :title="$t('关闭')" @click="versionsOpen = false"><AikIcon name="close" :size="14" /></button>
-        </div>
-        <p class="vp-hint">{{ $t('每次保存前，旧内容会自动留一份快照。恢复历史版本会') }}<b>{{ $t('产生一个新版本') }}</b>{{ $t('，所以恢复本身也能再恢复回去。') }}</p>
-        <div v-if="versionsLoading" class="vp-empty">{{ $t('加载中…') }}</div>
-        <div v-else-if="versionsErr" class="vp-empty vp-fail">{{  versionsErr  }}</div>
-        <div v-else-if="!versions.length" class="vp-empty">{{ $t('还没有历史版本（首次保存后就会产生）') }}</div>
-        <div v-else class="vp-list">
-          <div v-for="v in versions" :key="v.version" class="vp-item" :class="{ cur: v.version === file?.version }">
-            <div class="vp-item-main">
-              <div class="vp-item-top">
-                <b>v{{  v.version  }}</b>
-                <span v-if="v.version === file?.version" class="vp-cur">{{ $t('当前') }}</span>
-                <span class="vp-size">{{  formatSize(v.size)  }}</span>
-              </div>
-              <div class="vp-item-sub">
-                <span>{{  fmtVerTime(v.created_at)  }}</span>
-                <span v-if="v.note" class="vp-note-tag">{{  v.note  }}</span>
-              </div>
-            </div>
-            <div class="vp-item-ops">
-              <button class="btn btn-sm" :disabled="v.version === file?.version" @click="doDownload(v)">{{ $t('下载') }}</button>
-              <button class="btn btn-sm" :disabled="v.version === file?.version || restoring" @click="pendingRestore = v.version">{{ $t('恢复') }}</button>
-            </div>
-            <div v-if="pendingRestore === v.version" class="vp-confirm">
-              <span>{{ $t('用 v') }}{{  v.version  }} {{ $t('覆盖当前正文？') }}</span>
-              <button class="btn btn-sm btn-primary" :disabled="restoring" @click="doRestore(v.version)">{{  restoring ? $t('恢复中…') : $t('确认恢复')  }}</button>
-              <button class="btn btn-sm" :disabled="restoring" @click="pendingRestore = 0">{{ $t('取消') }}</button>
-            </div>
+            <button class="btn btn-sm" :class="{ active: reading.width === 'standard' }" @click="reading.setWidth('standard')">标准</button>
+            <button class="btn btn-sm" :class="{ active: reading.width === 'wide' }" @click="reading.setWidth('wide')">宽</button>
+            <button class="btn btn-sm" :class="{ active: reading.width === 'auto' }" @click="reading.setWidth('auto')">自适应</button>
           </div>
         </div>
       </div>
     </Transition>
 
     <!-- 正文 -->
-    <div v-if="loading" class="read-loading"><div class="spinner"></div><span>{{ $t('加载中…') }}</span></div>
+    <div v-if="loading" class="read-loading"><div class="spinner"></div><span>加载中…</span></div>
 
     <div v-else-if="error" class="read-error">
       <AikIcon name="info" :size="20" />
-      <p>{{  error  }}</p>
-      <button class="btn btn-primary" @click="goBack">{{ $t('返回') }}</button>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" @click="goBack">返回</button>
     </div>
 
     <!-- 文本类：Markdown 渲染（博客化文章排版，发布/分享复用） -->
@@ -258,18 +194,18 @@
       <div v-if="aiInfo && aiInfo.summary" class="ai-read-card">
         <div class="ai-read-head">
           <AikIcon name="sparkles" :size="14" />
-          <span>{{ $t('AI 解读') }}</span>
-          <span v-if="aiInfo.meta?.doc_type" class="ai-read-tag">{{  aiInfo.meta.doc_type  }}</span>
-          <span v-if="aiInfo.meta?.language" class="ai-read-tag">{{  aiInfo.meta.language === 'en' ? 'EN' : $t('中文')  }}</span>
+          <span>AI 解读</span>
+          <span v-if="aiInfo.meta?.doc_type" class="ai-read-tag">{{ aiInfo.meta.doc_type }}</span>
+          <span v-if="aiInfo.meta?.language" class="ai-read-tag">{{ aiInfo.meta.language === 'en' ? 'EN' : '中文' }}</span>
         </div>
-        <p class="ai-read-summary">{{  aiInfo.summary  }}</p>
+        <p class="ai-read-summary">{{ aiInfo.summary }}</p>
         <div v-if="hasAiMeta" class="ai-read-meta">
-          <span v-if="aiInfo.meta?.author" class="ai-read-kv"><b>{{ $t('作者') }}</b>{{  aiInfo.meta.author  }}</span>
-          <span v-if="aiInfo.meta?.source" class="ai-read-kv"><b>{{ $t('来源') }}</b>{{  aiInfo.meta.source  }}</span>
-          <span v-if="aiInfo.meta?.title" class="ai-read-kv"><b>{{ $t('标题') }}</b>{{  aiInfo.meta.title  }}</span>
+          <span v-if="aiInfo.meta?.author" class="ai-read-kv"><b>作者</b>{{ aiInfo.meta.author }}</span>
+          <span v-if="aiInfo.meta?.source" class="ai-read-kv"><b>来源</b>{{ aiInfo.meta.source }}</span>
+          <span v-if="aiInfo.meta?.title" class="ai-read-kv"><b>标题</b>{{ aiInfo.meta.title }}</span>
         </div>
         <div v-if="aiInfo.meta?.keywords?.length" class="ai-read-kws">
-          <span v-for="k in aiInfo.meta.keywords" :key="k" class="ai-read-kw">{{  k  }}</span>
+          <span v-for="k in aiInfo.meta.keywords" :key="k" class="ai-read-kw">{{ k }}</span>
         </div>
       </div>
       <MarkdownArticle
@@ -279,55 +215,60 @@
       />
     </template>
 
-    <!-- 文本类：编辑模式（编辑器本体轨：与写作轨共用同一编辑器偏好，2026-10-09 统一） -->
+    <!-- 文本类：编辑模式（Vditor Markdown 编辑器） -->
     <div v-else-if="isText && editMode" class="edit-wrap">
-      <component :is="quickEditorComp" ref="editorRef" v-model="editContent" :height="Math.max(320, windowHeight - 160)" class="vd-wrap" />
+      <VditorEditor
+        ref="editorRef"
+        v-model="editContent"
+        :height="Math.max(320, windowHeight - 160)"
+        class="vd-wrap"
+      />
     </div>
 
     <!-- 图片 -->
     <div v-else-if="isImage" class="media-view">
-      <img :src="mediaUrl || ''" :alt="file.name" class="media-img" @error="error = t('图片加载失败')" />
-      <div class="media-meta">{{  file.name  }} · {{  formatSize(file.size)  }}</div>
+      <img :src="mediaUrl || ''" :alt="file.name" class="media-img" @error="error = '图片加载失败'" />
+      <div class="media-meta">{{ file.name }} · {{ formatSize(file.size) }}</div>
     </div>
 
     <!-- 视频 -->
     <div v-else-if="isVideo" class="media-view">
       <video :src="mediaUrl || ''" controls class="media-video"></video>
-      <div class="media-meta">{{  file.name  }}</div>
+      <div class="media-meta">{{ file.name }}</div>
     </div>
 
     <!-- 音频 -->
     <div v-else-if="isAudio" class="media-view">
       <audio :src="mediaUrl || ''" controls class="media-audio"></audio>
-      <div class="media-meta">{{  file.name  }}</div>
+      <div class="media-meta">{{ file.name }}</div>
     </div>
 
     <!-- PDF -->
     <div v-else-if="isPdf" class="pdf-view">
-      <iframe :src="mediaUrl || ''" class="pdf-frame" :title="$t('PDF 预览')"></iframe>
+      <iframe :src="mediaUrl || ''" class="pdf-frame" title="PDF 预览"></iframe>
     </div>
 
     <!-- 其他：下载 -->
     <div v-else class="media-view unsupported">
       <AikIcon name="file" :size="40" />
-      <p class="unsupported-title">{{ $t('暂不支持在线预览此格式') }}</p>
-      <p class="unsupported-desc">{{  file.name  }}</p>
+      <p class="unsupported-title">暂不支持在线预览此格式</p>
+      <p class="unsupported-desc">{{ file.name }}</p>
       <a class="btn btn-primary" :href="mediaUrl || '#'" download>
         <AikIcon name="download" :size="15" />
-        <span>{{ $t('下载文件') }}</span>
+        <span>下载文件</span>
       </a>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, shallowRef, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import AikIcon from '@/components/AikIcon.vue'
 import { useReadingStore } from '@/stores/reading'
-import { getFile, fetchTextContent, fetchMediaUrl, revokeMediaUrl, updateDocContent, getChunk, getLocateChunk, getFileLinks, resolveWikiTitle, getFileSummary, listFileVersions, restoreFileVersion, downloadFileVersion, subscriptionStatus, subscribeTarget, unsubscribeTarget, requestJSON, uploadFiles, mkdir } from '@/api'
+import { getFile, fetchTextContent, fetchMediaUrl, updateDocContent, getChunk, getLocateChunk, getFileLinks, resolveWikiTitle, getFileSummary } from '@/api'
 import { renderMarkdown } from '@/utils/markdown'
-import { getEditorLoader, readEditorPref } from '@/editors/registry'
+import VditorEditor from '@/components/VditorEditor.vue'
 import MarkdownArticle from '@/components/MarkdownArticle.vue'
 
 const props = defineProps({
@@ -344,8 +285,6 @@ const reading = useReadingStore()
 
 const file = ref(null)
 const mediaUrl = ref('')
-// F5 修复：记录当前 mediaUrl 对应的文件 id，切换/卸载时据此 revoke 旧 objectURL
-const mediaId = ref('')
 const html = ref('')
 const loading = ref(true)
 const error = ref('')
@@ -358,126 +297,11 @@ const aiInfo = ref(null)
 const editMode = ref(false)
 const editContent = ref('')
 const editorRef = ref(null)
-// 编辑器本体轨：快编与写作共用同一偏好（readEditorPref），进编辑模式时解析组件
-const quickEditorComp = shallowRef(null)
-async function loadQuickEditor() {
-  const id = readEditorPref()
-  const loader = getEditorLoader(id)
-  if (!loader) return
-  try {
-    const mod = await loader()
-    quickEditorComp.value = mod.default || mod
-  } catch (e) {
-    console.warn('[read] 编辑器加载失败，回退 plain:', e)
-    try {
-      const m = await getEditorLoader('plain')()
-      quickEditorComp.value = m.default || m
-    } catch (_) { /* 组件都不可用时保持 null */ }
-  }
-}
 const saving = ref(false)
 const savedMsg = ref('')
 const windowHeight = ref(window.innerHeight)
 import { useToastStore } from '@/stores/toast'
-import { t } from '@/i18n'
 const toastStore = useToastStore()
-
-// ---- 内容订阅（B6 订阅与通知）----
-const subscribed = ref(false)
-const subBusy = ref(false)
-
-async function loadSubStatus() {
-  if (!props.fileId) {
-    subscribed.value = false
-    return
-  }
-  try {
-    const d = await subscriptionStatus('file', props.fileId)
-    subscribed.value = !!d.subscribed
-  } catch (_) {
-    subscribed.value = false
-  }
-}
-
-async function toggleSubscribe() {
-  if (!props.fileId || subBusy.value) return
-  subBusy.value = true
-  try {
-    const d = subscribed.value
-      ? await unsubscribeTarget('file', props.fileId)
-      : await subscribeTarget('file', props.fileId)
-    subscribed.value = !!d.subscribed
-    toastStore.push(subscribed.value ? t('已订阅：这篇文章更新时会通知你') : t('已取消订阅'))
-  } catch (e) {
-    toastStore.push(t('订阅操作失败：') + (e.message || e))
-  } finally {
-    subBusy.value = false
-  }
-}
-
-watch(() => props.fileId, () => { loadSubStatus() }, { immediate: true })
-
-// ---- 版本历史（B5 写作增强）----
-const versionsOpen = ref(false)
-const versions = ref([])
-const versionsLoading = ref(false)
-const versionsErr = ref('')
-const restoring = ref(false)
-const pendingRestore = ref(0)
-
-async function openVersions() {
-  versionsOpen.value = !versionsOpen.value
-  if (versionsOpen.value) await loadVersions()
-}
-
-async function loadVersions() {
-  if (!file.value?.id) return
-  versionsLoading.value = true
-  versionsErr.value = ''
-  try {
-    const d = await listFileVersions(file.value.id)
-    versions.value = d.versions || []
-  } catch (e) {
-    versionsErr.value = t('加载版本历史失败：') + (e.message || e)
-  } finally {
-    versionsLoading.value = false
-  }
-}
-
-async function doDownload(v) {
-  try {
-    await downloadFileVersion(file.value.id, v.version, file.value.name)
-  } catch (e) {
-    showToast(t('下载版本失败：') + (e.message || e))
-  }
-}
-
-async function doRestore(version) {
-  if (restoring.value) return
-  restoring.value = true
-  try {
-    await restoreFileVersion(file.value.id, version)
-    pendingRestore.value = 0
-    await load()
-    await loadVersions()
-    showToast(t('已恢复 v') + version + t('（生成了新版本 v') + (file.value?.version ?? '') + '）')
-  } catch (e) {
-    showToast(t('恢复失败：') + (e.message || e))
-  } finally {
-    restoring.value = false
-  }
-}
-
-function fmtVerTime(ts) {
-  if (!ts) return '—'
-  const dt = new Date(ts)
-  const diff = Date.now() - dt.getTime()
-  if (diff >= 0 && diff < 60e3) return t('刚刚')
-  if (diff >= 0 && diff < 3600e3) return Math.floor(diff / 60e3) + t(' 分钟前')
-  if (diff >= 0 && diff < 86400e3) return Math.floor(diff / 3600e3) + t(' 小时前')
-  const p = (x) => String(x).padStart(2, '0')
-  return dt.getFullYear() + '-' + p(dt.getMonth() + 1) + '-' + p(dt.getDate()) + ' ' + p(dt.getHours()) + ':' + p(dt.getMinutes())
-}
 
 // ---- 页内查找（Ctrl+F / Enter / Shift+Enter / Esc）----
 const findOpen = ref(false)
@@ -608,18 +432,13 @@ onMounted(() => window.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', onKeydown)
   clearFindMarks()
-  // F5 修复：卸载时释放媒体 objectURL
-  if (mediaId.value) {
-    revokeMediaUrl(mediaId.value)
-    mediaId.value = ''
-  }
 })
 
 const BGS = [
-  { id: 'default', name: t('默认'), color: '#fbfbf9' },
-  { id: 'sepia', name: t('纸感'), color: '#f7f3ea' },
-  { id: 'green', name: t('护眼'), color: '#eef3ea' },
-  { id: 'dark', name: t('暗色'), color: '#161821' }
+  { id: 'default', name: '默认', color: '#fbfbf9' },
+  { id: 'sepia', name: '纸感', color: '#f7f3ea' },
+  { id: 'green', name: '护眼', color: '#eef3ea' },
+  { id: 'dark', name: '暗色', color: '#161821' }
 ]
 
 const EXT = {
@@ -677,25 +496,20 @@ const readMeta = computed(() => {
   if (!file.value) return []
   const meta = []
   if (file.value.size > 0) meta.push(formatSize(file.value.size))
-  if (file.value.updated_at) meta.push(formatTime(file.value.updated_at) + t(' 更新'))
-  meta.push(t('本地存储'))
+  if (file.value.updated_at) meta.push(formatTime(file.value.updated_at) + ' 更新')
+  meta.push('本地存储')
   return meta
 })
 
 async function load() {
   const id = props.fileId
   if (!id) {
-    error.value = t('缺少文件 ID')
+    error.value = '缺少文件 ID'
     loading.value = false
     return
   }
   loading.value = true
   error.value = ''
-  // F5 修复：切换文件/重载前释放上一个媒体 objectURL（blob 常驻内存，不 revoke 会随浏览累积）
-  if (mediaId.value) {
-    revokeMediaUrl(mediaId.value)
-    mediaId.value = ''
-  }
   mediaUrl.value = ''
   try {
     file.value = await getFile(id)
@@ -709,7 +523,6 @@ async function load() {
     } else if (!isText.value) {
       // 媒体类（图片/音视频/PDF）：鉴权后 blob 加载
       mediaUrl.value = await fetchMediaUrl(id)
-      mediaId.value = id
     }
     // AI 入库解读（摘要+元数据 K19）：失败静默，不影响正文
     try {
@@ -750,56 +563,6 @@ function exitReading() {
 }
 
 // ---- 编辑模式 ----
-
-// 博客文章封面（阅读页编辑态也可设封面；仅博客目录下的文章显示此栏）
-const BLOG_DIR = '00000000-0000-0000-0000-000000000010'
-const isBlogPost = ref(false)
-const blogCover = ref('')
-const blogCoverUploading = ref(false)
-let blogMediaDirId = ''
-async function blogMediaDir() {
-  if (blogMediaDirId) return blogMediaDirId
-  try {
-    const items = await requestJSON('/files?parent=' + BLOG_DIR)
-    const hit = (Array.isArray(items) ? items : items?.items || []).find((x) => x.kind === 'dir' && x.name === '媒体')
-    if (hit?.id) { blogMediaDirId = hit.id; return blogMediaDirId }
-  } catch (_) { /* 列目录失败则直接建 */ }
-  const d = await mkdir(t('媒体'), BLOG_DIR)
-  blogMediaDirId = d?.id || ''
-  return blogMediaDirId
-}
-async function rvUploadCover(e) {
-  const f = e.target?.files?.[0]
-  e.target.value = ''
-  if (!f || !/^image\//.test(f.type || '')) return
-  blogCoverUploading.value = true
-  try {
-    const parent = await blogMediaDir()
-    if (!parent) throw new Error(t('媒体目录不可用'))
-    const rs = await uploadFiles([{ file: f, path: f.name }], parent)
-    const fid = rs?.[0]?.file?.id
-    if (!fid) throw new Error(t('上传无结果'))
-    blogCover.value = '/api/v1/public/media/' + fid
-  } catch (err) {
-    showToast(t('封面上传失败：') + (err.message || err))
-  } finally {
-    blogCoverUploading.value = false
-  }
-}
-// 进入编辑时探测：当前文档是否为博客文章（是则带出已设封面）。非博客/无权限时静默不显示。
-async function probeBlogMeta() {
-  isBlogPost.value = false
-  blogCover.value = ''
-  try {
-    const d = await requestJSON('/blog/manage')
-    const p = (d.posts || []).find((x) => x.id === file.value?.id)
-    if (p) {
-      isBlogPost.value = true
-      blogCover.value = p.cover || ''
-    }
-  } catch (_) { /* 非博客管理员等：不显示封面栏 */ }
-}
-
 async function startEdit() {
   try {
     const text = await fetchTextContent(file.value.id)
@@ -807,8 +570,6 @@ async function startEdit() {
     editOriginal.value = text
     editMode.value = true
     savedMsg.value = ''
-    if (!quickEditorComp.value) await loadQuickEditor()
-    probeBlogMeta() // 异步探测，不阻塞编辑器打开
   } catch (e) {
     error.value = e.message
   }
@@ -866,17 +627,6 @@ async function saveEdit() {
         ? editorRef.value.getSaveValue()
         : editContent.value
     await updateDocContent(file.value.id, finalContent)
-    // 博客文章：封面一并保存（后端指针语义，只传 cover 不会动摘要/SEO；失败不阻断正文保存）
-    if (isBlogPost.value) {
-      try {
-        await requestJSON('/blog/posts/meta', {
-          method: 'POST',
-          body: JSON.stringify({ id: file.value.id, cover: blogCover.value }),
-        })
-      } catch (me) {
-        showToast(t('正文已保存，但封面保存失败：') + (me.message || me))
-      }
-    }
     // 重新加载渲染 + 提示（AI 后台会自动重新解读/向量化）
     editMode.value = false
     savedMsg.value = ''
@@ -887,7 +637,7 @@ async function saveEdit() {
     } else {
       html.value = finalContent
     }
-    showToast(t('已保存，已重新进入知识库解读'))
+    showToast('已保存，已重新进入知识库解读')
   } catch (e) {
     error.value = e.message
   } finally {
@@ -1240,54 +990,6 @@ async function goLink(link) {
   border-bottom: 1px solid var(--border);
 }
 
-/* 博客文章编辑：封面图栏 */
-.edit-cover-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 20px;
-  background: var(--primary-soft);
-  border-bottom: 1px solid var(--border);
-  font-size: var(--fs-small);
-}
-
-.ecb-label {
-  flex-shrink: 0;
-  color: var(--text-2, #4b5563);
-  font-weight: 600;
-}
-
-.ecb-input {
-  flex: 1;
-  min-width: 0;
-  border: 1px solid var(--border, #e3e6eb);
-  border-radius: 6px;
-  padding: 5px 8px;
-  font-size: 12px;
-  font-family: inherit;
-  background: var(--surface, #fff);
-  color: var(--text, #1f2329);
-}
-
-.ecb-input:focus {
-  outline: none;
-  border-color: var(--primary, #4c7df0);
-}
-
-.ecb-up {
-  flex-shrink: 0;
-  position: relative;
-}
-
-.ecb-thumb {
-  flex-shrink: 0;
-  width: 46px;
-  height: 30px;
-  object-fit: cover;
-  border-radius: 5px;
-  border: 1px solid var(--border, #e3e6eb);
-}
-
 .edit-saved {
   color: var(--success, #16a34a);
 }
@@ -1352,39 +1054,6 @@ async function goLink(link) {
 }
 
 /* 阅读设置面板 */
-.versions-panel {
-  position: fixed;
-  top: var(--topbar-h);
-  right: 16px;
-  width: 300px;
-  max-height: 70vh;
-  overflow-y: auto;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
-  padding: 14px;
-  z-index: var(--z-drawer);
-}
-.vp-title { display: flex; align-items: center; justify-content: space-between; font-size: 13.5px; font-weight: 600; margin-bottom: 6px; }
-.vp-close { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 0; border-radius: 6px; background: transparent; color: var(--text-3); cursor: pointer; }
-.vp-close:hover { background: var(--surface-2); color: var(--text); }
-.vp-hint { font-size: 11.5px; line-height: 1.6; color: var(--text-3); margin: 0 0 10px; }
-.vp-empty { padding: 22px 4px; text-align: center; font-size: 12px; color: var(--text-3); }
-.vp-fail { color: #e03e3e; }
-.vp-list { display: flex; flex-direction: column; gap: 7px; }
-.vp-item { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 9px 10px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface-2); }
-.vp-item.cur { border-color: var(--primary); background: var(--primary-soft); }
-.vp-item-main { flex: 1; min-width: 0; }
-.vp-item-top { display: flex; align-items: center; gap: 7px; font-size: 12.5px; }
-.vp-item-top b { color: var(--text); }
-.vp-cur { font-size: 10.5px; padding: 1px 6px; border-radius: 8px; background: var(--primary); color: #fff; }
-.vp-size { color: var(--text-3); font-size: 11.5px; }
-.vp-item-sub { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-top: 2px; font-size: 11px; color: var(--text-3); }
-.vp-note-tag { padding: 1px 6px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); }
-.vp-item-ops { display: flex; gap: 5px; }
-.vp-confirm { flex: 1 1 100%; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; padding-top: 7px; border-top: 1px dashed var(--border); font-size: 11.5px; color: var(--text-2); }
-
 .reading-panel {
   position: fixed;
   top: var(--topbar-h);

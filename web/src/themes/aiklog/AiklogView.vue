@@ -2,11 +2,11 @@
   <div class="ak-root">
     <header class="ak-top">
       <div class="ak-top-inner">
-        <a class="ak-brand" :href="publicHref">{{ $t('爱库录') }}<em>.</em></a>
+        <a class="ak-brand" :href="publicHref">爱库录<em>.</em></a>
         <span class="ak-tag">AiKlog · aiklog.com</span>
         <nav class="ak-top-links">
           <ThemeSwitch />
-          <a :href="publicHref">{{ $t('文章') }}</a>
+          <a :href="publicHref">文章</a>
           <a :href="rssHref" target="_blank" rel="noopener">RSS</a>
           <a href="https://github.com/AiKdex/AiKlog" target="_blank" rel="noopener">GitHub</a>
         </nav>
@@ -15,15 +15,15 @@
 
     <section class="ak-hero">
       <div class="ak-hero-kicker">AI Knowledge Blog System</div>
-      <h1>{{ $t('目录即站点') }}<br />{{ $t('文件即文章') }}</h1>
+      <h1>目录即站点<br />文件即文章</h1>
       <p>
         爱库录（AiKlog）· 自部署 AI 知识库博客。
         拖拽即发、语义检索、双链互文；数据在自己手里。
       </p>
       <div class="ak-hero-meta">
-        <span class="ak-chip">{{ $t('目录即博客') }}</span>
-        <span class="ak-chip">{{ $t('插件协议') }}</span>
-        <span class="ak-chip">{{ $t('自部署') }}</span>
+        <span class="ak-chip">目录即博客</span>
+        <span class="ak-chip">插件协议</span>
+        <span class="ak-chip">自部署</span>
         <span v-if="ctx.siteName">{{ ctx.siteName }}</span>
       </div>
     </section>
@@ -32,9 +32,9 @@
       <aside class="ak-side">
         <section class="ak-side-card">
           <h3 class="ak-side-title">
-            {{ $t('关于') }}
-            <button type="button" class="ak-side-toggle" :title="sideLeft ? $t('侧栏移到右侧') : $t('侧栏移到左侧')" @click="toggleSide">
-              {{ sideLeft ? $t("侧栏 → 右") : $t("侧栏 ← 左") }}
+            关于
+            <button type="button" class="ak-side-toggle" :title="sideLeft ? '侧栏移到右侧' : '侧栏移到左侧'" @click="toggleSide">
+              {{ sideLeft ? '侧栏 → 右' : '侧栏 ← 左' }}
             </button>
           </h3>
           <p class="ak-side-text">
@@ -44,12 +44,12 @@
           <div class="ak-side-links">
             <a :href="rssHref" target="_blank" rel="noopener">RSS</a>
             <a href="https://github.com/AiKdex/AiKlog" target="_blank" rel="noopener">GitHub</a>
-            <a href="https://aiklog.com">{{ $t('官网') }}</a>
+            <a href="https://aiklog.com">官网</a>
           </div>
         </section>
 
         <section v-if="catList.length" class="ak-side-card">
-          <h3 class="ak-side-title">{{ $t('分类') }}</h3>
+          <h3 class="ak-side-title">分类</h3>
           <ul class="ak-side-list">
             <li v-for="c in catList" :key="c.name">
               <button type="button" class="ak-side-btn" :class="{ on: filterCat === c.name }" @click="toggleCat(c.name)">
@@ -61,7 +61,7 @@
         </section>
 
         <section v-if="monthList.length" class="ak-side-card">
-          <h3 class="ak-side-title">{{ $t('归档') }}</h3>
+          <h3 class="ak-side-title">归档</h3>
           <ul class="ak-side-list">
             <li v-for="m in monthList" :key="m.key">
               <button type="button" class="ak-side-btn" :class="{ on: filterMonth === m.key }" @click="toggleMonth(m.key)">
@@ -77,23 +77,24 @@
         <div class="ak-list-head">
           <h2>{{ listTitle }}</h2>
           <div class="ak-list-tools">
-            <button v-if="filterCat || filterMonth" type="button" class="ak-filter-clear" @click="clearFilter">{{ $t('清除筛选') }}</button>
-            <span class="ak-list-count">{{ shownPosts.length }} {{ $t('篇') }}</span>
+            <button v-if="filterCat || filterMonth" type="button" class="ak-filter-clear" @click="clearFilter">清除筛选</button>
+            <span class="ak-list-count">{{ shownPosts.length }} 篇</span>
           </div>
         </div>
 
         <div v-if="ctx.loading" class="ak-state">
-          <strong>{{ $t('加载中') }}</strong>
-          {{ $t('正在读取公开文章…') }}
+          <strong>加载中</strong>
+          正在读取公开文章…
         </div>
 
         <div v-else-if="ctx.error" class="ak-state">
-          <strong>{{ $t('加载失败') }}</strong>
+          <strong>加载失败</strong>
           {{ ctx.error }}
         </div>
 
         <div v-else-if="!shownPosts.length" class="ak-state">
-          <strong>{{ $t('还没有公开文章') }}</strong>{{ $t("在知识库「博客」目录放入 Markdown 并发布后，这里会自动出现。") }}
+          <strong>还没有公开文章</strong>
+          在知识库「博客」目录放入 Markdown 并发布后，这里会自动出现。
         </div>
 
         <template v-else>
@@ -107,11 +108,10 @@
               <img :src="postCover(p)" :alt="postTitle(p)" loading="lazy" />
             </div>
             <div v-else class="ak-card-media ak-card-media--ph" aria-hidden="true">
-              <span>{{ (postCat(p) || $t("文")).slice(0, 1) }}</span>
+              <span>{{ (postCat(p) || '文').slice(0, 1) }}</span>
             </div>
             <div class="ak-card-body">
               <div class="ak-card-meta">
-                <span v-if="nodeTypeOf(p.file)" class="ak-card-type" :title="$t('内容类型：') + nodeTypeOf(p.file)">{{ nodeTypeLabel(nodeTypeOf(p.file)) }}</span>
                 <span v-if="postCat(p)" class="ak-card-cat">{{ postCat(p) }}</span>
                 <span v-if="postDate(p)">{{ postDate(p) }}</span>
                 <span v-if="p.file?.size">{{ formatSize(p.file.size) }}</span>
@@ -134,15 +134,11 @@
       </span>
     </footer>
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import { t } from '@/i18n'
-import AskWidget from '../AskWidget.vue'
 import { computed, inject, ref } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
-import { nodeTypeOf, nodeTypeLabel } from '@/utils/contentState'
 import './style.css'
 
 const raw = inject('themeContext')
@@ -241,9 +237,6 @@ function postHref(p) {
 }
 
 function postCover(p) {
-  // 优先文章封面字段（编辑器设置/上传的封面图）；回退从摘要首图提取
-  const c = p.file?.cover
-  if (typeof c === 'string' && c.trim()) return c.trim()
   const s = p.preview || ''
   const m = /!\[[^\]]*\]\((https?:\/\/[^)\s]+|\/[^)\s]+)\)/.exec(s)
   return m ? m[1] : ''
@@ -257,7 +250,7 @@ function postTitle(p) {
     const base = path.split('/').pop() || path
     return base.replace(/\.(md|markdown)$/i, '')
   }
-  return p.title || t('common.unnamed')
+  return p.title || '未命名'
 }
 
 function postCat(p) {

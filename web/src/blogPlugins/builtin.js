@@ -10,7 +10,6 @@ import Archives from './builtin/archives.vue'
 import TagCloud from './builtin/tagCloud.vue'
 import Cover from './builtin/cover.vue'
 import ReaderAi from './builtin/readerAi.vue'
-import VoiceRead from './builtin/voiceRead.vue'
 import Stats from './builtin/stats.vue'
 
 // 文章元信息：挂载文章页正文下方（post_bottom）
@@ -93,12 +92,4 @@ registerBlogPlugin({
   id: 'blog-stats',
   mountPoints: ['post_bottom'],
   component: Stats
-})
-
-// 语音朗读：文章页标题下元信息行内联按钮（复用 ai.tts 语音合成，服务端磁盘缓存）
-// manifest（后端 EnsureBlogSpace 种子）的 mount_points 同步为 ['post_meta']
-registerBlogPlugin({
-  id: 'blog-voice-read',
-  mountPoints: ['post_meta'],
-  component: VoiceRead
 })

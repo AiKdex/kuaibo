@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/AiKMAP/AiKmap/server/internal/engine/bus"
-	"github.com/AiKMAP/AiKmap/server/internal/service"
 )
 
 // resolveCommentFile 按 token+path 解析文章 file_id（校验分享存在且未撤销、文件在公开目录内）。
@@ -31,7 +30,7 @@ func (a *API) resolveCommentFile(r *http.Request, token, path string) (string, i
 		if path == "" {
 			return "", http.StatusBadRequest, "COMMENT_PATH_REQUIRED", "目录分享需指定 path"
 		}
-		files, err := a.collectDirFiles(r.Context(), row.DirID, "")
+		files, err := a.collectDirFiles(r.Context(), row.DirID)
 		if err != nil {
 			return "", http.StatusNotFound, "SHARE_FILE_GONE", "公开目录不存在"
 		}
@@ -92,45 +91,6 @@ func (a *API) commentsList(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"items": out})
 }
 
-// 登录用户评论频率限制（M12 修复）：每用户 60 秒窗口最多 commentRateMax 条，防脚本刷屏灌水。
-// 与访客 IP 限流（guestCommentAllowed）互补：访客按 IP，登录用户按 user id。
-const (
-	commentRateMax = 10
-	commentRateWin = 60 * time.Second
-)
-
-var commentRate struct {
-	mu sync.Mutex
-	m  map[string][]int64 // uid → 最近发表时间戳（秒）
-}
-
-// commentRateAllow 记录并判定：窗口内超限返回 false。
-// 内存防御：条目数超 2000（随机 uid 撞库式攻击）时整体重建，避免 map 无界增长。
-func commentRateAllow(uid string) bool {
-	now := time.Now().Unix()
-	commentRate.mu.Lock()
-	defer commentRate.mu.Unlock()
-	if commentRate.m == nil {
-		commentRate.m = map[string][]int64{}
-	}
-	if len(commentRate.m) > 2000 {
-		commentRate.m = map[string][]int64{}
-	}
-	cut := now - int64(commentRateWin.Seconds())
-	qs := commentRate.m[uid]
-	i := 0
-	for i < len(qs) && qs[i] < cut {
-		i++
-	}
-	qs = qs[i:]
-	if len(qs) >= commentRateMax {
-		commentRate.m[uid] = qs
-		return false
-	}
-	commentRate.m[uid] = append(qs, now)
-	return true
-}
-
 // commentsCreate POST /api/v1/comments（登录写评论）
 // 请求：{token, path?, body, parent_id?}；body ≤ 2000 字符；parent_id 必须属于同一文章。
 func (a *API) commentsCreate(w http.ResponseWriter, r *http.Request) {
@@ -168,11 +128,6 @@ func (a *API) commentsCreate(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	uid, _ := r.Context().Value(ctxUserID).(string)
-	// M12 修复：登录用户评论频率限制（防刷屏/脚本灌水）
-	if !commentRateAllow(uid) {
-		writeErr(w, http.StatusTooManyRequests, "COMMENT_RATE_LIMITED", "评论过于频繁，请稍后再试")
-		return
-	}
 	id := newID()
 	now := time.Now().UnixMilli()
 	// parent_id 空时写 NULL（空串会被当作外键引用导致 FK 失败）
@@ -191,8 +146,6 @@ func (a *API) commentsCreate(w http.ResponseWriter, r *http.Request) {
 	}
 	a.b.Publish(r.Context(), bus.Event{Topic: "comment.created", Key: id,
 		Data: map[string]any{"file_id": fileID, "guest": false}})
-	// B6：@提及落库 + 回复通知父楼作者（增值动作，失败不影响评论落库）
-	a.afterCommentCreated(r, id, fileID, uid, body, in.ParentID)
 	writeJSON(w, http.StatusCreated, map[string]any{"ok": true, "id": id})
 }
 
@@ -234,9 +187,10 @@ func (a *API) publicGuestComment(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusForbidden, "GUEST_COMMENT_DISABLED", "本站未开放访客评论，请登录后评论")
 		return
 	}
-	// M12 修复：限流 ident 走 a.clientIP（默认只用 RemoteAddr；仅 security.trust_proxy=true
-	// 时才信任 X-Real-IP/X-Forwarded-For），否则访客伪造请求头即可绕过评论频率限制。
-	ip := a.clientIP(r)
+	ip := r.RemoteAddr
+	if xff := r.Header.Get("X-Real-IP"); xff != "" {
+		ip = xff
+	}
 	if !guestCommentAllowed(ip) {
 		writeErr(w, http.StatusTooManyRequests, "COMMENT_RATE", "评论过于频繁，请稍后再试")
 		return
@@ -372,12 +326,6 @@ func (a *API) blogCommentApprove(w http.ResponseWriter, r *http.Request) {
 	}
 	var fileID string
 	_ = a.db.QueryRowContext(r.Context(), `SELECT file_id FROM comments WHERE id=?`, id).Scan(&fileID)
-	// B6：待审评论通过时才做 @提及 / 回复通知 —— 未过审的内容不该产生通知
-	var cBody, cUid, cParent string
-	_ = a.db.QueryRowContext(r.Context(),
-		`SELECT body, COALESCE(user_id,''), COALESCE(parent_id,'') FROM comments WHERE id=?`, id).
-		Scan(&cBody, &cUid, &cParent)
-	a.afterCommentCreated(r, id, fileID, cUid, cBody, cParent)
 	a.b.Publish(r.Context(), bus.Event{Topic: "comment.approved", Key: id,
 		Data: map[string]any{"file_id": fileID}})
 	_, _ = a.aud.Append(r.Context(), a.curUserID(r), "blog.comment_approve", "comments", map[string]any{"id": id})
@@ -391,25 +339,10 @@ func (a *API) blogCommentDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	id := r.PathValue("id")
 	// 楼层评论：父评论删除后子评论失去挂载意义，一并删除
-	// B6：先收集被删评论 id（含子楼），删除后连带清掉它们的 @提及行
-	var delIDs []string
-	{
-		rows, qerr := a.db.QueryContext(r.Context(), `SELECT id FROM comments WHERE id=? OR parent_id=?`, id, id)
-		if qerr == nil {
-			for rows.Next() {
-				var cid string
-				if rows.Scan(&cid) == nil {
-					delIDs = append(delIDs, cid)
-				}
-			}
-			rows.Close()
-		}
-	}
 	if _, err := a.db.ExecContext(r.Context(), `DELETE FROM comments WHERE id=? OR parent_id=?`, id, id); err != nil {
 		writeErr(w, http.StatusInternalServerError, "COMMENT_DELETE_FAILED", err.Error())
 		return
 	}
-	_ = a.mentions.PurgeSources(r.Context(), service.MentionSourceComment, delIDs)
 	_, _ = a.aud.Append(r.Context(), a.curUserID(r), "blog.comment_delete", "comments", map[string]any{"id": id})
 	writeJSON(w, http.StatusOK, map[string]any{"ok": true})
 }

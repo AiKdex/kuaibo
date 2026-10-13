@@ -1,6 +1,6 @@
 <template>
   <div v-if="pv !== null" class="st-line">
-    <span class="st-label">{{ $t('阅读') }}</span>
+    <span class="st-label">阅读</span>
     <span class="st-n">{{ pv }}</span>
   </div>
 </template>

@@ -9,7 +9,6 @@ package ai
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -62,27 +61,11 @@ type ToolCall struct {
 	Arguments json.RawMessage `json:"arguments"`
 }
 
-// MarshalJSON 按 OpenAI 线格式输出 tool_calls 元素：
-// {"id":..,"type":"function","function":{"name":..,"arguments":..}}。
-// 缺 type/function 包裹会被严格反序列化的上游（如 agnes/vLLM）以
-// "missing field `type`" 400 拒绝，导致 agent 工具循环第二轮必挂。
-func (t ToolCall) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[string]any{
-		"id":   t.ID,
-		"type": "function",
-		"function": map[string]any{
-			"name":      t.Name,
-			"arguments": string(t.Arguments),
-		},
-	})
-}
-
 // ChatResult 带工具调用的对话结果。
 type ChatResult struct {
 	Content   string     `json:"content"`
 	ToolCalls []ToolCall `json:"tool_calls,omitempty"`
 	Error     string     `json:"error,omitempty"`
-	Usage     *Usage     `json:"-"`
 }
 
 // ProviderDef 一个模型提供方的注册定义（来自 secrets/providers.json）。
@@ -96,13 +79,7 @@ type ProviderDef struct {
 	ModelCands map[string][]string `json:"model_cands,omitempty"`
 	Keys       []string            `json:"keys"`
 	Caps       []string            `json:"caps"`
-	// VoiceCands 语音合成音色候选（providers.json 按需声明；设置页下拉展示，
-	// 不声明=不限制、设置页自由填写——音色语义由 provider 自定，内核不做枚举硬编码）。
-	VoiceCands []string `json:"voice_cands,omitempty"`
-	Note       string   `json:"note,omitempty"`
-	// Builtin 标记来自 providers.json 的内置提供方（禁止删除；用户可在 UI 编辑但保留标记）。
-	// 该字段不进入 ProviderDef 的 JSON 反序列化（name 是 map key），仅由代码/持久化层赋值。
-	Builtin bool `json:"-"`
+	Note       string              `json:"note,omitempty"`
 }
 
 // Gateway 按配置路由到 provider；失败按 fallback 顺序降级。
@@ -116,53 +93,6 @@ type Gateway struct {
 	mu    sync.Mutex            // 保护 pools 懒创建（HTTP/摘要/向量/工具多路径并发调用 pick）
 	// activeDefaults: providers.json 声明的能力默认 provider（清除自定义时回退）
 	activeDefaults map[string]string
-	// recorder: 用量记账（A1 LLM 可观测，B27 自上游 9ddd6e7 移植）。nil=不记账；
-	// pick 时透传给 OpenAICompat 统一落账。
-	recorder UsageRecorder
-	// meter: 用量管控（配额+增值 token 计费，meter.go）。nil=不管控。
-	meter *Meter
-}
-
-// SetMeter 注入用量管控器（main 启动时传 db 即开；传 nil 关闭）。
-func (g *Gateway) SetMeter(m *Meter) { g.meter = m }
-
-// Meter 返回管控器（nil=未启用）；handler 断言做配额/余额查询。
-func (g *Gateway) Meter() *Meter { return g.meter }
-
-// SetUsageRecorder 注入用量记账器（main 启动时传 db 即开；传 nil 关闭）。
-func (g *Gateway) SetUsageRecorder(r UsageRecorder) { g.recorder = r }
-
-// UsageRecorder 返回当前记账器（nil=未注入）；handler 断言 *UsageDB 做聚合查询。
-func (g *Gateway) UsageRecorder() UsageRecorder { return g.recorder }
-
-// recordUsage 统一记账入口（OpenAICompat 内部调用）：
-//  1. llm_usage 明细落账（可观测，异步）；
-//  2. meter 日聚合 +（计费开启且平台模型时）按 token 扣余额（管控，meter.go）。
-func (g *Gateway) recordUsage(ctx context.Context, cap, model string, u *Usage, start time.Time, err error) {
-	if g.recorder == nil && g.meter == nil {
-		return
-	}
-	rec := UsageRecord{
-		Provider:  "ai." + cap,
-		Cap:       cap,
-		Model:     model,
-		LatencyMs: time.Since(start).Milliseconds(),
-		OK:        err == nil,
-	}
-	if err != nil {
-		rec.Err = err.Error()
-	}
-	if u != nil {
-		rec.PromptTokens = u.PromptTokens
-		rec.CompletionTokens = u.CompletionTokens
-	}
-	if g.recorder != nil {
-		g.recorder.Record(context.Background(), rec)
-	}
-	if g.meter != nil {
-		billing := g.IsPlatform(cap) && g.QuotaPolicy().BillingEnabled
-		g.meter.charge(SubjectFrom(ctx), rec.PromptTokens+rec.CompletionTokens, billing)
-	}
 }
 
 // SetActiveDefaults 注入 providers.json 的能力级默认 provider（main 加载时调用）。
@@ -183,33 +113,9 @@ func NewGateway(cfg *config.Store, b *bus.Bus) *Gateway {
 	return &Gateway{
 		cfg:   cfg,
 		b:     b,
-		httpc: newHTTPClient(timeout),
+		httpc: &http.Client{Timeout: time.Duration(timeout) * time.Second},
 		defs:  map[string]*ProviderDef{},
 		pools: map[string]*TokenPool{},
-	}
-}
-
-// newHTTPClient 返回一个每次请求都新建连接的 *http.Client。
-//
-// 根因（family.8.3.1/8.3.2 语音朗读验证时发现）：网关对所有 OpenAI 兼容
-// provider 复用同一个 http.Client 的连接池；到 mimo 的 AWS ALB 的长连接会因
-// ALB/防火墙的空闲回收被静默丢弃，而 TTS/对话等都是 POST（非幂等，Go 不会自动
-// 重试），一旦复用到一个已死的空闲连接，请求就一直等到本地 30s 上下文超时后返回
-// 502。独立的 fresh-connection 测试（每次新连接）始终 200，正印证了这一点。
-// 因此直接关闭 keep-alive：每次请求走全新连接（TLS 握手约百毫秒，对本应用调用
-// 频率完全可接受），从根上消除"复用死连接"导致的挂死。同时 ALPN 仅声明 http/1.1、
-// 关掉 HTTP/2 自动升级，进一步规避 ALB 的 HTTP/2 复用隐患。
-func newHTTPClient(timeoutSec int) *http.Client {
-	if timeoutSec <= 0 {
-		timeoutSec = 120
-	}
-	return &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig:   &tls.Config{NextProtos: []string{"http/1.1"}},
-			ForceAttemptHTTP2: false,
-			DisableKeepAlives: true,
-		},
-		Timeout: time.Duration(timeoutSec) * time.Second,
 	}
 }
 
@@ -333,14 +239,6 @@ func (g *Gateway) ModelCandidates(provider, cap string) []string {
 	return nil
 }
 
-// VoiceCandidates 返回某 provider 声明的音色候选（providers.json voice_cands；无声明返回空）。
-func (g *Gateway) VoiceCandidates(provider string) []string {
-	if d, ok := g.defs[provider]; ok {
-		return d.VoiceCands
-	}
-	return nil
-}
-
 // validModel 校验模型是否在该 provider 的候选或注册模型中。
 func (g *Gateway) validModel(provider, cap, model string) bool {
 	d, ok := g.defs[provider]
@@ -373,86 +271,6 @@ func (g *Gateway) PoolNames() []string {
 // Providers 返回注册表视图（供管理 API 枚举候选）。
 func (g *Gateway) Providers() map[string]*ProviderDef {
 	return g.defs
-}
-
-// UpsertProvider 热新增/更新一个 provider（写内存注册表，下次 pick 生效）。
-// name 是 defs 的 map key（不存于 ProviderDef 自身）。并发安全（复用 mu 锁）。
-func (g *Gateway) UpsertProvider(name string, def *ProviderDef) {
-	if def == nil {
-		return
-	}
-	g.mu.Lock()
-	g.defs[name] = def
-	g.mu.Unlock()
-}
-
-// RemoveProvider 移除一个 provider（非内置由调用方判定）。同时清理其关联 token 池，
-// 避免 pick 命中已删除 provider 的残留池。
-func (g *Gateway) RemoveProvider(name string) {
-	g.mu.Lock()
-	delete(g.defs, name)
-	for k := range g.pools {
-		if strings.HasPrefix(k, name+"|") {
-			delete(g.pools, k)
-		}
-	}
-	g.mu.Unlock()
-}
-
-// DropProviderPools 清理某 provider 的全部懒建 token 池（密钥变更后强制重建）。
-func (g *Gateway) DropProviderPools(name string) {
-	g.mu.Lock()
-	for k := range g.pools {
-		if strings.HasPrefix(k, name+"|") {
-			delete(g.pools, k)
-		}
-	}
-	g.mu.Unlock()
-}
-
-// TestConnection 最小连通性校验：对 endpoint 发起一次极简请求（llm=chat/completions，
-// embedding=embeddings），校验 HTTP 200 + 可解析。用于后台「测试」按钮，不消耗真实用量。
-func (g *Gateway) TestConnection(ctx context.Context, endpoint, model, apiKey, capName string) error {
-	endpoint = strings.TrimRight(strings.TrimSpace(endpoint), "/")
-	if endpoint == "" {
-		return fmt.Errorf("endpoint 为空")
-	}
-	base := endpoint
-	if !strings.HasSuffix(base, "/v1") {
-		base = base + "/v1"
-	}
-	var url string
-	var payload []byte
-	if capName == "embedding" {
-		url = base + "/embeddings"
-		payload, _ = json.Marshal(map[string]any{"model": model, "input": []string{"ping"}})
-	} else {
-		url = base + "/chat/completions"
-		payload, _ = json.Marshal(map[string]any{
-			"model":       model,
-			"messages":    []map[string]string{{"role": "user", "content": "ping"}},
-			"max_tokens":  1,
-			"stream":      false,
-		})
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(payload))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	if apiKey != "" {
-		req.Header.Set("Authorization", "Bearer "+apiKey)
-	}
-	resp, err := g.httpc.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode >= 400 {
-		b, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
-		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(b))
-	}
-	return nil
 }
 
 // CurrentModel 返回某能力的当前生效模型（provider 解析后）。
@@ -799,8 +617,6 @@ func (g *Gateway) pick(prefix string) (*OpenAICompat, error) {
 		apiKey:   apiKey,
 		httpc:    g.httpc,
 		dims:     g.cfg.GetInt(prefix + ".dim"),
-		cap:      capName,
-		gate:     g,
 	}, nil
 }
 
@@ -812,8 +628,6 @@ type OpenAICompat struct {
 	apiKey   string
 	httpc    *http.Client
 	dims     int // >0 时 embedding 请求带 dimensions
-	cap      string    // 能力名（llm/embedding/...），记账用
-	gate     *Gateway  // 记账回源（recordUsage）
 }
 
 // Name 返回提供方名。
@@ -829,7 +643,6 @@ func (o *OpenAICompat) v1Base() string {
 
 // Embed 调用 embeddings。
 func (o *OpenAICompat) Embed(ctx context.Context, texts []string) ([][]float32, error) {
-	start := time.Now()
 	payload := map[string]any{
 		"model": o.model, "input": texts,
 	}
@@ -843,38 +656,24 @@ func (o *OpenAICompat) Embed(ctx context.Context, texts []string) ([][]float32, 
 	}
 	resp, err := o.httpc.Do(req)
 	if err != nil {
-		if o.gate != nil {
-			o.gate.recordUsage(ctx, o.cap, o.model, nil, start, err)
-		}
 		return nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
 		b, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
-		err = fmt.Errorf("embedding http %d: %s", resp.StatusCode, b)
-		if o.gate != nil {
-			o.gate.recordUsage(ctx, o.cap, o.model, nil, start, err)
-		}
-		return nil, err
+		return nil, fmt.Errorf("embedding http %d: %s", resp.StatusCode, b)
 	}
 	var out struct {
 		Data []struct {
 			Embedding []float32 `json:"embedding"`
 		} `json:"data"`
-		Usage *Usage `json:"usage"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
-		if o.gate != nil {
-			o.gate.recordUsage(ctx, o.cap, o.model, nil, start, err)
-		}
 		return nil, err
 	}
 	vecs := make([][]float32, 0, len(out.Data))
 	for _, d := range out.Data {
 		vecs = append(vecs, d.Embedding)
-	}
-	if o.gate != nil {
-		o.gate.recordUsage(ctx, o.cap, o.model, out.Usage, start, nil)
 	}
 	return vecs, nil
 }
@@ -1047,7 +846,6 @@ func (o *OpenAICompat) Ask(ctx context.Context, messages []Msg) (string, error) 
 
 // chatJSON 对话补全，支持 tools（function calling）。返回内容与工具调用。
 func (o *OpenAICompat) chatJSON(ctx context.Context, messages []Msg, tools []map[string]any) (*ChatResult, error) {
-	start := time.Now()
 	body := map[string]any{
 		"model": o.model, "messages": messages, "stream": false,
 	}
@@ -1061,19 +859,12 @@ func (o *OpenAICompat) chatJSON(ctx context.Context, messages []Msg, tools []map
 	}
 	resp, err := o.httpc.Do(req)
 	if err != nil {
-		if o.gate != nil {
-			o.gate.recordUsage(ctx, o.cap, o.model, nil, start, err)
-		}
 		return nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
 		b, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
-		err = fmt.Errorf("chat http %d: %s", resp.StatusCode, b)
-		if o.gate != nil {
-			o.gate.recordUsage(ctx, o.cap, o.model, nil, start, err)
-		}
-		return nil, err
+		return nil, fmt.Errorf("chat http %d: %s", resp.StatusCode, b)
 	}
 	var out struct {
 		Choices []struct {
@@ -1089,23 +880,15 @@ func (o *OpenAICompat) chatJSON(ctx context.Context, messages []Msg, tools []map
 				} `json:"tool_calls"`
 			} `json:"message"`
 		} `json:"choices"`
-		Usage *Usage `json:"usage"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
-		if o.gate != nil {
-			o.gate.recordUsage(ctx, o.cap, o.model, nil, start, err)
-		}
 		return nil, err
 	}
 	if len(out.Choices) == 0 {
-		err = fmt.Errorf("chat: empty choices")
-		if o.gate != nil {
-			o.gate.recordUsage(ctx, o.cap, o.model, nil, start, err)
-		}
-		return nil, err
+		return nil, fmt.Errorf("chat: empty choices")
 	}
 	m := out.Choices[0].Message
-	res := &ChatResult{Content: m.Content, Usage: out.Usage}
+	res := &ChatResult{Content: m.Content}
 	for _, tc := range m.ToolCalls {
 		res.ToolCalls = append(res.ToolCalls, ToolCall{
 			ID:        tc.ID,
@@ -1113,75 +896,41 @@ func (o *OpenAICompat) chatJSON(ctx context.Context, messages []Msg, tools []map
 			Arguments: json.RawMessage(tc.Function.Arguments),
 		})
 	}
-	if o.gate != nil {
-		o.gate.recordUsage(ctx, o.cap, o.model, out.Usage, start, nil)
-	}
 	return res, nil
 }
 
 func (o *OpenAICompat) chat(ctx context.Context, messages []Msg) (string, error) {
-	out, _, err := o.chatWithUsage(ctx, messages)
-	return out, err
-}
-
-// chatWithUsage 对话补全并解析用量（记账入口）。
-func (o *OpenAICompat) chatWithUsage(ctx context.Context, messages []Msg) (string, *Usage, error) {
-	start := time.Now()
 	body, _ := json.Marshal(map[string]any{
 		"model": o.model, "messages": messages, "stream": false,
 	})
 	req, err := o.newReq(ctx, o.v1Base()+"/chat/completions", body)
 	if err != nil {
-		return "", nil, err
+		return "", err
 	}
 	resp, err := o.httpc.Do(req)
 	if err != nil {
-		if o.gate != nil {
-			o.gate.recordUsage(ctx, o.cap, o.model, nil, start, err)
-		}
-		return "", nil, err
+		return "", err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
 		b, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
-		err = fmt.Errorf("chat http %d: %s", resp.StatusCode, b)
-		if o.gate != nil {
-			o.gate.recordUsage(ctx, o.cap, o.model, nil, start, err)
-		}
-		return "", nil, err
+		return "", fmt.Errorf("chat http %d: %s", resp.StatusCode, b)
 	}
 	var out struct {
 		Choices []struct {
 			Message Msg `json:"message"`
 		} `json:"choices"`
-		Usage *Usage `json:"usage"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
-		if o.gate != nil {
-			o.gate.recordUsage(ctx, o.cap, o.model, nil, start, err)
-		}
-		return "", nil, err
+		return "", err
 	}
 	if len(out.Choices) == 0 {
-		err = fmt.Errorf("chat: empty choices")
-		if o.gate != nil {
-			o.gate.recordUsage(ctx, o.cap, o.model, nil, start, err)
-		}
-		return "", nil, err
+		return "", fmt.Errorf("chat: empty choices")
 	}
-	if o.gate != nil {
-		o.gate.recordUsage(ctx, o.cap, o.model, out.Usage, start, nil)
-	}
-	return out.Choices[0].Message.Content, out.Usage, nil
+	return out.Choices[0].Message.Content, nil
 }
 
 func (o *OpenAICompat) newReq(ctx context.Context, url string, body []byte) (*http.Request, error) {
-	// 前置闸：配额/余额校验（平台模型才受限；nil meter 零开销）
-	if o.gate != nil {
-		if err := o.gate.checkGate(ctx, o.cap); err != nil {
-			return nil, err
-		}
-	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
 		return nil, err

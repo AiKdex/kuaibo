@@ -3,32 +3,32 @@
     <header class="cl-header">
       <div class="cl-header-in">
         <a class="cl-brand" :href="homeHref"><span class="cl-logo-icon">C</span><span class="cl-logo-text">{{ siteName }}</span></a>
-        <nav class="cl-nav"><a :href="homeHref" class="cl-nav-a">{{ $t('首页') }}</a><ThemeSwitch /></nav>
+        <nav class="cl-nav"><a :href="homeHref" class="cl-nav-a">首页</a><ThemeSwitch /></nav>
       </div>
     </header>
     <main class="cl-inner-main">
-      <h1 class="cl-inner-title">{{ $t('搜索') }}</h1>
+      <h1 class="cl-inner-title">搜索</h1>
       <div class="cl-search-box">
         <input
           v-model="keyword"
           class="cl-search-input"
           type="text"
-          :placeholder="$t('输入关键词搜索文章标题和摘要…')"
+          placeholder="输入关键词搜索文章标题和摘要…"
           @keydown.enter="doSearch"
         />
-        <button class="cl-search-go" @click="doSearch">{{ $t('搜索') }}</button>
+        <button class="cl-search-go" @click="doSearch">搜索</button>
       </div>
 
       <div v-if="!q" class="cl-state">
         <div class="cl-state-icon">🔍</div>
-        <p>{{ $t('输入关键词开始检索') }}</p>
+        <p>输入关键词开始检索</p>
       </div>
       <div v-else-if="!results.length" class="cl-state">
         <div class="cl-state-icon">😕</div>
-        <p>{{ $t('未找到与「') }}{{ q }}{{ $t('」相关的文章') }}</p>
+        <p>未找到与「{{ q }}」相关的文章</p>
       </div>
       <div v-else>
-        <p class="cl-inner-count">{{ $t('找到') }} {{ results.length }} {{ $t('篇相关文章') }}</p>
+        <p class="cl-inner-count">找到 {{ results.length }} 篇相关文章</p>
         <div class="cl-list">
           <article v-for="p in results" :key="p.token" class="cl-list-item">
             <a :href="hrefOf(p)" class="cl-list-link">
@@ -45,12 +45,9 @@
     </main>
     <footer class="cl-footer"><div class="cl-footer-in"><p class="cl-footer-copy">© {{ currentYear }} {{ siteName }}</p></div></footer>
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import { t } from '@/i18n'
-import AskWidget from '../AskWidget.vue'
 import { ref, computed, inject, watch } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
 import './style.css'
@@ -81,7 +78,7 @@ const results = computed(() => {
   })
 })
 
-function titleOf(p) { const n = p.file?.name || p.path || ''; return String(n).replace(/\.(md|markdown)$/i,'').split('/').pop() || t('common.unnamed') }
+function titleOf(p) { const n = p.file?.name || p.path || ''; return String(n).replace(/\.(md|markdown)$/i,'').split('/').pop() || '无标题' }
 function dateOf(p) { const v = p.file?.updated_at; if (!v) return ''; const ms = typeof v === 'number' ? (v > 1e12 ? v : v * 1000) : Date.parse(v); if (!Number.isFinite(ms)) return ''; const d = new Date(ms); const z = (n) => String(n).padStart(2,'0'); return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}` }
 function hrefOf(p) { return ctx.value.postUrl ? ctx.value.postUrl(p) : '#' }
 function cleanPreview(s) { return String(s || '').replace(/^#+\s*/gm, '').replace(/[*_`~]/g, '').slice(0, 120) }

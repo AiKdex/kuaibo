@@ -2,8 +2,6 @@
  * EmForum 主题公共派生根 —— 严格按《AiKlog 博客主题开发规范（第三方完整交付版）》
  * §2.2 posts 字段 / §2.3 标题·分类·日期派生 实现，禁止臆造字段。
  */
-import { t } from '@/i18n'
-
 import { computed, inject } from 'vue'
 
 /** 兼容 ref 与普通对象两种包装（不同宿主版本） */
@@ -16,7 +14,7 @@ export function useBlog(ctxRef) {
 /** 标题：去扩展名（.md / .markdown）→ 取末段 */
 export function postTitle(p) {
   const n = p?.file?.name || p?.path || ''
-  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || t('无标题')
+  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || '无标题'
 }
 
 /** 分类：path 首段；无 '/' 返回空串（展示层再决定是否写「未分类」） */
@@ -61,9 +59,9 @@ export function daysAgo(p) {
   const v = p?.file?.updated_at
   if (!v) return ''
   const days = Math.floor((Date.now() - v) / 86400000)
-  if (days <= 0) return t('今天')
-  if (days === 1) return t('昨天')
-  if (days < 30) return days + t('天前')
+  if (days <= 0) return '今天'
+  if (days === 1) return '昨天'
+  if (days < 30) return days + ' 天前'
   return ''
 }
 
@@ -81,14 +79,14 @@ export function boardIcon(index) {
 /** 由分类名稳定哈希出 3 套头像配色 */
 export function boardColor(name) {
   let h = 0
-  for (const ch of String(name || t('文'))) h = (h * 31 + ch.charCodeAt(0)) >>> 0
+  for (const ch of String(name || '文')) h = (h * 31 + ch.charCodeAt(0)) >>> 0
   return 'c' + (h % 3 + 1)
 }
 /** 版块计数（分类 → 篇数） */
 export function boardCounts(posts) {
   const map = new Map()
   for (const p of posts || []) {
-    const name = postCat(p) || t('未分类')
+    const name = postCat(p) || '未分类'
     map.set(name, (map.get(name) || 0) + 1)
   }
   return [...map.entries()]
@@ -129,11 +127,11 @@ export async function askBlogAI(question, { onLoading } = {}) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question: q }),
     })
-    if (res.status === 429) return t('提问太频繁（每 5 分钟限 8 次），请稍后再试')
+    if (res.status === 429) return '提问太频繁（每 5 分钟限 8 次），请稍后再试'
     const data = await res.json().catch(() => ({}))
-    return data.reply || t('暂无回答')
+    return data.reply || '暂无回答'
   } catch {
-    return t('请求失败，请稍后重试')
+    return '请求失败，请稍后重试'
   } finally {
     onLoading?.(false)
   }

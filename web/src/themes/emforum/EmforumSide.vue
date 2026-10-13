@@ -2,30 +2,30 @@
   <!-- 侧栏：站点信息 / AI 问答 / 最新更新 / 标签（各页共用，取自同一 themeContext） -->
   <aside class="ef-side">
     <section class="ef-panel">
-      <div class="ef-panel-head"><h3>{{ $t('站点信息') }}</h3></div>
+      <div class="ef-panel-head"><h3>站点信息</h3></div>
       <div class="ef-site-card">
         <div class="ef-site-avatar">{{ (siteName || 'A')[0] }}</div>
         <div class="ef-site-name">{{ siteName || '爱库录' }}</div>
-        <div class="ef-site-desc">{{ siteDesc || $t("目录即站点，文件即文章") }}</div>
+        <div class="ef-site-desc">{{ siteDesc || '目录即站点，文件即文章' }}</div>
         <div class="ef-site-btns">
-          <a class="primary" :href="blogUrl">{{ $t('全部文章') }}</a>
+          <a class="primary" :href="blogUrl">全部文章</a>
           <a :href="rssHref">RSS</a>
         </div>
       </div>
     </section>
 
     <section class="ef-panel">
-      <div class="ef-panel-head"><h3>{{ $t('AI 问答') }}</h3></div>
+      <div class="ef-panel-head"><h3>AI 问答</h3></div>
       <div class="ef-ai">
         <div class="ef-ai-box">
           <input
             v-model="aiQuery"
-            :placeholder="$t('问点什么…')"
+            placeholder="问点什么…"
             :disabled="aiLoading"
             @keyup.enter="ask"
           />
           <button type="button" :disabled="!aiQuery.trim() || aiLoading" @click="ask">
-            {{ aiLoading ? '…' : $t("问") }}
+            {{ aiLoading ? '…' : '问' }}
           </button>
         </div>
         <p v-if="aiAnswer" class="ef-ai-ans">{{ aiAnswer }}</p>
@@ -33,7 +33,7 @@
     </section>
 
     <section class="ef-panel">
-      <div class="ef-panel-head"><h3>{{ $t('最新更新') }}</h3></div>
+      <div class="ef-panel-head"><h3>最新更新</h3></div>
       <ul class="ef-latest">
         <li v-for="(p, i) in latest" :key="p.token || i">
           <span class="ef-latest-no">{{ i + 1 }}</span>
@@ -45,7 +45,7 @@
 
     <!-- 标签云：ctx.tags 当前恒为空 → 整块隐藏；有数据时显示 t.name 且不输出死链（规范 §4.6） -->
     <section v-if="tags && tags.length" class="ef-panel">
-      <div class="ef-panel-head"><h3>{{ $t('标签') }}</h3></div>
+      <div class="ef-panel-head"><h3>标签</h3></div>
       <div class="ef-cloud">
         <span v-for="t in tags" :key="t.name" class="ef-cloud-tag" :class="{ big: t.count >= 3 }">
           {{ t.name }}<i>{{ t.count }}</i>
@@ -56,7 +56,6 @@
 </template>
 
 <script setup>
-import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import { postDate, postHref, postTitle, LIST_HREF, RSS_HREF, askBlogAI, useBlog } from './helpers.js'
 
@@ -82,7 +81,7 @@ const rssHref = RSS_HREF
 
 async function ask() {
   if (!aiQuery.value.trim() || aiLoading.value) return
-  aiAnswer.value = t('思考中…')
+  aiAnswer.value = '思考中…'
   aiAnswer.value = await askBlogAI(aiQuery.value, { onLoading: (v) => (aiLoading.value = v) })
 }
 </script>

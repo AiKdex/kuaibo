@@ -22,8 +22,8 @@
             <span class="bf-bar-s">{{ barSub }}</span>
           </div>
           <div class="bf-bar-r">
-            <span class="bf-bar-chip">{{ posts.length }} {{ $t('篇文章') }}</span>
-            <span v-if="cats.length" class="bf-bar-chip">{{ cats.length }} {{ $t('个分类') }}</span>
+            <span class="bf-bar-chip">{{ posts.length }} 篇文章</span>
+            <span v-if="cats.length" class="bf-bar-chip">{{ cats.length }} 个分类</span>
           </div>
         </div>
 
@@ -31,7 +31,7 @@
         <template v-if="mode === 'list'">
           <div class="bf-tool">
             <div class="bf-chips">
-              <button class="bf-chip" :class="{ 'is-on': !catFilter }" type="button" @click="catFilter = ''">{{ $t('全部') }}</button>
+              <button class="bf-chip" :class="{ 'is-on': !catFilter }" type="button" @click="catFilter = ''">全部</button>
               <button
                 v-for="c in cats"
                 :key="c.name"
@@ -42,8 +42,8 @@
               >{{ c.name }}<i>{{ c.count }}</i></button>
             </div>
             <div class="bf-sorts">
-              <button class="bf-sort" :class="{ 'is-on': sort === 'time' }" type="button" @click="sort = 'time'">{{ $t('最新更新') }}</button>
-              <button class="bf-sort" :class="{ 'is-on': sort === 'title' }" type="button" @click="sort = 'title'">{{ $t('标题') }}</button>
+              <button class="bf-sort" :class="{ 'is-on': sort === 'time' }" type="button" @click="sort = 'time'">最新更新</button>
+              <button class="bf-sort" :class="{ 'is-on': sort === 'title' }" type="button" @click="sort = 'title'">标题</button>
             </div>
           </div>
 
@@ -58,16 +58,16 @@
 
           <div v-else-if="error" class="bf-state">
             <span class="bf-state-ic">!</span>
-            <p class="bf-state-t">{{ $t('内容加载失败') }}</p>
+            <p class="bf-state-t">内容加载失败</p>
             <p class="bf-state-s">{{ error }}</p>
-            <button class="bf-state-btn" type="button" @click="reload">{{ $t('重新加载') }}</button>
+            <button class="bf-state-btn" type="button" @click="reload">重新加载</button>
           </div>
 
           <div v-else-if="!shown.length" class="bf-state">
             <span class="bf-state-ic">∅</span>
-            <p class="bf-state-t">{{ catFilter ? $t('「{cat}」下暂无文章', { cat: catFilter }) : $t('还没有公开文章') }}</p>
-            <p class="bf-state-s">{{ $t('在控制台把文件加入分享后，这里会出现卡片。') }}</p>
-            <button v-if="catFilter" class="bf-state-btn" type="button" @click="catFilter = ''">{{ $t('查看全部文章') }}</button>
+            <p class="bf-state-t">{{ catFilter ? `「${catFilter}」下暂无文章` : '还没有公开文章' }}</p>
+            <p class="bf-state-s">在控制台把文件加入分享后，这里会出现卡片。</p>
+            <button v-if="catFilter" class="bf-state-btn" type="button" @click="catFilter = ''">查看全部文章</button>
           </div>
 
           <template v-else>
@@ -80,7 +80,7 @@
             />
 
             <nav v-if="pages > 1" class="bf-pager">
-              <button class="bf-page" type="button" :disabled="page <= 1" @click="goPage(page - 1)">{{ $t('上一页') }}</button>
+              <button class="bf-page" type="button" :disabled="page <= 1" @click="goPage(page - 1)">上一页</button>
               <button
                 v-for="n in pages"
                 :key="n"
@@ -89,7 +89,7 @@
                 type="button"
                 @click="goPage(n)"
               >{{ n }}</button>
-              <button class="bf-page" type="button" :disabled="page >= pages" @click="goPage(page + 1)">{{ $t('下一页') }}</button>
+              <button class="bf-page" type="button" :disabled="page >= pages" @click="goPage(page + 1)">下一页</button>
             </nav>
           </template>
         </template>
@@ -101,15 +101,15 @@
           </div>
           <div v-else-if="!years.length" class="bf-state">
             <span class="bf-state-ic">∅</span>
-            <p class="bf-state-t">{{ $t('暂无归档内容') }}</p>
-            <p class="bf-state-s">{{ $t("公开文章出现后，这里会按年月自动分组。") }}</p>
+            <p class="bf-state-t">暂无归档内容</p>
+            <p class="bf-state-s">公开文章出现后，这里会按年月自动分组。</p>
           </div>
           <div v-else class="bf-archive">
             <section v-for="g in years" :key="g.year" class="bf-arc-y">
               <h2 class="bf-arc-yh">
                 <span class="bf-arc-ydot"></span>
                 <span>{{ g.year }}</span>
-                <span class="bf-arc-ynum">{{ g.list.length }} {{ $t('篇') }}</span>
+                <span class="bf-arc-ynum">{{ g.list.length }} 篇</span>
               </h2>
               <ul class="bf-arc-list">
                 <li v-for="p in g.list" :key="p.token || p.path" class="bf-arc-i">
@@ -128,20 +128,20 @@
           <div class="bf-search">
             <div class="bf-search-box">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7.5" /><path d="M21 21l-4.4-4.4" /></svg>
-              <input v-model="q" class="bf-search-in" type="search" :placeholder="$t('搜索标题、分类或摘要…')" />
-              <button v-if="q" class="bf-search-clr" type="button" @click="q = ''">{{ $t('清空') }}</button>
+              <input v-model="q" class="bf-search-in" type="search" placeholder="搜索标题、分类或摘要…" />
+              <button v-if="q" class="bf-search-clr" type="button" @click="q = ''">清空</button>
             </div>
             <p class="bf-search-tip">
-              <template v-if="!q">{{ $t('输入关键词开始检索，共') }} {{ posts.length }} {{ $t('篇可搜索内容。') }}</template>
-              <template v-else>「{{ q }}{{ $t('」匹配到') }} {{ searched.length }} {{ $t('篇') }}</template>
+              <template v-if="!q">输入关键词开始检索，共 {{ posts.length }} 篇可搜索内容。</template>
+              <template v-else>「{{ q }}」匹配到 {{ searched.length }} 篇</template>
             </p>
           </div>
 
           <div v-if="q && !searched.length" class="bf-state">
             <span class="bf-state-ic">∅</span>
-            <p class="bf-state-t">{{ $t('没有匹配的内容') }}</p>
-            <p class="bf-state-s">{{ $t("换个关键词，或到归档页按年月浏览。") }}</p>
-            <button class="bf-state-btn" type="button" @click="goArchive">{{ $t('打开归档') }}</button>
+            <p class="bf-state-t">没有匹配的内容</p>
+            <p class="bf-state-s">换个关键词，或到归档页按年月浏览。</p>
+            <button class="bf-state-btn" type="button" @click="goArchive">打开归档</button>
           </div>
 
           <template v-else-if="q">
@@ -171,12 +171,9 @@
     <ButterflyFoot :site-name="siteName" :blog-url="blogUrl" :count="posts.length" @go-archive="goArchive" @go-search="goSearch" />
     <ButterflyRight :dark="dark" @toggle-dark="toggleDark" />
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import { t as i18t } from '@/i18n'
-import AskWidget from '../AskWidget.vue'
 import { computed, ref, watch } from 'vue'
 import ButterflyHead from './ButterflyHead.vue'
 import ButterflyCard from './ButterflyCard.vue'
@@ -198,7 +195,7 @@ const tags = computed(() => (ctx.value.tags || []).filter((t) => t && t.name))
 const loading = computed(() => !!ctx.value.loading)
 const error = computed(() => ctx.value.error || '')
 
-const slogan = 'BUTTERFLY · ' + i18t('简单卡片，优雅阅读')
+const slogan = 'BUTTERFLY · 简单卡片，优雅阅读'
 const blogUrl = '#/blog?view=public'
 
 /* ===== 视图状态（无 hash 改动，规范 §3.2） ===== */
@@ -212,15 +209,15 @@ const PAGE_SIZE = 8
 const cats = computed(() => catCounts(posts.value))
 
 const barTitle = computed(() => {
-  if (mode.value === 'archive') return i18t('文章归档')
-  if (mode.value === 'search') return i18t('全文检索')
-  return catFilter.value || i18t('全部文章')
+  if (mode.value === 'archive') return '文章归档'
+  if (mode.value === 'search') return '全文检索'
+  return catFilter.value || '全部文章'
 })
 const barSub = computed(() => {
-  if (mode.value === 'archive') return i18t('按更新时间倒序，自动分年归组')
-  if (mode.value === 'search') return i18t('在标题、分类与摘要中即时匹配')
-  if (catFilter.value) return i18t('分类「{cat}」下的全部内容', { cat: catFilter.value })
-  return i18t('目录即站点，文件即文章')
+  if (mode.value === 'archive') return '按更新时间倒序，自动分年归组'
+  if (mode.value === 'search') return '在标题、分类与摘要中即时匹配'
+  if (catFilter.value) return `分类「${catFilter.value}」下的全部内容`
+  return '目录即站点，文件即文章'
 })
 
 /** 只做「读者显式操作」的排序；默认保持系统下发顺序（置顶优先 + 时间倒序） */

@@ -1,6 +1,6 @@
 <template>
   <div class="tab-bar" :class="{ empty: tabs.length === 0 }">
-    <div v-if="tabs.length === 0" class="tab-empty">{{  $t('打开文档后在此显示标签页 · 可同时浏览多个文件')  }}</div>
+    <div v-if="tabs.length === 0" class="tab-empty">打开文档后在此显示标签页 · 可同时浏览多个文件</div>
     <div
       v-for="t in tabs"
       :key="t.fileId"
@@ -11,21 +11,21 @@
       :title="t.name"
     >
       <AikIcon :name="tabIcon(t)" :size="13" class="tab-ic" />
-      <span class="tab-name">{{  t.name  }}</span>
-      <span v-if="isDirty(t.fileId)" class="tab-dirty" :title="$t('有未保存的修改')"></span>
+      <span class="tab-name">{{ t.name }}</span>
+      <span v-if="isDirty(t.fileId)" class="tab-dirty" title="有未保存的修改"></span>
       <button
         class="tab-x"
-        :title="$t('关闭标签')"
+        title="关闭标签"
         @click.stop="$emit('close', t.fileId)"
       ><AikIcon name="close" :size="12" /></button>
     </div>
     <div class="tab-spacer"></div>
     <div v-if="tabs.length > 1" class="tab-actions">
-      <button class="tab-act" :title="$t('关闭其他标签')" @click="$emit('close-others', activeId)">
-        <AikIcon name="close" :size="12" /> {{  $t('其他')  }}
+      <button class="tab-act" title="关闭其他标签" @click="$emit('close-others', activeId)">
+        <AikIcon name="close" :size="12" /> 其他
       </button>
-      <button class="tab-act" :title="$t('关闭全部标签')" @click="$emit('close-all')">
-        <AikIcon name="close" :size="12" /> {{  $t('全部')  }}
+      <button class="tab-act" title="关闭全部标签" @click="$emit('close-all')">
+        <AikIcon name="close" :size="12" /> 全部
       </button>
     </div>
   </div>

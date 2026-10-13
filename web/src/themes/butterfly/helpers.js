@@ -3,8 +3,7 @@
  * 严格按《AiKlog 博客主题开发规范（第三方完整交付版）》v1.2
  * §2.2 posts 字段 / §2.3 标题·分类·日期派生 / §2.4 排序实现。
  * 只使用契约字段 token / path / preview / file.{name,slug,updated_at,size}，禁止臆造。
- */import { t } from '@/i18n'
-
+ */
 import { computed, inject, ref } from 'vue'
 
 /** 兼容 ref 与普通对象两种包装（不同宿主版本） */
@@ -17,7 +16,7 @@ export function useBlog(ctxRef) {
 /** 标题：去扩展名（.md / .markdown）→ 取末段 */
 export function postTitle(p) {
   const n = p?.file?.name || p?.path || ''
-  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || t('无标题')
+  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || '无标题'
 }
 
 /** 分类：path 首段；无 '/' 返回空串（展示层再决定是否写「未分类」） */
@@ -28,7 +27,7 @@ export function postCat(p) {
 
 /** 分类展示名（补「未分类」兜底） */
 export function catName(p) {
-  return postCat(p) || t('未分类')
+  return postCat(p) || '未分类'
 }
 
 /** 日期：updated_at（毫秒，兼容秒级/字符串） */
@@ -70,9 +69,9 @@ export function daysAgo(p) {
   const ms = typeof v === 'number' ? (v > 1e12 ? v : v * 1000) : Date.parse(v)
   if (!Number.isFinite(ms)) return ''
   const days = Math.floor((Date.now() - ms) / 86400000)
-  if (days <= 0) return t('今天')
-  if (days === 1) return t('昨天')
-  if (days < 30) return days + t('天前')
+  if (days <= 0) return '今天'
+  if (days === 1) return '昨天'
+  if (days < 30) return days + ' 天前'
   return ''
 }
 
@@ -99,7 +98,7 @@ export function initials(text, n = 1) {
  */
 export function catTone(name) {
   let h = 0
-  for (const ch of String(name || t('文'))) h = (h * 31 + ch.charCodeAt(0)) >>> 0
+  for (const ch of String(name || '文')) h = (h * 31 + ch.charCodeAt(0)) >>> 0
   return 'tone' + (h % 6 + 1)
 }
 
@@ -119,7 +118,7 @@ export function catCounts(posts) {
 export function yearGroups(posts) {
   const map = new Map()
   for (const p of posts || []) {
-    const y = postDate(p, 'year') || t('未知')
+    const y = postDate(p, 'year') || '未知'
     if (!map.has(y)) map.set(y, [])
     map.get(y).push(p)
   }
@@ -132,7 +131,7 @@ export function yearGroups(posts) {
 export function monthGroups(posts) {
   const map = new Map()
   for (const p of posts || []) {
-    const m = postDate(p, 'month') || t('未知')
+    const m = postDate(p, 'month') || '未知'
     if (!map.has(m)) map.set(m, [])
     map.get(m).push(p)
   }

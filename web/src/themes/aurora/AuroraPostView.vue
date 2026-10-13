@@ -4,7 +4,7 @@
 
     <main class="au-main">
       <nav class="au-crumb">
-        <a class="au-crumb-link" :href="listHref">{{ $t('全部文章') }}</a>
+        <a class="au-crumb-link" :href="listHref">全部文章</a>
         <span class="au-crumb-sep" aria-hidden="true">/</span>
         <template v-if="post.cat">
           <span class="au-crumb-mid">{{ post.cat }}</span>
@@ -18,7 +18,6 @@
         <h1 class="au-post-title">{{ post.title }}</h1>
         <div class="au-post-meta">
           <span v-for="(m, i) in meta" :key="i" class="au-post-meta-i">{{ m }}</span>
-          <BlogPluginSlot mount="post_meta" :ctx="pluginCtx" />
         </div>
       </header>
 
@@ -29,18 +28,18 @@
 
           <div class="au-post-foot">
             <button class="au-btn" type="button" @click="copyLink">
-              {{ copied ? $t("链接已复制") : $t("复制分享链接") }}
+              {{ copied ? '链接已复制' : '复制分享链接' }}
             </button>
-            <a class="au-btn au-btn-ghost" :href="shareHref">{{ $t('打开静态页') }}</a>
+            <a class="au-btn au-btn-ghost" :href="shareHref">打开静态页</a>
           </div>
 
           <nav v-if="prevPost || nextPost" class="au-pn">
             <a v-if="prevPost" class="au-pn-item" :href="href(prevPost)">
-              <span class="au-pn-dir">{{ $t('← 上一篇') }}</span>
+              <span class="au-pn-dir">← 上一篇</span>
               <span class="au-pn-t">{{ titleOf(prevPost) }}</span>
             </a>
             <a v-if="nextPost" class="au-pn-item au-pn-item-r" :href="href(nextPost)">
-              <span class="au-pn-dir">{{ $t('下一篇 →') }}</span>
+              <span class="au-pn-dir">下一篇 →</span>
               <span class="au-pn-t">{{ titleOf(nextPost) }}</span>
             </a>
           </nav>
@@ -53,7 +52,7 @@
 
         <aside class="au-side">
           <div v-if="toc.length" class="au-side-box">
-            <div class="au-side-t">{{ $t('本文目录') }}</div>
+            <div class="au-side-t">本文目录</div>
             <ul class="au-toc">
               <li v-for="(h, i) in toc" :key="i" class="au-toc-li">
                 <button
@@ -69,7 +68,7 @@
           </div>
 
           <div v-if="related.length" class="au-side-box">
-            <div class="au-side-t">{{ $t('相关文章') }}</div>
+            <div class="au-side-t">相关文章</div>
             <ul class="au-side-list">
               <li v-for="(p, i) in related" :key="i" class="au-side-li">
                 <a class="au-side-a" :href="href(p)">{{ titleOf(p) }}</a>
@@ -79,11 +78,11 @@
           </div>
 
           <div v-if="cats.length" class="au-side-box">
-            <div class="au-side-t">{{ $t('分类') }}</div>
+            <div class="au-side-t">分类</div>
             <ul class="au-side-list">
               <li v-for="c in cats" :key="c.name" class="au-side-li">
                 <span class="au-side-a">{{ c.name }}</span>
-                <span class="au-side-d">{{ c.count }} {{ $t('篇') }}</span>
+                <span class="au-side-d">{{ c.count }} 篇</span>
               </li>
             </ul>
           </div>
@@ -93,11 +92,9 @@
 
     <AuroraFoot />
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import AskWidget from '../AskWidget.vue'
 /**
  * AuroraPostView —— 极光主题文章内页（entries.post，一期交付项）。
  *

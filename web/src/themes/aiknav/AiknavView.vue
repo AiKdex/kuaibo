@@ -12,7 +12,7 @@
             type="button"
             :class="['an-nav-btn', { 'an-on': !activeCat }]"
             @click="scrollToTop"
-          >{{ $t('全部') }}</button>
+          >全部</button>
           <button
             v-for="c in cats.slice(0, 5)"
             :key="c.name"
@@ -29,19 +29,19 @@
     <!-- Hero -->
     <section class="an-hero">
       <h1 class="an-hero-h1">{{ heroTitle }}</h1>
-      <p class="an-hero-p">{{ ctx.siteDesc || $t("优质内容，分类整理，持续更新。") }}</p>
+      <p class="an-hero-p">{{ ctx.siteDesc || '优质内容，分类整理，持续更新。' }}</p>
       <div class="an-search">
         <input
           v-model="q"
           class="an-search-input"
-          :placeholder="$t('搜索文章、工具、资源...')"
+          placeholder="搜索文章、工具、资源..."
           @keyup.enter="doSearch"
         />
-        <button type="button" class="an-search-btn" @click="doSearch">{{ $t('搜索') }}</button>
+        <button type="button" class="an-search-btn" @click="doSearch">搜索</button>
       </div>
       <div class="an-stats">
-        <span>🔗 <strong>{{ ctx.posts?.length || 0 }}</strong> {{ $t('篇文章') }}</span>
-        <span>📂 <strong>{{ cats.length }}</strong> {{ $t('个分类') }}</span>
+        <span>🔗 <strong>{{ ctx.posts?.length || 0 }}</strong> 篇文章</span>
+        <span>📂 <strong>{{ cats.length }}</strong> 个分类</span>
       </div>
     </section>
 
@@ -50,7 +50,7 @@
       <main class="an-main">
         <div class="an-section">
           <span class="an-dot" style="background:var(--th-blue)"></span>
-          <h2 class="an-section-h2">{{ $t('搜索「') }}{{ q }}{{ $t('」的结果') }}</h2>
+          <h2 class="an-section-h2">搜索「{{ q }}」的结果</h2>
           <span class="an-line"></span>
           <span class="an-cnt">{{ filtered.length }}</span>
         </div>
@@ -64,17 +64,17 @@
             <div class="an-card-icon"><span>📄</span></div>
             <div class="an-card-info">
               <h3 class="an-card-h3">{{ postTitle(p) }}</h3>
-              <p class="an-card-desc">{{ p.preview || $t("暂无摘要") }}</p>
+              <p class="an-card-desc">{{ p.preview || '暂无摘要' }}</p>
               <div class="an-card-meta">
-                <span class="an-tag an-tag-blue">{{ postCat(p) || $t("未分类") }}</span>
+                <span class="an-tag an-tag-blue">{{ postCat(p) || '未分类' }}</span>
                 <span class="an-tag an-tag-green">{{ postDate(p) }}</span>
               </div>
             </div>
             <span class="an-arrow">→</span>
           </a>
         </div>
-        <p v-else class="an-empty">{{ $t('未找到匹配的文章') }}</p>
-        <button type="button" class="an-back-btn" @click="clearSearch">{{ $t('← 返回全部') }}</button>
+        <p v-else class="an-empty">未找到匹配的文章</p>
+        <button type="button" class="an-back-btn" @click="clearSearch">← 返回全部</button>
       </main>
     </div>
 
@@ -83,14 +83,14 @@
       <!-- Sidebar -->
       <aside class="an-side">
         <div class="an-sb">
-          <h4 class="an-sb-h4">{{ $t('📂 分类') }}</h4>
+          <h4 class="an-sb-h4">📂 分类</h4>
           <ul class="an-cat-tree">
             <li
               :class="['an-cat-item', { 'an-on': !activeCat }]"
               @click="activeCat = ''"
             >
               <span class="an-cat-dot" style="background:var(--th-blue)"></span>
-              {{ $t('全部') }}
+              全部
               <span class="an-cat-cnt">{{ ctx.posts?.length || 0 }}</span>
             </li>
             <li
@@ -107,7 +107,7 @@
         </div>
 
         <div class="an-sb">
-          <h4 class="an-sb-h4">{{ $t('🕐 最新更新') }}</h4>
+          <h4 class="an-sb-h4">🕐 最新更新</h4>
           <ul class="an-latest-list">
             <li
               v-for="(p, i) in latest.slice(0, 5)"
@@ -122,11 +122,11 @@
         </div>
 
         <div class="an-sb">
-          <h4 class="an-sb-h4">{{ $t('🔗 链接') }}</h4>
+          <h4 class="an-sb-h4">🔗 链接</h4>
           <div class="an-sb-links">
-            <a :href="rssHref">{{ $t('📡 RSS 订阅') }}</a>
-            <a :href="archiveHref">{{ $t('📖 归档') }}</a>
-            <a :href="homeHref">{{ $t('🏠 首页') }}</a>
+            <a :href="rssHref">📡 RSS 订阅</a>
+            <a :href="archiveHref">📖 归档</a>
+            <a :href="homeHref">🏠 首页</a>
           </div>
         </div>
       </aside>
@@ -135,7 +135,7 @@
       <main class="an-main">
         <!-- Loading -->
         <div v-if="loading" class="an-loading">
-          <p>{{ $t('⏳ 加载中...') }}</p>
+          <p>⏳ 加载中...</p>
         </div>
 
         <!-- Error -->
@@ -145,7 +145,7 @@
 
         <!-- Empty -->
         <div v-else-if="!ctx.posts?.length" class="an-empty">
-          <p>{{ $t('📭 还没有公开文章') }}</p>
+          <p>📭 还没有公开文章</p>
         </div>
 
         <!-- Posts grouped by category -->
@@ -158,7 +158,7 @@
           >
             <div class="an-section">
               <span class="an-dot" :style="{ background: catColor(group.name) }"></span>
-              <h2 class="an-section-h2">{{ group.name || $t("未分类") }}</h2>
+              <h2 class="an-section-h2">{{ group.name || '未分类' }}</h2>
               <span class="an-line"></span>
               <span class="an-cnt">{{ group.posts.length }}</span>
             </div>
@@ -172,9 +172,9 @@
                 <div class="an-card-icon"><span>{{ catEmoji(group.name) }}</span></div>
                 <div class="an-card-info">
                   <h3 class="an-card-h3">{{ postTitle(p) }}</h3>
-                  <p class="an-card-desc">{{ p.preview || $t("暂无摘要") }}</p>
+                  <p class="an-card-desc">{{ p.preview || '暂无摘要' }}</p>
                   <div class="an-card-meta">
-                    <span class="an-tag" :class="catTagClass(group.name)">{{ group.name || $t("未分类") }}</span>
+                    <span class="an-tag" :class="catTagClass(group.name)">{{ group.name || '未分类' }}</span>
                     <span class="an-tag an-tag-green">{{ postDate(p) }}</span>
                   </div>
                 </div>
@@ -190,18 +190,15 @@
     <footer class="an-footer">
       <div class="an-footer-links">
         <a :href="rssHref">RSS</a>
-        <a :href="archiveHref">{{ $t('归档') }}</a>
-        <a :href="homeHref">{{ $t('首页') }}</a>
+        <a :href="archiveHref">归档</a>
+        <a :href="homeHref">首页</a>
       </div>
       <p>© {{ year }} {{ ctx.siteName || '好站导航' }} · Powered by AiKlog</p>
     </footer>
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import { t } from '@/i18n'
-import AskWidget from '../AskWidget.vue'
 import { ref, computed, inject } from 'vue'
 import ThemeSwitch from '@/components/ThemeSwitch.vue'
 import './style.css'
@@ -228,7 +225,7 @@ const heroTitle = computed(() => {
 /* ── helpers ─────────────────────────────── */
 function postTitle(p) {
   const n = p.file?.name || p.path || ''
-  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || t('common.unnamed')
+  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || '无标题'
 }
 function postCat(p) {
   const path = p.path || ''

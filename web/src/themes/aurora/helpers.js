@@ -5,8 +5,6 @@
  *  §2.2 posts 条目字段 · §2.3 标题/分类/日期派生 · §4.7 归档派生 · §7.1 AI 问答。
  * 只使用契约字段 token / path / preview / file.{name,slug,updated_at,size}，不臆造任何字段。
  */
-import { t } from '@/i18n'
-
 import { computed, inject } from 'vue'
 
 /** 兼容 ref 与普通对象两种包装（不同宿主版本） */
@@ -18,7 +16,7 @@ export function useBlog() {
 /** 标题：去扩展名（.md 与 .markdown 都要处理）→ 取末段 */
 export function postTitle(p) {
   const n = p?.file?.name || p?.path || ''
-  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || t('无标题')
+  return String(n).replace(/\.(md|markdown)$/i, '').split('/').pop() || '无标题'
 }
 
 /** 分类：path 首段；无 '/' 返回空串 */
@@ -29,7 +27,7 @@ export function postCat(p) {
 
 /** 分类展示名（补「未分类」兜底） */
 export function catName(p) {
-  return postCat(p) || t('未分类')
+  return postCat(p) || '未分类'
 }
 
 /** 日期：file.updated_at（毫秒，兼容秒级与字符串） */
@@ -105,7 +103,7 @@ export function catCounts(posts) {
 export function yearGroups(posts) {
   const map = new Map()
   for (const p of posts || []) {
-    const y = postDate(p, 'year') || t('未知')
+    const y = postDate(p, 'year') || '未知'
     if (!map.has(y)) map.set(y, [])
     map.get(y).push(p)
   }
@@ -159,11 +157,11 @@ export async function askBlogAI(question, { onLoading } = {}) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question: q }),
     })
-    if (res.status === 429) return t('提问太频繁（每 5 分钟限 8 次），请稍后再试')
+    if (res.status === 429) return '提问太频繁（每 5 分钟限 8 次），请稍后再试'
     const data = await res.json().catch(() => ({}))
-    return data.reply || t('暂无回答')
+    return data.reply || '暂无回答'
   } catch {
-    return t('请求失败，请稍后重试')
+    return '请求失败，请稍后重试'
   } finally {
     onLoading?.(false)
   }

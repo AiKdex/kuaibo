@@ -80,11 +80,6 @@
  */
 
 import { ref } from 'vue'
-import { t } from '@/i18n'
-import { THEME_LOADERS, themeCatalog } from './catalog.js'
-
-// 管理端/切换器需要全量主题元数据（含未安装项）→ 转出口径
-export { themeCatalog }
 
 const STORAGE_KEY = 'aikmap.blog.theme' // 站点设置下发的主题（服务端权威值缓存）
 const OVERRIDE_KEY = 'aiklog.theme.override' // 访客/站长在公开页手动选的主题（本地优先）
@@ -92,17 +87,9 @@ const OVERRIDE_KEY = 'aiklog.theme.override' // 访客/站长在公开页手动�
 /** 主题注册表：id -> theme */
 const registry = new Map()
 
-/** 注册表版本号（响应式）：懒加载主题注册完成后自增，驱动 listThemes() 的 computed 重算 */
-export const registryVersion = ref(0)
-
-/** 已安装主题 id 集合（后端 blog_plugins kind=theme 驱动；null=尚未拉取，视为全部可用以降级） */
-export const installedThemeIds = ref(null)
-
 /** 当前生效主题 id（响应式：切换后所有组件同步） */
 export const activeThemeId = ref(readStoredId())
 /** 站点设置下发的主题 id（服务端权威） */
-/** 是否允许访客自由切换主题（per-site site_settings.allow_visitor_theme_switch；默认允许） */
-export const allowVisitorSwitch = ref(true)
 export const serverThemeId = ref('')
 
 /**
@@ -120,54 +107,16 @@ export function registerTheme(theme) {
     return
   }
   registry.set(theme.id, theme)
-  registryVersion.value++
 }
 
 /**
  * 列出全部已注册主题（默认主题排最前）。
- * registryVersion 读取建立响应式依赖：懒加载主题注册后调用方 computed 自动重算。
  */
 export function listThemes() {
-  registryVersion.value // 响应式依赖（见上）
   const arr = []
   if (registry.has('default')) arr.push(registry.get('default'))
-  // 参数名避开 t：防止遮蔽 i18n 的 t（B23/B24 同款坑）
-  registry.forEach((th, id) => { if (id !== 'default') arr.push(th) })
+  registry.forEach((t, id) => { if (id !== 'default') arr.push(t) })
   return arr
-}
-
-// ============ 懒加载主题机制（应用中心按需安装，2026-10-09） ============
-// 懒主题经 catalog.js 的 THEME_LOADERS 动态 import（Vite 独立 chunk），
-// 其 index.js 副作用 registerTheme 后进入 registry；未加载前 listThemes() 不含它们。
-
-/**
- * 确保主题已注册：已注册直接返回 true；在懒加载表中则动态加载并等注册完成；
- * 两者皆否（未知 id / 加载失败）返回 false。加载失败自动回落默认主题。
- */
-export async function ensureTheme(id) {
-  if (!id || registry.has(id)) return registry.has(id)
-  let load = null
-  try { load = (THEME_LOADERS[id]) } catch (e) { /* catalog 未引入 */ }
-  if (!load) return false
-  try {
-    await load()
-  } catch (e) {
-    console.warn('[themes] 主题动态加载失败，回落默认:', id, e)
-    return false
-  }
-  return registry.has(id)
-}
-
-/** 拉取到「已安装主题列表」后调用：驱动切换器/列表只显示已安装主题。 */
-export function applyInstalledThemes(ids) {
-  installedThemeIds.value = Array.isArray(ids) ? ids : []
-}
-
-/** 主题是否已安装（未拉取过列表时返回 true —— 降级为老的全量可见行为）。 */
-export function isThemeInstalled(id) {
-  if (!id || id === 'default' || id === 'aiklog') return true
-  if (!Array.isArray(installedThemeIds.value)) return true
-  return installedThemeIds.value.includes(id)
 }
 
 /**
@@ -204,19 +153,10 @@ export function setActiveTheme(id) {
 export function applyServerTheme(id, opts = {}) {
   const sid = id || 'default'
   serverThemeId.value = sid
-  // 访客切换开关（per-site site_settings.allow_visitor_theme_switch）：
-  // false = 关闭，强制使用站点默认主题、忽略访客本地覆盖（SPEC-MS-001 M1）。
-  const allowSwitch = opts.allowVisitorSwitch !== false
-  allowVisitorSwitch.value = allowSwitch
   try {
     localStorage.setItem(STORAGE_KEY, sid)
     if (opts.force) localStorage.removeItem(OVERRIDE_KEY) // 站长刚改了站点主题 → 丢弃本地覆盖
   } catch (e) { /* ignore */ }
-  if (!allowSwitch) {
-    // 关闭访客切换：忽略本地覆盖，统一使用站点默认主题
-    activeThemeId.value = sid
-    return getActiveTheme()
-  }
   const ov = readOverride()
   activeThemeId.value = ov || sid
   return getActiveTheme()
@@ -260,7 +200,7 @@ function readStoredId() {
 // ============ 内置默认主题（博客文章列表，即原 PublicHome 形态） ============
 registerTheme({
   id: 'default',
-  title: t('默认 · 博客文章'),
+  title: '默认 · 博客文章',
   desc: '爱库录内置博客形态：公开文章列表',
   version: '1.0.0',
   entry: null, // 由 BlogView 内部渲染默认列表（避免循环依赖）；此处仅占位

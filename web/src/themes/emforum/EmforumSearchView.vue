@@ -1,8 +1,8 @@
 <template>
   <div class="eforum-root">
-    <EmforumHead :site-name="siteName" :site-desc="siteDesc" :blog-url="blogUrl" :slogan="$t('SEARCH · 站内搜索')" />
+    <EmforumHead :site-name="siteName" :site-desc="siteDesc" :blog-url="blogUrl" slogan="SEARCH · 站内搜索" />
 
-    <div v-if="loading" class="ef-state">{{ $t('正在加载文章…') }}</div>
+    <div v-if="loading" class="ef-state">正在加载文章…</div>
     <div v-else-if="error" class="ef-state ef-state-err">{{ error }}</div>
 
     <div v-else class="ef-wrap">
@@ -12,13 +12,13 @@
           <input
             v-model="q"
             type="search"
-            :placeholder="$t('输入关键词，检索标题与摘要…')"
+            placeholder="输入关键词，检索标题与摘要…"
             @keyup.enter="go"
           />
-          <button class="ef-search-btn" type="button" :disabled="!q.trim()" @click="go">{{ $t('搜 索') }}</button>
+          <button class="ef-search-btn" type="button" :disabled="!q.trim()" @click="go">搜 索</button>
         </div>
         <span class="ef-search-hint">
-          {{ searched ? $t("命中 {list} 篇 / 共 {posts} 篇公开文章", { list: list.length, posts: posts.length }) : $t("仅检索已加载的公开文章") }}
+          {{ searched ? `命中 ${list.length} 篇 / 共 ${posts.length} 篇公开文章` : '仅检索已加载的公开文章' }}
         </span>
       </div>
 
@@ -26,7 +26,7 @@
         <main class="ef-list">
           <div class="ef-list-head">
             <span class="ef-feed">
-              {{ searched ? $t('关键词「{keyword}」的搜索结果', { keyword }) : $t("最新更新 · 输入关键词开始检索") }}
+              {{ searched ? `关键词「${keyword}」的搜索结果` : '最新更新 · 输入关键词开始检索' }}
             </span>
           </div>
 
@@ -37,7 +37,7 @@
           />
 
           <p v-if="searched && !list.length" class="ef-empty">
-            {{ $t('没有匹配「') }}{{ keyword }}{{ $t('」的文章，换个关键词试试') }}
+            没有匹配「{{ keyword }}」的文章，换个关键词试试
           </p>
         </main>
 
@@ -46,7 +46,6 @@
     </div>
 
     <EmforumFoot :site-name="siteName" :blog-url="blogUrl" />
-    <EmforumAsk />
   </div>
 </template>
 
@@ -55,7 +54,6 @@ import { computed, ref } from 'vue'
 import EmforumHead from './EmforumHead.vue'
 import EmforumSide from './EmforumSide.vue'
 import EmforumFoot from './EmforumFoot.vue'
-import EmforumAsk from './EmforumAsk.vue'
 import EmforumThread from './EmforumThread.vue'
 import './style.css'
 import { postSummary, postTitle, readPageParam, useBlog, LIST_HREF } from './helpers.js'

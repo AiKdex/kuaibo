@@ -2,23 +2,23 @@
   <div class="modal-mask" @click.self="emit('close')">
     <div class="tag-dialog">
       <div class="td-head">
-        <h3>{{  $t('标签 / 分类')  }}</h3>
-        <button class="icon-btn" :title="$t('关闭')" @click="emit('close')"><AikIcon name="close" :size="16" /></button>
+        <h3>标签 / 分类</h3>
+        <button class="icon-btn" title="关闭" @click="emit('close')"><AikIcon name="close" :size="16" /></button>
       </div>
-      <div class="td-file" :title="fileLabel">{{  fileLabel  }}</div>
+      <div class="td-file" :title="fileLabel">{{ fileLabel }}</div>
 
       <!-- 已选标签 -->
       <div v-if="selected.length" class="td-selected">
         <span v-for="t in selectedTags" :key="t.id" class="td-chip">
-          {{  t.path  }}
-          <button class="td-chip-x" :title="$t('移除')" @click="toggle(t)"><AikIcon name="close" :size="11" /></button>
+          {{ t.path }}
+          <button class="td-chip-x" title="移除" @click="toggle(t)"><AikIcon name="close" :size="11" /></button>
         </span>
       </div>
-      <div v-else class="td-hint">{{  $t('未打标签——点下方标签选择，或新建一个')  }}</div>
+      <div v-else class="td-hint">未打标签——点下方标签选择，或新建一个</div>
 
       <!-- 标签树（缩进显示层级） -->
       <div class="td-list">
-        <div v-if="!allTags.length" class="td-empty">{{  $t('还没有标签，先新建一个（如：音乐、工作、项目A）')  }}</div>
+        <div v-if="!allTags.length" class="td-empty">还没有标签，先新建一个（如：音乐、工作、项目A）</div>
         <button
           v-for="t in allTags"
           :key="t.id"
@@ -28,8 +28,8 @@
           @click="toggle(t)"
         >
           <AikIcon name="check" :size="12" class="td-check" />
-          <span class="td-path">{{  t.path  }}</span>
-          <span class="td-cnt">{{  t.count  }}</span>
+          <span class="td-path">{{ t.path }}</span>
+          <span class="td-cnt">{{ t.count }}</span>
         </button>
       </div>
 
@@ -37,15 +37,15 @@
       <div class="td-new">
         <input
           v-model="newName"
-          :placeholder="$t('新标签名（如：粤语）')"
+          placeholder="新标签名（如：粤语）"
           @keydown.enter="createTag"
         />
-        <button class="btn btn-sm" :disabled="!newName.trim()" @click="createTag">{{  $t('新建')  }}</button>
+        <button class="btn btn-sm" :disabled="!newName.trim()" @click="createTag">新建</button>
       </div>
 
       <div class="td-foot">
-        <button class="btn" @click="emit('close')">{{  $t('取消')  }}</button>
-        <button class="btn btn-primary" :disabled="saving" @click="save">{{  $t('保存')  }}</button>
+        <button class="btn" @click="emit('close')">取消</button>
+        <button class="btn btn-primary" :disabled="saving" @click="save">保存</button>
       </div>
     </div>
   </div>
@@ -56,7 +56,6 @@ import { ref, computed, onMounted } from 'vue'
 import AikIcon from './AikIcon.vue'
 import * as api from '@/api'
 import { useToastStore } from '@/stores/toast'
-import { t } from '@/i18n'
 
 const props = defineProps({
   file: { type: Object, required: false, default: null },
@@ -94,7 +93,7 @@ async function load() {
       selected.value = (ftags || []).map((t) => t.id)
     }
   } catch (e) {
-    toast.push(t('加载标签失败：') + (e.message || e))
+    toast.push('加载标签失败：' + (e.message || e))
   }
 }
 onMounted(load)
@@ -118,7 +117,7 @@ async function createTag() {
     selected.value.push(t.id)
     newName.value = ''
   } catch (e) {
-    toast.push(t('新建失败：') + (e.message || e))
+    toast.push('新建失败：' + (e.message || e))
   }
 }
 
@@ -132,12 +131,12 @@ async function save() {
       toast.push(`已给 ${props.files.length} 个文件打上所选标签`)
     } else if (props.file) {
       await api.setFileTags(props.file.id, selected.value)
-      toast.push(t('标签已保存'))
+      toast.push('标签已保存')
     }
     emit('saved')
     emit('close')
   } catch (e) {
-    toast.push(t('保存失败：') + (e.message || e))
+    toast.push('保存失败：' + (e.message || e))
   } finally {
     saving.value = false
   }

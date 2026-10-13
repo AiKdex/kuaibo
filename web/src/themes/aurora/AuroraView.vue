@@ -5,19 +5,19 @@
     <main class="au-main">
       <!-- 首屏：站点名 + 描述 + 可证事实（篇数 / 分类数） -->
       <section class="au-hero">
-        <p class="au-kicker">{{ $t('Bento · 极光 Aurora') }}</p>
+        <p class="au-kicker">Bento · 极光 Aurora</p>
         <div class="au-hero-name">{{ siteName }}</div>
         <p class="au-hero-desc">{{ siteDesc }}</p>
         <div class="au-hero-stat">
-          <span>{{ posts.length }} {{ $t('篇公开文章') }}</span>
+          <span>{{ posts.length }} 篇公开文章</span>
           <span class="au-hero-line" aria-hidden="true"></span>
-          <span>{{ cats.length }} {{ $t('个分类') }}</span>
+          <span>{{ cats.length }} 个分类</span>
         </div>
       </section>
 
       <!-- 加载中 -->
       <div v-if="loading" class="au-state">
-        <div class="au-state-t">{{ $t('加载中…') }}</div>
+        <div class="au-state-t">加载中…</div>
         <div class="au-grid au-grid-flat">
           <div v-for="n in 6" :key="n" class="au-skel">
             <div class="au-skel-line"></div>
@@ -30,21 +30,21 @@
       <!-- 错误态 -->
       <div v-else-if="error" class="au-state">
         <div class="au-state-t">{{ error }}</div>
-        <div class="au-state-d">{{ $t("稍后重试，或直接访问静态页列表。") }}</div>
+        <div class="au-state-d">稍后重试，或直接访问静态页列表。</div>
       </div>
 
       <!-- 空态 -->
       <div v-else-if="!posts.length" class="au-state">
-        <div class="au-state-t">{{ $t('还没有公开文章') }}</div>
-        <div class="au-state-d">{{ $t("在知识库里把文件分享出来，这里就会出现列表。") }}</div>
+        <div class="au-state-t">还没有公开文章</div>
+        <div class="au-state-d">在知识库里把文件分享出来，这里就会出现列表。</div>
       </div>
 
       <template v-else>
         <!-- 分类筛选：纯前端筛选已加载的文章，用 button 而非 hash 链接（规范 §3.2） -->
         <section v-if="cats.length > 1" class="au-sec">
           <div class="au-sec-head">
-            <div class="au-sec-t">{{ $t('按分类浏览') }}</div>
-            <div class="au-sec-n">{{ shown.length }} / {{ posts.length }} {{ $t('篇') }}</div>
+            <div class="au-sec-t">按分类浏览</div>
+            <div class="au-sec-n">{{ shown.length }} / {{ posts.length }} 篇</div>
           </div>
           <div class="au-chips">
             <button
@@ -53,7 +53,7 @@
               type="button"
               @click="pickCat('')"
             >
-              {{ $t('全部') }}<em class="au-chip-n">{{ posts.length }}</em>
+              全部<em class="au-chip-n">{{ posts.length }}</em>
             </button>
             <button
               v-for="c in cats"
@@ -71,18 +71,16 @@
         <AuroraGrid :posts="shown" lead />
 
         <div v-if="!shown.length" class="au-state">
-          <div class="au-state-t">{{ $t('该分类下暂无公开文章') }}</div>
+          <div class="au-state-t">该分类下暂无公开文章</div>
         </div>
       </template>
     </main>
 
     <AuroraFoot />
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import AskWidget from '../AskWidget.vue'
 /**
  * AuroraView —— 极光主题列表页（主题入口，一期核心页面）。
  *

@@ -1,25 +1,24 @@
 <template>
   <div class="cd-mask" @click.self="$emit('cancel')">
     <div class="cd-modal">
-      <h3 class="cd-title">{{  title  }}</h3>
-      <p v-if="message" class="cd-desc">{{  message  }}</p>
+      <h3 class="cd-title">{{ title }}</h3>
+      <p v-if="message" class="cd-desc">{{ message }}</p>
       <div class="cd-actions">
-        <button class="btn btn-sm" @click="$emit('cancel')">{{  cancelText  }}</button>
+        <button class="btn btn-sm" @click="$emit('cancel')">{{ cancelText }}</button>
         <button class="btn btn-sm" :class="danger ? 'btn-danger' : 'btn-primary'" @click="$emit('confirm')">
-          {{  confirmText  }}
+          {{ confirmText }}
         </button>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>import { t } from '@/i18n'
-
+<script setup>
 defineProps({
   title: { type: String, required: true },
   message: { type: String, default: '' },
-  confirmText: { type: String, default: t('确定') },
-  cancelText: { type: String, default: t('取消') },
+  confirmText: { type: String, default: '确定' },
+  cancelText: { type: String, default: '取消' },
   danger: { type: Boolean, default: false }
 })
 defineEmits(['confirm', 'cancel'])

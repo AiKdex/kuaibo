@@ -5,7 +5,6 @@
 </template>
 
 <script setup>
-import { t } from '@/i18n'
 import { computed } from 'vue'
 
 const props = defineProps({
@@ -19,7 +18,7 @@ const cover = computed(() => {
   return m ? m[1] : ''
 })
 
-const alt = computed(() => props.ctx?.post?.file?.name || t('封面'))
+const alt = computed(() => props.ctx?.post?.file?.name || '封面')
 </script>
 
 <style scoped>

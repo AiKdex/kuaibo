@@ -10,18 +10,11 @@ import (
 	"log"
 	"net/http"
 	"strings"
-
-	"github.com/AiKMAP/AiKmap/server/internal/service"
 )
 
 // appInstallZip POST /api/v1/admin/apps/install-zip
 // multipart 字段 file=zip；或 Content-Type application/json 的 {manifest:{...}}
 func (a *API) appInstallZip(w http.ResponseWriter, r *http.Request) {
-	// H2 修复：zip/manifest 安装会写插件注册表与主题目录，仅站长（owner/admin）可执行
-	// （纵深防御：路由级 /api/v1/admin/ 前缀已统一拦截，此处再加 handler 层守卫）。
-	if !a.blogAdminOnly(w, r) {
-		return
-	}
 	ct := r.Header.Get("Content-Type")
 	if strings.HasPrefix(ct, "application/json") {
 		var body struct {
@@ -79,11 +72,6 @@ func (a *API) appInstallZip(w http.ResponseWriter, r *http.Request) {
 	var pm pluginManifest
 	isTheme := false
 	if err := json.Unmarshal(manifest, &pm); err == nil && pm.ID != "" {
-		// 源包分流（SPEC-SP-001）：kind=source-pack 或包内带 sources/ 目录 → 走采集源导入链路
-		if pm.Kind == service.SourcePackKind || zipHasDir(zr, "sources") {
-			a.installSourcePack(w, r, raw, nil)
-			return
-		}
 		isTheme = pm.Kind == "theme"
 		if !isTheme && zipHasRootFile(zr, "ssr.css") {
 			isTheme = true
@@ -137,18 +125,6 @@ func (a *API) installManifestJSON(w http.ResponseWriter, r *http.Request, raw []
 		m.Enabled = &t
 	}
 	a.upsertPluginManifest(w, r, &m, "app.install")
-}
-
-// zipHasDir 判定 zip 包内是否含指定顶层目录（源包识别：sources/ 目录存在即按源包处理）。
-func zipHasDir(zr *zip.Reader, dir string) bool {
-	prefix := dir + "/"
-	for _, zf := range zr.File {
-		n := strings.TrimPrefix(strings.ReplaceAll(zf.Name, "\\", "/"), "./")
-		if strings.HasPrefix(n, prefix) {
-			return true
-		}
-	}
-	return false
 }
 
 // zipHasRootFile 判定 zip 包内是否含主题有效资产（能经 themeAssetMap 映射出 ssr.css 或 page.html；

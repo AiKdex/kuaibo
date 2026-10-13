@@ -2,12 +2,12 @@
   <div class="tm-view">
     <div class="tm-head">
       <div>
-        <h2>{{  $t('标签管理')  }}</h2>
-        <p class="tm-sub">{{  $t('统一树状标签 = 文件分类 / 知识库概念 / 博客分类 的同一套体系')  }}</p>
+        <h2>标签管理</h2>
+        <p class="tm-sub">统一树状标签 = 文件分类 / 知识库概念 / 博客分类 的同一套体系</p>
       </div>
       <div class="tm-tools">
         <button class="btn" @click="load" :disabled="loading">
-          <AikIcon name="refresh" :size="14" />{{  $t('刷新')  }}
+          <AikIcon name="refresh" :size="14" />刷新
         </button>
       </div>
     </div>
@@ -16,30 +16,30 @@
       <!-- 左栏：标签树 -->
       <div class="tm-tree-pane">
         <div class="tm-new">
-          <input v-model="newRoot" class="input" :placeholder="$t('新建顶层标签…（如：工作 / 学习 / 音乐）')" @keyup.enter="createRoot" />
+          <input v-model="newRoot" class="input" placeholder="新建顶层标签…（如：工作 / 学习 / 音乐）" @keyup.enter="createRoot" />
           <button class="btn btn-primary" :disabled="!newRoot.trim()" @click="createRoot">
-            <AikIcon name="plus" :size="14" />{{  $t('新建')  }}
+            <AikIcon name="plus" :size="14" />新建
           </button>
         </div>
 
-        <div v-if="loading" class="tm-empty">{{  $t('加载中…')  }}</div>
+        <div v-if="loading" class="tm-empty">加载中…</div>
         <div v-else-if="!tags.length" class="tm-empty">
           <AikIcon name="tag" :size="30" />
-          <p>{{  $t('还没有标签')  }}</p>
-          <p class="muted">{{  $t('在上方新建一个顶层标签；右键文件 →「标签/分类」→ 可新建子标签')  }}</p>
+          <p>还没有标签</p>
+          <p class="muted">在上方新建一个顶层标签；右键文件 →「标签/分类」→ 可新建子标签</p>
         </div>
 
         <div v-else class="tm-cascade">
           <div v-for="(col, ci) in columns" :key="ci" class="tm-col">
             <div v-for="t in col" :key="t.id" class="tm-col-item"
               :class="{ sel: selPath[ci] && selPath[ci].id === t.id }"
-              :title="$t('{path}（{count} 个文件）', { path: t.path, count: t.count })" @click="selectLevel(ci, t)">
+              :title="t.path + '（' + t.count + ' 个文件）'" @click="selectLevel(ci, t)">
               <AikIcon name="tag" :size="13" class="tm-ico" />
-              <span class="tm-col-name">{{  t.name  }}</span>
-              <span class="tm-cnt">{{  t.count  }}</span>
+              <span class="tm-col-name">{{ t.name }}</span>
+              <span class="tm-cnt">{{ t.count }}</span>
               <AikIcon v-if="hasChildren(t.id)" name="chevron-right" :size="12" class="tm-col-arrow" />
             </div>
-            <div v-if="!col.length" class="tm-col-empty">{{  $t('（无）')  }}</div>
+            <div v-if="!col.length" class="tm-col-empty">（无）</div>
           </div>
         </div>
       </div>
@@ -50,50 +50,50 @@
           <div class="tm-detail-head">
             <div class="tm-detail-path">
               <AikIcon name="tag" :size="15" class="tm-ico" />
-              <b>{{  filterTag.path  }}</b>
-              <span class="tm-cnt">{{  files.length  }} {{  $t('个文件')  }}</span>
+              <b>{{ filterTag.path }}</b>
+              <span class="tm-cnt">{{ files.length }} 个文件</span>
             </div>
             <div class="tm-detail-ops">
-              <button class="btn btn-sm" :title="$t('在该标签下新建子标签')" @click="startChild(filterTag)"><AikIcon name="plus" :size="13" />{{  $t('子标签')  }}</button>
-              <button class="btn btn-sm" :title="$t('重命名')" @click="startRename(filterTag)"><AikIcon name="edit" :size="13" />{{  $t('重命名')  }}</button>
-              <button class="btn btn-sm btn-danger-ghost" :title="$t('删除（连同子标签）')" @click="confirmRemoveTag = filterTag"><AikIcon name="trash" :size="13" />{{  $t('删除')  }}</button>
+              <button class="btn btn-sm" title="在该标签下新建子标签" @click="startChild(filterTag)"><AikIcon name="plus" :size="13" />子标签</button>
+              <button class="btn btn-sm" title="重命名" @click="startRename(filterTag)"><AikIcon name="edit" :size="13" />重命名</button>
+              <button class="btn btn-sm btn-danger-ghost" title="删除（连同子标签）" @click="confirmRemoveTag = filterTag"><AikIcon name="trash" :size="13" />删除</button>
             </div>
           </div>
           <!-- 行内新建子标签 -->
           <div v-if="childOf === filterTag.id" class="tm-inline" @click.stop>
-            <input v-model="childName" class="input tm-inline-input" :placeholder="$t('子标签名…')" @keyup.enter="createChild(filterTag)" @keyup.esc="childOf = ''" />
-            <button class="btn btn-sm" :disabled="!childName.trim()" @click="createChild(filterTag)">{{  $t('确定')  }}</button>
-            <button class="btn btn-sm btn-ghost" @click="childOf = ''">{{  $t('取消')  }}</button>
+            <input v-model="childName" class="input tm-inline-input" placeholder="子标签名…" @keyup.enter="createChild(filterTag)" @keyup.esc="childOf = ''" />
+            <button class="btn btn-sm" :disabled="!childName.trim()" @click="createChild(filterTag)">确定</button>
+            <button class="btn btn-sm btn-ghost" @click="childOf = ''">取消</button>
           </div>
           <!-- 行内重命名 -->
           <div v-if="renameOf === filterTag.id" class="tm-inline" @click.stop>
-            <input v-model="renameName" class="input tm-inline-input" :placeholder="$t('新名称…')" @keyup.enter="doRename(filterTag)" @keyup.esc="renameOf = ''" />
-            <button class="btn btn-sm" :disabled="!renameName.trim()" @click="doRename(filterTag)">{{  $t('确定')  }}</button>
-            <button class="btn btn-sm btn-ghost" @click="renameOf = ''">{{  $t('取消')  }}</button>
+            <input v-model="renameName" class="input tm-inline-input" placeholder="新名称…" @keyup.enter="doRename(filterTag)" @keyup.esc="renameOf = ''" />
+            <button class="btn btn-sm" :disabled="!renameName.trim()" @click="doRename(filterTag)">确定</button>
+            <button class="btn btn-sm btn-ghost" @click="renameOf = ''">取消</button>
           </div>
-          <div v-if="filesLoading" class="tm-empty-sm">{{  $t('加载中…')  }}</div>
+          <div v-if="filesLoading" class="tm-empty-sm">加载中…</div>
           <div v-else-if="!files.length" class="tm-detail-empty-sm">
-            {{  $t('该标签下暂无文件 —— 在文件库选中文件 →「标签/分类」打上这个标签')  }}
+            该标签下暂无文件 —— 在文件库选中文件 →「标签/分类」打上这个标签
           </div>
           <div v-else class="tm-files">
             <div v-for="f in files" :key="f.id" class="tm-file" @click="openFile(f)">
               <AikIcon :name="f.kind === 'dir' ? 'folder' : 'file'" :size="14" class="tm-file-ico" />
-              <span class="tm-file-name">{{  f.name  }}</span>
-              <span class="tm-file-meta">{{  f.kind === 'dir' ? $t('目录') : fmtSize(f.size)  }}</span>
+              <span class="tm-file-name">{{ f.name }}</span>
+              <span class="tm-file-meta">{{ f.kind === 'dir' ? '目录' : fmtSize(f.size) }}</span>
             </div>
           </div>
         </template>
         <div v-else class="tm-detail-empty">
           <AikIcon name="tag" :size="30" />
-          <p>{{ $t('点选左侧标签') }}</p>
-          <p class="muted">{{ $t('查看该标签下的文件，或进行 子标签 / 重命名 / 删除 操作') }}</p>
+          <p>点选左侧标签</p>
+          <p class="muted">查看该标签下的文件，或进行 子标签 / 重命名 / 删除 操作</p>
         </div>
       </div>
     </div>
     <ConfirmDialog
       v-if="confirmRemoveTag"
-      :title="$t('删除标签')"
-      :message="$t('删除标签「{v0}」？其下所有子标签一并删除，文件本身不受影响。', { v0: confirmRemoveTag.path })"
+      title="删除标签"
+      :message="`删除标签「${confirmRemoveTag.path}」？其下所有子标签一并删除，文件本身不受影响。`"
       confirm-text="删除"
       danger
       @confirm="doRemoveTag(confirmRemoveTag)"
@@ -109,7 +109,6 @@ import AikIcon from '@/components/AikIcon.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import * as api from '@/api'
 import { useToastStore } from '@/stores/toast'
-import { t } from '@/i18n'
 
 const router = useRouter()
 const toast = useToastStore()
@@ -167,7 +166,7 @@ async function load() {
       if (root) selectLevel(0, root)
     }
   } catch (e) {
-    toast.push(t('加载标签失败：') + (e.message || e))
+    toast.push('加载标签失败：' + (e.message || e))
   } finally {
     loading.value = false
   }
@@ -183,7 +182,7 @@ async function createRoot() {
     await load()
     toast.push(`已创建「${name}」`)
   } catch (e) {
-    toast.push(t('创建失败：') + (e.message || e))
+    toast.push('创建失败：' + (e.message || e))
   }
 }
 
@@ -201,7 +200,7 @@ async function createChild(t) {
     await load()
     toast.push(`已创建「${t.path}/${name}」`)
   } catch (e) {
-    toast.push(t('创建失败：') + (e.message || e))
+    toast.push('创建失败：' + (e.message || e))
   }
 }
 
@@ -222,7 +221,7 @@ async function doRename(t) {
     await load()
     toast.push(`已重命名为「${name}」`)
   } catch (e) {
-    toast.push(t('重命名失败：') + (e.message || e))
+    toast.push('重命名失败：' + (e.message || e))
   }
 }
 
@@ -240,7 +239,7 @@ function doRemoveTag(t) {
       }
       toast.push(`已删除「${t.path}」`)
     })
-    .catch((e) => toast.push(t('删除失败：') + (e.message || e)))
+    .catch((e) => toast.push('删除失败：' + (e.message || e)))
 }
 
 async function filterByTag(t) {
@@ -249,7 +248,7 @@ async function filterByTag(t) {
   try {
     files.value = await api.listFilesByTag(t.id)
   } catch (e) {
-    toast.push(t('加载文件失败：') + (e.message || e))
+    toast.push('加载文件失败：' + (e.message || e))
   } finally {
     filesLoading.value = false
   }
@@ -273,7 +272,7 @@ function fmtSize(n) {
 </script>
 
 <style scoped>
-.tm-view { max-width: 1200px; margin: 0 auto; padding: 20px 24px 40px; }
+.tm-view { padding: 20px 24px; }
 .tm-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
 .tm-head h2 { font-size: 20px; margin: 0 0 4px; }
 .tm-sub { color: var(--text-3, #8a919f); font-size: 13px; margin: 0; }

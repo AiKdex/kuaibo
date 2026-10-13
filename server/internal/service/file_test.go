@@ -40,7 +40,7 @@ func newTestFS(t *testing.T) (*FileStore, context.Context, string, string) {
 
 func TestFileUploadAndConflictRename(t *testing.T) {
 	fs, ctx, owner, space := newTestFS(t)
-	f1, err := fs.Upload(ctx, owner, space, "", "a.md", "text/markdown", strings.NewReader("# hi"), -1, DefaultSiteID)
+	f1, err := fs.Upload(ctx, owner, space, "", "a.md", "text/markdown", strings.NewReader("# hi"), -1)
 	if err != nil {
 		t.Fatalf("upload: %v", err)
 	}
@@ -48,14 +48,14 @@ func TestFileUploadAndConflictRename(t *testing.T) {
 		t.Fatalf("bad file: %+v", f1)
 	}
 	// 同名冲突 → a-1.md
-	f2, err := fs.Upload(ctx, owner, space, "", "a.md", "text/markdown", strings.NewReader("# hi2"), -1, DefaultSiteID)
+	f2, err := fs.Upload(ctx, owner, space, "", "a.md", "text/markdown", strings.NewReader("# hi2"), -1)
 	if err != nil {
 		t.Fatalf("conflict upload: %v", err)
 	}
 	if f2.Name != "a-1.md" {
 		t.Fatalf("expected a-1.md, got %s", f2.Name)
 	}
-	items, err := fs.ListDir(ctx, space, "", DefaultSiteID)
+	items, err := fs.ListDir(ctx, space, "")
 	if err != nil {
 		t.Fatalf("list: %v", err)
 	}
@@ -78,11 +78,11 @@ func TestFileUploadAndConflictRename(t *testing.T) {
 
 func TestDirMoveDeleteCycle(t *testing.T) {
 	fs, ctx, owner, space := newTestFS(t)
-	dir1, err := fs.CreateDir(ctx, owner, space, "", "docs", DefaultSiteID)
+	dir1, err := fs.CreateDir(ctx, owner, space, "", "docs")
 	if err != nil {
 		t.Fatalf("mkdir: %v", err)
 	}
-	dir2, err := fs.CreateDir(ctx, owner, space, dir1.ID, "sub", DefaultSiteID)
+	dir2, err := fs.CreateDir(ctx, owner, space, dir1.ID, "sub")
 	if err != nil {
 		t.Fatalf("mkdir sub: %v", err)
 	}
@@ -99,7 +99,7 @@ func TestDirMoveDeleteCycle(t *testing.T) {
 		t.Fatalf("delete: %v", err)
 	}
 	// docs 已删；renamed（原 sub 移出）仍在根
-	items, _ := fs.ListDir(ctx, space, "", DefaultSiteID)
+	items, _ := fs.ListDir(ctx, space, "")
 	if len(items) != 1 || items[0].Name != "renamed" {
 		t.Fatalf("expected only 'renamed', got %d items", len(items))
 	}
@@ -110,10 +110,10 @@ func TestDirMoveDeleteCycle(t *testing.T) {
 
 func TestInvalidName(t *testing.T) {
 	fs, ctx, owner, space := newTestFS(t)
-	if _, err := fs.Upload(ctx, owner, space, "", "../evil", "", strings.NewReader("x"), 1, DefaultSiteID); err != ErrInvalidName {
+	if _, err := fs.Upload(ctx, owner, space, "", "../evil", "", strings.NewReader("x"), 1); err != ErrInvalidName {
 		t.Fatalf("expected ErrInvalidName, got %v", err)
 	}
-	if _, err := fs.CreateDir(ctx, owner, space, "", "a/b", DefaultSiteID); err != ErrInvalidName {
+	if _, err := fs.CreateDir(ctx, owner, space, "", "a/b"); err != ErrInvalidName {
 		t.Fatalf("expected ErrInvalidName for slash, got %v", err)
 	}
 }

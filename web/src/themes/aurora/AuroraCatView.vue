@@ -4,28 +4,26 @@
 
     <main class="au-main">
       <section class="au-hero au-hero-sm">
-        <p class="au-kicker">{{ $t('分类') }}</p>
-        <div class="au-hero-name">{{ cat || $t("未识别到分类参数") }}</div>
-        <p class="au-hero-desc">{{ $t('按目录首段聚合，共') }} {{ list.length }} {{ $t('篇公开文章。') }}</p>
+        <p class="au-kicker">分类</p>
+        <div class="au-hero-name">{{ cat || '未识别到分类参数' }}</div>
+        <p class="au-hero-desc">按目录首段聚合，共 {{ list.length }} 篇公开文章。</p>
       </section>
 
       <AuroraGrid v-if="list.length" :posts="list" />
 
       <div v-else class="au-state">
         <div class="au-state-t">
-          {{ cat ? $t("该分类下暂无公开文章") : $t("未识别到分类参数") }}
+          {{ cat ? '该分类下暂无公开文章' : '未识别到分类参数' }}
         </div>
-        <div class="au-state-d">{{ $t('分类 = 文章所在目录的第一段。') }}</div>
+        <div class="au-state-d">分类 = 文章所在目录的第一段。</div>
       </div>
     </main>
 
     <AuroraFoot />
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import AskWidget from '../AskWidget.vue'
 /**
  * AuroraCatView —— 分类页（entries.cat / entries.category）。
  * 数据：ctx.page.cat（系统侧路由补齐后注入）+ ctx.posts 按 path 首段过滤；

@@ -29,7 +29,7 @@ var Defaults = map[string]any{
 	"site.domain":            "localhost:8080",
 	"site.language":          "zh-CN",
 	"site.timezone":          "Asia/Shanghai",
-	"site.registration_open": false, // C1a 修复：默认关闭开放注册（上线安全默认；需要时后台显式打开）
+	"site.registration_open": true,
 	// CORS 跨源白名单（外部频道站如 qiuzhi.aikmap.cn 读知识库数据用）：逗号分隔来源；
 	// "*" 放行全部；留空 = 关闭 CORS（同源部署，默认最安全）
 	"server.cors_origins": "",
@@ -40,24 +40,6 @@ var Defaults = map[string]any{
 	"storage.default_backend": "local",
 	"storage.local.root":      "./data/files",
 	"storage.recycle_days":    30,
-	// 媒体派生资产（缩略图）参数：B16 从代码常量提取，**改完即时生效**（生成时运行期读取）。
-	// 为什么可配：不同站点图片尺寸差异大；共享主机还常需按 CPU 余量收放抽帧成本。
-	// 空串 = 未配置（回退内置默认），与 capability.* 同一口径。
-	"media.thumb_max_edge": 480,  // 缩略图长边上限（像素，64-4096）：只缩不放
-	"media.thumb_seek_ms":  1000, // 视频抽帧位置上限（毫秒，0-60000）：跳过片头黑场/台标
-	"media.thumb_quality":  5,    // JPEG 质量（2-31，数值越小越清晰、体积越大）
-	// 视频转码参数（B17）：与 thumb 同一口径 —— 运行期读取、改完即时生效、空串=回退内置默认。
-	// 为什么可配：主机 CPU 余量、受众网络、素材分辨率差异极大；默认值面向「单机自部署」场景。
-	"media.transcode_max_height":   720,      // 输出最大高度（像素，0-2160；只缩不放，0=不缩放）
-	"media.transcode_crf":          23,       // x264 质量因子（0-51，越小越清晰；18-28 为常用档）
-	"media.transcode_preset":       "medium", // x264 速度档（ultrafast…veryslow）
-	"media.transcode_audio_kbps":   128,      // AAC 音频码率（0-320；0=去掉音轨）
-	"media.transcode_concurrency":  1,        // 同时进行的转码任务数（1-4；共享主机建议 1）
-	"media.transcode_max_duration_s": 1800,   // 允许转码的最长素材时长（秒，0=不限）
-	// 孤儿派生对象定时兜底清理（B18）：把 B16 的「手动 stats+purge」升级为自动。
-	// 默认 1440 分钟（24 小时）= 启用；0 = 关闭（保持 B16 纯手动行为，不强制自动化）。
-	// 为何可配：清理频率与「误删容忍度」成反比，站长按数据重要程度自定。
-	"media.derived_sweep_interval_min": 1440,
 	// AI / 模型（按能力绑定；provider 可为 local/hosted）
 	"ai.embedding.provider": "local", // local | hosted
 	"ai.embedding.endpoint": "",
@@ -89,10 +71,6 @@ var Defaults = map[string]any{
 	// 上传后自动发布（站长可配）：true=博客管理拖拽/选文件上传 md 后直接 published；
 	// false（默认）=保持草稿，由站长逐篇确认后发布
 	"blog.auto_publish_on_upload": false,
-	// 公开列表是否收录附件（站长可配，B10）：false（默认）=公开列表/热门榜/RSS/sitemap 只列文章，
-	// 图片/音视频/压缩包等附件不进这些出口（附件在管理轨与分享页照常可见）；
-	// true=恢复旧行为（附件也当内容列出，适合整目录发布图集的场景）
-	"blog.list_attachments": false,
 	// 交互版主题（SPA 公开视图）；静态页 /blog 固定阅读壳，不受此项影响
 	"blog.theme": "aiklog",
 	// 索引与检索
@@ -114,7 +92,7 @@ var Defaults = map[string]any{
 	"media.hls_enabled":       false,
 	"media.transcribe_engine": "", // local | hosted
 	// 安全
-	"security.registration_open": false, // C1a 修复：同上（当前门禁实际读 site.registration_open）
+	"security.registration_open": true,
 	"security.invite_only":       false,
 	"security.jwt_ttl_s":         3600,
 	"security.refresh_ttl_s":     604800,
@@ -123,21 +101,7 @@ var Defaults = map[string]any{
 	// 运维
 	"ops.log_level":      "info",
 	"ops.telemetry":      false,
-	"ops.backup_enabled":      false,   // 备份总开关（后台可动态开关：PUT /api/v1/system/backup）
-	"ops.backup_schedule":     "03:00", // 每日备份时刻 HH:MM（后台可设；每分钟检查，改动≤1min 生效）
-	"ops.backup_keep_local":   7,       // 本地保留份数
-	"ops.backup_keep_remote":  30,      // 远端保留份数（storage 后端 backup/ 前缀）
-	"ops.backup_last_at":      "",      // 最近一次成功备份时间戳（备份成功后回写，动态键）
-
-	// 组织架构（企业版运维层）：能力装配受 capability.org 控制，装配完成后由下列
-	// 运行期子开关决定各能力是否放行；总开关关闭时 tree/department/transfer 一律视同关闭。
-	"org.enabled":    false,
-	"org.tree":       false,
-	"org.department": false,
-	"org.transfer":   false,
-
-	// 家族传承记录（[family] REQ-010/011）：capability.family 装配后由 family.enabled 控制开关；默认关=不装不用。
-	"family.enabled": false,
+	"ops.backup_enabled": false,
 }
 
 // Entry 是配置项运行时形态。
@@ -347,12 +311,11 @@ func (s *Store) Snapshot() map[string]Entry {
 	return out
 }
 
-// isSecretKey 判断配置键是否为密钥类（api_key / token / secret / password / pass）。
+// isSecretKey 判断配置键是否为密钥类（api_key / token / secret / password）。
 func isSecretKey(k string) bool {
 	lk := strings.ToLower(k)
 	return strings.Contains(lk, "api_key") || strings.Contains(lk, "token") ||
-		strings.Contains(lk, "secret") || strings.Contains(lk, "password") ||
-		strings.Contains(lk, "pass")
+		strings.Contains(lk, "secret") || strings.Contains(lk, "password")
 }
 
 func (s *Store) encrypt(raw string) string {

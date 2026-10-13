@@ -14,7 +14,6 @@ var KernelTopics = map[string]bool{
 	"file.purged":        true,
 	"file.status":        true,
 	"file.tagged":        true,
-	"file.ingested":      true, // 评论收录进正文（B3）：quote 直写 / fuse 采纳 / revert 撤销
 	"tag.created":        true,
 	"tag.renamed":        true,
 	"tag.deleted":        true,

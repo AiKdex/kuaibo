@@ -1,4 +1,3 @@
-import { t } from '@/i18n'
 import { defineAsyncComponent } from 'vue'
 
 /**
@@ -9,31 +8,30 @@ const CatView = defineAsyncComponent(() => import('./VerdantCatView.vue'))
 const AuthorView = defineAsyncComponent(() => import('./VerdantAuthorView.vue'))
 const ArchiveView = defineAsyncComponent(() => import('./VerdantArchiveView.vue'))
 const SearchView = defineAsyncComponent(() => import('./VerdantSearchView.vue'))
-const TagView = defineAsyncComponent(() => import('./VerdantTagView.vue'))
 
 export default {
   id: 'verdant',
-  title: t('青野 Verdant'),
+  title: '青野 Verdant',
   desc: '明亮清爽：暖白底 + 森林绿 + 有机圆角，适合生活/自然/产品类内容，含分类/作者/归档/搜索内页',
   version: '1.0.0',
   pages: ['posts'],
   tokens: {
-    '--th-ink': t('正文色（深墨绿）'),
-    '--th-ink-2': t('次要文字'),
-    '--th-ink-3': t('弱化文字'),
-    '--th-paper': t('页面底色（暖白）'),
-    '--th-card': t('卡片底色（纯白）'),
-    '--th-line': t('描边与分隔线（浅绿灰）'),
-    '--th-green': t('主强调色（森林绿）'),
-    '--th-green-deep': t('强调色深阶（悬停/标题）'),
-    '--th-mint': t('辅助色（薄荷）'),
-    '--th-leaf': t('浅叶色底（徽章/标签底）'),
-    '--th-sun': t('点缀色（琥珀）'),
-    '--th-r-sm': t('小圆角'),
-    '--th-r': t('常规圆角'),
-    '--th-r-lg': t('大圆角（卡片）'),
-    '--th-font-d': t('标题字体（无衬线，字重对比）'),
-    '--th-font-b': t('正文字体'),
+    '--th-ink': '正文色（深墨绿）',
+    '--th-ink-2': '次要文字',
+    '--th-ink-3': '弱化文字',
+    '--th-paper': '页面底色（暖白）',
+    '--th-card': '卡片底色（纯白）',
+    '--th-line': '描边与分隔线（浅绿灰）',
+    '--th-green': '主强调色（森林绿）',
+    '--th-green-deep': '强调色深阶（悬停/标题）',
+    '--th-mint': '辅助色（薄荷）',
+    '--th-leaf': '浅叶色底（徽章/标签底）',
+    '--th-sun': '点缀色（琥珀）',
+    '--th-r-sm': '小圆角',
+    '--th-r': '常规圆角',
+    '--th-r-lg': '大圆角（卡片）',
+    '--th-font-d': '标题字体（无衬线，字重对比）',
+    '--th-font-b': '正文字体',
   },
   ui: { themeSwitcher: true }, // 页头自带 <ThemeSwitch />，宿主不再补悬浮版
   dataSources: ['blog'],
@@ -44,7 +42,7 @@ export default {
     author: AuthorView,
     archive: ArchiveView,
     search: SearchView,
-    tag: TagView, // 标签页（entries.tag）：按 file.tags 过滤
     // post：在 index.js 中合并（整页交给 VerdantPostView，正文样式由 post.css 提供）
+    // tag：系统层标签数据未实现（规范 §4.6），暂不接管
   },
 }

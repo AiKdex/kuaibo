@@ -1,12 +1,12 @@
 <template>
   <!-- sidebar 挂载点示例：文章页侧栏信息卡（协议演示，第三方可替换/删除） -->
   <aside v-if="ctx.title" class="mc-card">
-    <h4 class="mc-title">{{ $t('文章信息') }}</h4>
+    <h4 class="mc-title">文章信息</h4>
     <dl class="mc-dl">
-      <div class="mc-row"><dt>{{ $t('分类') }}</dt><dd>{{ ctx.category || $t("未分类") }}</dd></div>
-      <div class="mc-row"><dt>{{ $t('更新时间') }}</dt><dd>{{ fmtTime(ctx.updatedAt) }}</dd></div>
-      <div class="mc-row"><dt>{{ $t('大小') }}</dt><dd>{{ fmtSize(ctx.size) }}</dd></div>
-      <div class="mc-row"><dt>{{ $t('来源') }}</dt><dd>{{ $t('爱库录知识库') }}</dd></div>
+      <div class="mc-row"><dt>分类</dt><dd>{{ ctx.category || '未分类' }}</dd></div>
+      <div class="mc-row"><dt>更新时间</dt><dd>{{ fmtTime(ctx.updatedAt) }}</dd></div>
+      <div class="mc-row"><dt>大小</dt><dd>{{ fmtSize(ctx.size) }}</dd></div>
+      <div class="mc-row"><dt>来源</dt><dd>爱库录知识库</dd></div>
     </dl>
   </aside>
 </template>

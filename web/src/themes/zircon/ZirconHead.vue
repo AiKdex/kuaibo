@@ -6,9 +6,9 @@
         <span class="zc-brand-txt">{{ siteName }}</span>
       </a>
       <nav class="zc-nav">
-        <a class="zc-nav-link" :href="listHref">{{ $t('文章') }}</a>
+        <a class="zc-nav-link" :href="listHref">文章</a>
         <a class="zc-nav-link" :href="rssHref" target="_blank" rel="noopener">RSS</a>
-        <a class="zc-nav-link" href="https://aiklog.com" target="_blank" rel="noopener">{{ $t('官网') }}</a>
+        <a class="zc-nav-link" href="https://aiklog.com" target="_blank" rel="noopener">官网</a>
         <ThemeSwitch />
       </nav>
     </div>

@@ -6,15 +6,15 @@
       <main class="bf-main">
         <div class="bf-bar">
           <div class="bf-bar-l">
-            <h1 class="bf-bar-t">{{ cat || $t("未分类") }}</h1>
-            <span class="bf-bar-s">{{ $t('分类由文件路径首段决定') }}</span>
+            <h1 class="bf-bar-t">{{ cat || '未分类' }}</h1>
+            <span class="bf-bar-s">分类由文件路径首段决定</span>
           </div>
-          <div class="bf-bar-r"><span class="bf-bar-chip">{{ list.length }} {{ $t('篇') }}</span></div>
+          <div class="bf-bar-r"><span class="bf-bar-chip">{{ list.length }} 篇</span></div>
         </div>
 
         <div class="bf-tool">
           <div class="bf-chips">
-            <button class="bf-chip" :class="{ 'is-on': !picked }" type="button" @click="picked = ''">{{ $t('全部') }}</button>
+            <button class="bf-chip" :class="{ 'is-on': !picked }" type="button" @click="picked = ''">全部</button>
             <button
               v-for="c in cats"
               :key="c.name"
@@ -25,16 +25,16 @@
             >{{ c.name }}<i>{{ c.count }}</i></button>
           </div>
           <div class="bf-sorts">
-            <a class="bf-sort" :href="blogUrl">{{ $t('‹ 返回全部') }}</a>
+            <a class="bf-sort" :href="blogUrl">‹ 返回全部</a>
           </div>
         </div>
 
-        <div v-if="loading" class="bf-state"><span class="bf-state-ic">…</span><p class="bf-state-t">{{ $t('正在加载') }}</p></div>
+        <div v-if="loading" class="bf-state"><span class="bf-state-ic">…</span><p class="bf-state-t">正在加载</p></div>
         <div v-else-if="error" class="bf-state"><span class="bf-state-ic">!</span><p class="bf-state-t">{{ error }}</p></div>
         <div v-else-if="!list.length" class="bf-state">
           <span class="bf-state-ic">∅</span>
-          <p class="bf-state-t">{{ $t('该分类下暂无文章') }}</p>
-          <a class="bf-state-btn" :href="blogUrl">{{ $t('查看全部文章') }}</a>
+          <p class="bf-state-t">该分类下暂无文章</p>
+          <a class="bf-state-btn" :href="blogUrl">查看全部文章</a>
         </div>
         <template v-else>
           <ButterflyCard v-for="(p, i) in list" :key="p.token || p.path || i" :post="p" :index="i" :reversed="i % 2 === 1" />
@@ -50,11 +50,9 @@
     <ButterflyFoot :site-name="siteName" :blog-url="blogUrl" :count="posts.length" />
     <ButterflyRight :dark="dark" @toggle-dark="toggleDark" />
   </div>
-    <AskWidget />
 </template>
 
 <script setup>
-import AskWidget from '../AskWidget.vue'
 import { computed, ref } from 'vue'
 import ButterflyHead from './ButterflyHead.vue'
 import ButterflyCard from './ButterflyCard.vue'

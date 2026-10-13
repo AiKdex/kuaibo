@@ -4,7 +4,7 @@
       <TransitionGroup name="toast-slide">
         <div v-for="t in store.items" :key="t.id" class="toast-item">
           <AikIcon name="check" :size="13" class="ti" />
-          <span>{{  t.text  }}</span>
+          <span>{{ t.text }}</span>
         </div>
       </TransitionGroup>
     </div>

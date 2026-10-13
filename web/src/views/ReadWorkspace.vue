@@ -24,19 +24,19 @@
     <!-- 无标签空态 -->
     <div v-if="tabs.length === 0" class="read-empty">
       <AikIcon name="book" :size="34" />
-      <p>{{  $t('没有打开的文档')  }}</p>
-      <span>{{  $t('在文件库、知识库或搜索中点击文档即可在此打开')  }}</span>
+      <p>没有打开的文档</p>
+      <span>在文件库、知识库或搜索中点击文档即可在此打开</span>
     </div>
 
     <!-- 关闭未保存 tab 的确认 -->
     <Transition name="fade">
       <div v-if="confirmClose" class="modal-mask" @click.self="confirmClose = null">
         <div class="modal modal-sm">
-          <h3>{{  $t('有未保存的修改')  }}</h3>
-          <p class="modal-desc">「{{  confirmClose.name  }}{{  $t('」有未保存的修改，关闭后将丢失这些改动。')  }}</p>
+          <h3>有未保存的修改</h3>
+          <p class="modal-desc">「{{ confirmClose.name }}」有未保存的修改，关闭后将丢失这些改动。</p>
           <div class="modal-actions">
-            <button class="btn" @click="confirmClose = null">{{  $t('取消')  }}</button>
-            <button class="btn btn-danger-ghost" @click="doClose(confirmClose.fileId)">{{  $t('放弃修改并关闭')  }}</button>
+            <button class="btn" @click="confirmClose = null">取消</button>
+            <button class="btn btn-danger-ghost" @click="doClose(confirmClose.fileId)">放弃修改并关闭</button>
           </div>
         </div>
       </div>
@@ -52,7 +52,6 @@ import ReadView from '@/views/ReadView.vue'
 import AikIcon from '@/components/AikIcon.vue'
 import { useTabsStore } from '@/stores/tabs'
 import { getFile } from '@/api'
-import { t } from '@/i18n'
 
 const route = useRoute()
 const router = useRouter()
@@ -98,7 +97,7 @@ function onActivate(fileId) {
 function onClose(fileId) {
   if (tabsStore.isDirty(fileId)) {
     const t = tabsStore.tabs.find(x => x.fileId === fileId)
-    confirmClose.value = { fileId, name: t?.name || t('文档') }
+    confirmClose.value = { fileId, name: t?.name || '文档' }
     return
   }
   doClose(fileId)

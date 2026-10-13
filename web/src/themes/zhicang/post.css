@@ -44,7 +44,7 @@
 
 /* ── Post Content ──────────────────────────────────────────── */
 .zcp-content { padding-bottom: 80px; }
-.zcp-wrapper { min-width: 0; }
+.zcp-wrapper { max-width: 800px; margin: 0 auto; padding: 0 28px; }
 
 /* ── Post Header ───────────────────────────────────────────── */
 .zcp-head { padding: 48px 0 32px; }
@@ -177,14 +177,9 @@
   .zcp-h1 { font-size: 26px; }
   .zcp-body { font-size: 15px; }
   .zcp-related-grid { grid-template-columns: 1fr 1fr; }
+  .zcp-wrapper { padding: 0 16px; }
 }
 @media (max-width: 480px) {
   .zcp-related-grid { grid-template-columns: 1fr; }
   .zcp-top-in { padding: 0 16px; }
 }
-
-/* ── 文章页两栏（正文 + 侧栏 SideWidget）── */
-.zc-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;max-width:1100px;margin:0 auto;align-items:start;padding:0 28px 80px}
-.zc-article{min-width:0}
-.zc-aside{position:sticky;top:20px}
-@media(max-width:860px){.zc-layout{grid-template-columns:1fr;padding:0 16px}.zc-aside{position:static;margin-top:20px}}

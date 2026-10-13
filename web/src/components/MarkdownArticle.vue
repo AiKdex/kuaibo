@@ -2,10 +2,10 @@
   <article ref="artRef" class="md-article" :style="readingCssVars">
     <!-- 文章头：标题 + 元信息（博客化） -->
     <header class="art-head">
-      <h1 class="art-title">{{  title  }}</h1>
+      <h1 class="art-title">{{ title }}</h1>
       <div v-if="meta && meta.length" class="art-meta">
         <span v-for="(m, i) in meta" :key="i" class="art-meta-item">
-          <template v-if="i > 0"><span class="art-meta-dot">·</span></template>{{  m  }}
+          <template v-if="i > 0"><span class="art-meta-dot">·</span></template>{{ m }}
         </span>
       </div>
       <div class="art-divider"></div>
@@ -15,19 +15,19 @@
     <div class="art-body" v-html="html"></div>
 
     <!-- 页脚（可选：公开页显示来源） -->
-    <footer v-if="footer" class="art-footer">{{  footer  }}</footer>
+    <footer v-if="footer" class="art-footer">{{ footer }}</footer>
 
     <!-- 悬浮 TOC 胶囊：正文标题 ≥2 个时显示；点击滚动到锚点，滚动监听高亮当前章节 -->
     <div v-if="toc.length >= 2" class="md-toc" :class="{ open: tocOpen }">
-      <button class="md-toc-toggle" :title="tocOpen ? $t('收起目录') : $t('展开目录')" @click="tocOpen = !tocOpen">
+      <button class="md-toc-toggle" :title="tocOpen ? '收起目录' : '展开目录'" @click="tocOpen = !tocOpen">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
           <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
         </svg>
-        <span class="md-toc-toggle-label">{{  $t('目录')  }}</span>
+        <span class="md-toc-toggle-label">目录</span>
       </button>
       <div v-show="tocOpen" class="md-toc-panel">
-        <div class="md-toc-title">{{  $t('本文目录')  }}</div>
+        <div class="md-toc-title">本文目录</div>
         <div
           v-for="t in toc"
           :key="t.id"
@@ -36,7 +36,7 @@
           :style="{ paddingLeft: 8 + (t.level - 1) * 14 + 'px' }"
           :title="t.text"
           @click="jumpTo(t.id)"
-        >{{  t.text  }}</div>
+        >{{ t.text }}</div>
       </div>
     </div>
   </article>
@@ -45,12 +45,11 @@
 <script setup>
 import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useReadingStore } from '@/stores/reading'
-import { t } from '@/i18n'
 
 const props = defineProps({
   title: { type: String, default: '' },
   html: { type: String, default: '' },
-  meta: { type: Array, default: () => [] }, // 如 ['4.2 KB', t('2026-09-11 更新'), t('本地存储')]
+  meta: { type: Array, default: () => [] }, // 如 ['4.2 KB', '2026-09-11 更新', '本地存储']
   footer: { type: String, default: '' }
 })
 
@@ -105,11 +104,6 @@ function scheduleCollect() {
     collectToc()
     if (toc.value.length >= 2) {
       onScroll()
-      // F3 复核：onScroll 是 setup 作用域内的稳定函数引用，按 DOM 规范
-      // addEventListener 对 (type, listener, capture) 三元组相同者本就只登记一次，
-      // 因此此前"正文每次变更叠加一个监听"并不成立。这里仍先 remove 再 add，
-      // 把幂等性写成显式约束 —— 万一将来 onScroll 变成闭包，这行能防住真正的叠加泄漏。
-      window.removeEventListener('scroll', onScroll)
       window.addEventListener('scroll', onScroll, { passive: true })
     }
   })

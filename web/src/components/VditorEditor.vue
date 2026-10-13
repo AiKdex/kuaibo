@@ -12,12 +12,11 @@ import Vditor from 'vditor'
 import 'vditor/dist/index.css'
 import { uploadFiles, listWikiNames } from '@/api'
 import { getToolbarItems, getShortcuts, runHook, renderStatusBars } from '@/editor/plugins'
-import { t } from '@/i18n'
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
   height: { type: Number, default: 520 },
-  placeholder: { type: String, default: t('在此输入文档内容…') }
+  placeholder: { type: String, default: '在此输入文档内容…' }
 })
 const emit = defineEmits(['update:modelValue', 'save'])
 
@@ -108,15 +107,15 @@ async function uploadImage(file) {
     const it = arr[0]
     const id = it && it.file && it.file.id
     if (!id) {
-      console.warn(t('[editor] 图片上传失败:'), it && it.error, r)
-      try { vd?.tip?.(t('图片上传失败，请重试'), 3000) } catch (_) {}
+      console.warn('[editor] 图片上传失败:', it && it.error, r)
+      try { vd?.tip?.('图片上传失败，请重试', 3000) } catch (_) {}
       return ''
     }
     // 同源相对路径：编辑器预览与公开博客页（含 SSR 主题）都能直接渲染
     return `/api/v1/public/media/${id}`
   } catch (e) {
-    console.warn(t('[editor] 图片上传异常:'), e)
-    try { vd?.tip?.(t('图片上传失败，请重试'), 3000) } catch (_) {}
+    console.warn('[editor] 图片上传异常:', e)
+    try { vd?.tip?.('图片上传失败，请重试', 3000) } catch (_) {}
     return ''
   }
 }
@@ -242,11 +241,7 @@ defineExpose({
   // 保存用：先跑插件 beforeSave 钩子链，再返回最终内容
   getSaveValue: () => runHook('beforeSave', vd?.getValue?.() || '', makeCtx()),
   setValue: (md) => vd?.setValue(md || '', false),
-  focus: () => vd?.focus?.(),
-  // 统一编辑器协议（2026-10-09 编辑器插件化）：光标处插入（WriteView AI 插入等宿主能力）
-  insertAtCursor: (text) => {
-    try { vd?.insertValue(text || '') } catch (_) { /* 编辑器未就绪 */ }
-  },
+  focus: () => vd?.focus?.()
 })
 </script>
 

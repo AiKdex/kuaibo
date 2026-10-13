@@ -5,54 +5,52 @@
 
     <!-- 极简顶栏：品牌 + 入口 -->
     <header class="pub-bar">
-      <a class="pub-brand" href="#/blog?view=public" :title="$t('爱库录公开博客')">
-        <span class="pub-logo">{{  $t('录')  }}</span>
-        <span class="pub-name">{{  $t('爱库录')  }}</span>
+      <a class="pub-brand" href="#/blog?view=public" title="爱库录公开博客">
+        <span class="pub-logo">录</span>
+        <span class="pub-name">爱库录</span>
         <span class="pub-sub">AiKlog</span>
       </a>
-      <LangSwitch mode="inline" />
       <GuestEntry variant="bar" />
     </header>
 
     <!-- 头部：博客标题（站点设置 blog.title/description 同源） -->
     <div class="ph-head">
-      <h1 class="ph-title">{{  site.title || $t('爱库录')  }}</h1>
-      <p class="ph-desc">{{  site.description || $t('爱库录 · AI 知识库博客：目录即站点，文件即文章')  }}</p>
+      <h1 class="ph-title">{{ site.title || '爱库录' }}</h1>
+      <p class="ph-desc">{{ site.description || '爱库录 · AI 知识库博客：目录即站点，文件即文章' }}</p>
     </div>
 
     <!-- 加载/错误 -->
-    <div v-if="loading" class="pub-center"><div class="spinner"></div><span>{{  $t('加载中…')  }}</span></div>
+    <div v-if="loading" class="pub-center"><div class="spinner"></div><span>加载中…</span></div>
     <div v-else-if="error" class="pub-center">
       <AikIcon name="info" :size="20" />
-      <p>{{  error  }}</p>
+      <p>{{ error }}</p>
     </div>
 
     <!-- 空态 -->
     <div v-else-if="!items.length" class="pub-center">
       <AikIcon name="book" :size="40" />
-      <p>{{  $t('这里还没有公开文章')  }}</p>
+      <p>这里还没有公开文章</p>
     </div>
 
     <!-- 文章列表（按目录分类分组：子目录=分类） -->
     <div v-else class="ph-groups">
       <!-- 博客根目录直放文件（未分类） -->
       <section v-if="loose.length" class="ph-group">
-        <div class="ph-group-head"><span class="ph-group-cat">{{  $t('未分类')  }}</span><span class="ph-group-count">{{  loose.length  }}</span></div>
+        <div class="ph-group-head"><span class="ph-group-cat">未分类</span><span class="ph-group-count">{{ loose.length }}</span></div>
         <div class="ph-list">
           <article v-for="p in loose" :key="p.token + '/' + (p.path || '')" class="ph-post">
             <a class="ph-post-link" :href="postUrl(p)">
-              <PostCover :post="p" round />
-              <h2 class="ph-post-title">{{  p.file?.name || $t('（未命名）')  }}
-                <span v-if="p.scope === 'dir' && p.token !== 'blog'" class="dir-tag" :title="$t('来自文件夹整体分享')">{{  $t('文件夹')  }}</span>
+              <h2 class="ph-post-title">{{ p.file?.name || '（未命名）' }}
+                <span v-if="p.scope === 'dir' && p.token !== 'blog'" class="dir-tag" title="来自文件夹整体分享">文件夹</span>
               </h2>
               <div class="ph-post-meta">
-                <span>{{  formatTime(p.file?.updated_at || p.created_at)  }}</span>
+                <span>{{ formatTime(p.file?.updated_at || p.created_at) }}</span>
                 <span class="dot">·</span>
-                <span>{{  p.file?.size ? formatSize(p.file.size) : '—'  }}</span>
+                <span>{{ p.file?.size ? formatSize(p.file.size) : '—' }}</span>
                 <span v-if="typeLabel(p.file)" class="dot">·</span>
-                <span v-if="typeLabel(p.file)">{{  typeLabel(p.file)  }}</span>
+                <span v-if="typeLabel(p.file)">{{ typeLabel(p.file) }}</span>
               </div>
-              <p v-if="cleanPreview(p.preview)" class="ph-post-excerpt">{{  cleanPreview(p.preview)  }}</p>
+              <p v-if="cleanPreview(p.preview)" class="ph-post-excerpt">{{ cleanPreview(p.preview) }}</p>
             </a>
             <!-- 博客插件挂载点：列表项（list_item） -->
             <BlogPluginSlot mount="list_item" :ctx="{ post: p }" />
@@ -63,28 +61,27 @@
       <!-- 分类组（博客目录子目录） -->
       <section v-for="g in groups" :key="g.cat" class="ph-group">
         <div class="ph-group-head">
-          <span class="ph-group-cat">{{  g.cat  }}</span>
-          <span class="ph-group-count">{{  g.posts.length  }}</span>
+          <span class="ph-group-cat">{{ g.cat }}</span>
+          <span class="ph-group-count">{{ g.posts.length }}</span>
         </div>
         <div class="ph-list">
           <article v-for="p in g.posts" :key="p.token + '/' + (p.path || '')" class="ph-post">
             <a class="ph-post-link" :href="postUrl(p)">
-              <PostCover :post="p" round />
-              <h2 class="ph-post-title">{{  p.file?.name || $t('（未命名）')  }}
-                <span v-if="p.scope === 'dir' && p.token !== 'blog'" class="dir-tag" :title="$t('来自文件夹整体分享')">{{  $t('文件夹')  }}</span>
+              <h2 class="ph-post-title">{{ p.file?.name || '（未命名）' }}
+                <span v-if="p.scope === 'dir' && p.token !== 'blog'" class="dir-tag" title="来自文件夹整体分享">文件夹</span>
               </h2>
               <div class="ph-post-meta">
-                <span>{{  formatTime(p.file?.updated_at || p.created_at)  }}</span>
+                <span>{{ formatTime(p.file?.updated_at || p.created_at) }}</span>
                 <span class="dot">·</span>
-                <span>{{  p.file?.size ? formatSize(p.file.size) : '—'  }}</span>
+                <span>{{ p.file?.size ? formatSize(p.file.size) : '—' }}</span>
                 <span v-if="typeLabel(p.file)" class="dot">·</span>
-                <span v-if="typeLabel(p.file)">{{  typeLabel(p.file)  }}</span>
+                <span v-if="typeLabel(p.file)">{{ typeLabel(p.file) }}</span>
                 <template v-if="p.path">
                   <span class="dot">·</span>
-                  <span class="ph-post-path" :title="p.path">{{  p.path  }}</span>
+                  <span class="ph-post-path" :title="p.path">{{ p.path }}</span>
                 </template>
               </div>
-              <p v-if="cleanPreview(p.preview)" class="ph-post-excerpt">{{  cleanPreview(p.preview)  }}</p>
+              <p v-if="cleanPreview(p.preview)" class="ph-post-excerpt">{{ cleanPreview(p.preview) }}</p>
             </a>
             <!-- 博客插件挂载点：列表项（list_item） -->
             <BlogPluginSlot mount="list_item" :ctx="{ post: p }" />
@@ -99,18 +96,13 @@
 </template>
 
 <script setup>
-import { t as i18t } from '@/i18n'
 import { ref, computed, onMounted } from 'vue'
 import AikIcon from '@/components/AikIcon.vue'
 import { publicPosts, publicSite } from '@/api'
-import DOMPurify from 'dompurify'
 import BlogPluginSlot from '@/components/BlogPluginSlot.vue'
 import GuestEntry from '@/components/GuestEntry.vue'
-import LangSwitch from '@/components/LangSwitch.vue'
-import PostCover from '@/components/PostCover.vue'
 import '@/blogPlugins/builtin' // 注册内置博客插件
 import { loadEnabledPlugins } from '@/blogPlugins'
-import { t } from '@/i18n'
 
 const items = ref([])
 const loading = ref(true)
@@ -119,16 +111,14 @@ const site = ref({ title: '', description: '', footer: '' })
 
 // head 挂载点上下文（公开首页；SEO 默认描述 → 站点简介 → 固定文案）
 const pageCtx = computed(() => ({
-  title: site.value.title || t('爱库录博客'),
-  description: site.value.description || t('由爱库录知识库发布的公开文章'),
+  title: site.value.title || '爱库录博客',
+  description: site.value.description || '由爱库录知识库发布的公开文章',
 }))
 
-// 页脚：站点设置文案（含链接），无则默认。
-// H5 修复：v-html 渲染前必须 DOMPurify 消毒 —— blog.footer 可由后台写入，
-// 未消毒时存储型 XSS 会在每个访客的浏览器里执行（与 utils/markdown.js 的消毒策略对齐）。
+// 页脚：站点设置文案（含链接），无则默认
 const footerHtml = computed(() => {
-  const raw = site.value.footer ? site.value.footer : t('由 <a href="#/files">爱库录</a> 发布 · 数据主权在发布者')
-  return DOMPurify.sanitize(raw)
+  if (site.value.footer) return site.value.footer
+  return '由 <a href="#/files">爱库录</a> 发布 · 数据主权在发布者'
 })
 
 // 分类分组：博客目录子目录 = 分类（path 首段）；根目录直放文件归"未分类"
@@ -179,7 +169,7 @@ function postUrl(p) {
 
 function typeLabel(f) {
   if (!f) return ''
-  if (f.kind === 'dir') return i18t('文件夹')
+  if (f.kind === 'dir') return '文件夹'
   const e = (f.name || '').split('.').pop().toLowerCase()
   return (e || '').toUpperCase()
 }
@@ -218,7 +208,7 @@ async function load() {
     const d = await publicPosts()
     items.value = d.items || []
   } catch (e) {
-    error.value = e.message || t('加载失败')
+    error.value = e.message || '加载失败'
   } finally {
     loading.value = false
   }

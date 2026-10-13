@@ -21,9 +21,7 @@ type convInfo struct {
 
 // convList GET /api/v1/ai/conversations：当前用户会话列表（按更新时间倒序）。
 func (a *API) convList(w http.ResponseWriter, r *http.Request) {
-	// M11 修复：归属改显式登录身份（服务令牌/IM/定时任务等内部场景由 authMiddleware
-	// 注入 SystemOwnerID，curUserID 仍回落站长）——登录成员只看到自己的会话。
-	owner := a.curUserID(r)
+	owner := a.homeOwnerID()
 	rows, err := a.db.QueryContext(r.Context(), `
 		SELECT c.id, c.title, c.updated_at, COUNT(m.id)
 		FROM ai_conversations c
@@ -60,10 +58,9 @@ func (a *API) convCreate(w http.ResponseWriter, r *http.Request) {
 	}
 	id := uuid.NewString()
 	now := time.Now().Unix()
-	// M11 修复：归属记到显式登录身份（不再统一挂到站长 homeOwnerID）
 	if _, err := a.db.ExecContext(r.Context(),
 		`INSERT INTO ai_conversations (id, owner_id, title, created_at, updated_at) VALUES (?,?,?,?,?)`,
-		id, a.curUserID(r), title, now, now); err != nil {
+		id, a.homeOwnerID(), title, now, now); err != nil {
 		writeErr(w, http.StatusInternalServerError, "CONV_CREATE_FAILED", err.Error())
 		return
 	}
@@ -77,15 +74,14 @@ func (a *API) convDelete(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "CONV_NO_ID", "conversation id required")
 		return
 	}
-	// M11 修复：归属校验改「显式登录身份本人或管理员」，不再与常量 homeOwnerID 比对
+	// 归属校验（单用户阶段直接校验 owner）
 	var owner string
 	if err := a.db.QueryRowContext(r.Context(),
 		`SELECT owner_id FROM ai_conversations WHERE id=?`, id).Scan(&owner); err != nil {
 		writeErr(w, http.StatusNotFound, "CONV_NOT_FOUND", "conversation not found")
 		return
 	}
-	uid, ok := ctxUID(r)
-	if !ok || (owner != uid && !a.isAdmin(r)) {
+	if owner != a.homeOwnerID() {
 		writeErr(w, http.StatusForbidden, "CONV_FORBIDDEN", "not your conversation")
 		return
 	}
@@ -115,19 +111,6 @@ func (a *API) convDelete(w http.ResponseWriter, r *http.Request) {
 // convMessages GET /api/v1/ai/conversations/{id}/messages?limit=50&before=ts：会话历史消息（分页，最新在前）。
 func (a *API) convMessages(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	// M11 修复：补归属校验——会话 owner 必须为当前显式登录用户，或当前用户为管理员
-	//（此前按 id 直取消息，任意登录用户可越权读他人会话全文）。
-	var owner string
-	if err := a.db.QueryRowContext(r.Context(),
-		`SELECT owner_id FROM ai_conversations WHERE id=?`, id).Scan(&owner); err != nil {
-		writeErr(w, http.StatusNotFound, "CONV_NOT_FOUND", "conversation not found")
-		return
-	}
-	uid, ok := ctxUID(r)
-	if !ok || (owner != uid && !a.isAdmin(r)) {
-		writeErr(w, http.StatusForbidden, "CONV_FORBIDDEN", "not your conversation")
-		return
-	}
 	limit := 50
 	if v := r.URL.Query().Get("limit"); v != "" {
 		if n, err := atoiSafe(v); err == nil && n > 0 && n <= 200 {
