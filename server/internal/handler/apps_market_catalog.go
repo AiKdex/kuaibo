@@ -13,79 +13,19 @@ import (
 	"fmt"
 	"io"
 	"log"
-
-	"github.com/AiKMAP/AiKmap/server/internal/ai"
-	"github.com/AiKMAP/AiKmap/server/internal/entitle"
-	"github.com/AiKMAP/AiKmap/server/internal/service"
 	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 )
 
 // marketIndex 市场索引协议（index.json）。
 type marketIndex struct {
-	SchemaVersion string          `json:"schema_version"`
-	Plugins       []marketPlugin  `json:"plugins"`
-	Themes        []marketTheme   `json:"themes"`
-	// Editors 内置编辑器条目（2026-10-09 编辑器插件化）：仅本实例 marketView 下发，
-	// 不进远程签名索引（omitempty 保证索引规范化字节不变，验签不受影响）。
-	Editors  []marketTheme   `json:"editors,omitempty"`
-	Licenses      []marketLicense `json:"licenses"`
-	// AiSupplies 平台 AI 供给条目（B38）：平台供模型套餐（aikgw 网关 key + 初始额度）。
-	AiSupplies []marketAiSupply `json:"ai_supplies,omitempty"`
-	// 市场 v0.3 签名：sign = base64(ed25519(规范化索引字节))，iss = 签发方。
-	// 规范化 = 本结构体去掉 Signature 字段后的 json.Marshal（Go 字段序稳定）。
-	Signature *marketSignature `json:"signature,omitempty"`
-}
-
-// marketSignature 索引/制品签名信封。
-type marketSignature struct {
-	Iss string `json:"iss"` // 签发方 iss（须在内嵌可信公钥表 entitle 中）
-	Sig string `json:"sig"` // base64(ed25519 签名)
-}
-
-// verifySignature 验索引签名。签发方不在内嵌可信公钥表、或签名不匹配 → 失败。
-// 注意：**不做「拿不到签名就当没签名」的降级**——那等于没做签名。
-func (idx *marketIndex) verifySignature() error {
-	if idx == nil || idx.Signature == nil {
-		return fmt.Errorf("市场索引未签名")
-	}
-	payload, err := idx.canonicalBytes()
-	if err != nil {
-		return err
-	}
-	return entitle.VerifyDetached(idx.Signature.Iss, payload, idx.Signature.Sig)
-}
-
-// canonicalBytes 规范化待签名字节：Signature 置空后的 JSON 编码。
-// 签发方与验签方必须用同一份代码生成，保证字节级一致。
-func (idx *marketIndex) canonicalBytes() ([]byte, error) {
-	cp := *idx
-	cp.Signature = nil
-	return json.Marshal(&cp)
-}
-
-// marketLicense 目录中的「站点数授权」条目（SPEC-MS-001 M4）：download_url 指向纯文本 entitle key
-// （scope feature:multisite，含 seats）；安装=验签后写入 site_licenses，即时提升站点数上限。
-type marketLicense struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Version     string   `json:"version"`
-	Description string   `json:"description"`
-	Edition     string   `json:"edition,omitempty"`
-	Seats       int      `json:"seats,omitempty"`
-	LicenseType string   `json:"license_type,omitempty"` // permanent | subscription
-	DownloadURL string   `json:"download_url"`
-	SHA256      string   `json:"sha256"`
-	Tier        string   `json:"tier,omitempty"`
-	Target      []string `json:"target,omitempty"`
-	// 服务端补充
-	Installed  bool `json:"installed"`
-	Applicable bool `json:"applicable"`
+	SchemaVersion string         `json:"schema_version"`
+	Plugins       []marketPlugin `json:"plugins"`
+	Themes        []marketTheme  `json:"themes"`
 }
 
 // marketPlugin 目录中的插件条目（含服务端补充字段 installed/applicable）。
@@ -98,19 +38,10 @@ type marketPlugin struct {
 	DownloadURL     string   `json:"download_url"`
 	SHA256          string   `json:"sha256"`
 	Tier            string   `json:"tier"` // free|paid（付费预留；安装需 pro license）
-	Price           string   `json:"price,omitempty"`           // 展示价（如 ¥99/年；上游 2026-09-24 商城化新增）
-	BillingPeriod   string   `json:"billing_period,omitempty"`  // yearly|monthly|once（可选）
-	PurchaseURL     string   `json:"purchase_url,omitempty"`    // 购买引导（上游暂未下发；下发后前端展示「去购买」）
 	Cover           string   `json:"cover,omitempty"` // 市场卡片封面图 URL（可选）
-	// Screenshots 详情截图（可选，多张；市场 v0.4 新增：介绍图随索引签名防篡改）
-	Screenshots    []string `json:"screenshots,omitempty"`
-	Target         []string `json:"target,omitempty"`
-	MinCoreVersion string   `json:"min_core_version,omitempty"`
-	SettingsSchema []any    `json:"settings_schema,omitempty"`
-	// 内置能力应用（builtin=true）：能力随主系统编译（如家族传承/组织架构），
-	// 无安装包可下载——"安装"=登记 blog_plugins capacity 记录（见 installBuiltinCapacity）。
-	Builtin     bool     `json:"builtin,omitempty"`
-	Capabilities []string `json:"capabilities,omitempty"` // 命中的内核能力名（builtin 应用必填）
+	Target          []string `json:"target,omitempty"`
+	MinCoreVersion  string   `json:"min_core_version,omitempty"`
+	SettingsSchema  []any    `json:"settings_schema,omitempty"`
 	// 服务端补充
 	Installed  bool `json:"installed"`
 	Applicable bool `json:"applicable"`
@@ -126,178 +57,19 @@ type marketTheme struct {
 	DownloadURL string   `json:"download_url"`
 	SHA256      string   `json:"sha256"`
 	Tier        string   `json:"tier,omitempty"`  // free|paid（付费预留）
-	Price       string   `json:"price,omitempty"`          // 展示价（上游 2026-09-24 商城化新增）
-	BillingPeriod string `json:"billing_period,omitempty"` // yearly|monthly|once（可选）
-	PurchaseURL string   `json:"purchase_url,omitempty"`   // 购买引导（上游暂未下发）
 	Cover       string   `json:"cover,omitempty"` // 市场卡片封面图 URL（可选）
-	// Screenshots 详情截图（可选，多张；市场 v0.4 新增：介绍图随索引签名防篡改）
-	Screenshots []string `json:"screenshots,omitempty"`
 	Target      []string `json:"target,omitempty"`
-	// 内置源码主题（builtin=true）：SPA 组件随主系统构建分发，无安装包可下载——
-	// 「安装」= 登记 blog_plugins(kind=theme)（见 installBuiltinTheme），卸载即撤销登记。
-	Builtin bool `json:"builtin,omitempty"`
 	// 服务端补充
 	Installed  bool `json:"installed"`
 	Applicable bool `json:"applicable"`
 }
 
-// builtinSourceThemeEntries 内置源码主题条目（2026-10-09 主题改版：只常驻 aiklog，
-// 其余 17 个 SPA 主题进应用中心「主题」类别按需安装）。注入在远程索引 themes 之前。
-func builtinSourceThemeEntries() []marketTheme {
-	out := make([]marketTheme, 0, len(service.BuiltinSpaThemes))
-	for _, t := range service.BuiltinSpaThemes {
-		desc := t.Desc
-		if desc == "" {
-			desc = "内置源码主题 · 随主系统构建分发，安装即启用（SPA 交互版 + 公开静态页令牌）"
-		} else {
-			desc += "（内置源码主题 · 随主系统构建分发，安装即启用）"
-		}
-		out = append(out, marketTheme{
-			ID:          t.ID,
-			Name:        t.Title,
-			Version:     coreVersion,
-			Description: desc,
-			Author:      "爱库录",
-			Tier:        "free",
-			Builtin:     true,
-			Applicable:  true,
-		})
-	}
-	return out
-}
-
-// installBuiltinTheme 内置源码主题安装：无 zip 可下载，「安装」= 登记 blog_plugins
-// (kind=theme, enabled=1)。SPA 组件已随主系统构建（懒 chunk），登记后前端
-// /public/blog/themes 立即可见 → 切换器出现、站点主题白名单放行，即时生效无需重启。
-func (a *API) installBuiltinTheme(w http.ResponseWriter, r *http.Request, entry *marketPlugin) {
-	if !service.IsBuiltinSpaTheme(entry.ID) {
-		writeErr(w, http.StatusUnprocessableEntity, "MARKET_BAD_REQ", "非内置源码主题，请提供主题包 zip")
-		return
-	}
-	if entry.Name == "" {
-		entry.Name = entry.ID
-	}
-	now := time.Now().UnixMilli()
-	ver := entry.Version
-	if ver == "" {
-		ver = coreVersion
-	}
-	if _, err := a.db.ExecContext(r.Context(),
-		`INSERT INTO blog_plugins (id, name, version, description, author, kind, enabled, created_at, updated_at)
-		 VALUES (?,?,?,?,?,'theme',1,?,?,?)
-		 ON CONFLICT(id) DO UPDATE SET name=excluded.name, version=excluded.version, description=excluded.description,
-		   author=excluded.author, kind='theme', enabled=1, updated_at=excluded.updated_at`,
-		entry.ID, entry.Name, ver, entry.Description, entry.Author, now, now); err != nil {
-		writeErr(w, http.StatusInternalServerError, "INTERNAL", err.Error())
-		return
-	}
-	log.Printf("应用中心：内置源码主题 %s 已登记（kind=theme，即时生效）", entry.ID)
-	writeJSON(w, http.StatusOK, map[string]any{
-		"ok": true, "id": entry.ID, "kind": "theme", "enabled": true, "builtin": true,
-		"apply": "immediate",
-		"message": "已安装：主题立即可用（博客设置/切换器中选择即可生效）",
-	})
-}
-
-// builtinEditorEntries 内置源码编辑器条目（2026-10-09 编辑器插件化）：随主系统编译
-// （懒 chunk），不进远程索引，本地注入「编辑器」类别。plain 为常驻兜底编辑器，
-// 永远可用、不可卸载，故不进目录；后续新编辑器在此追加。
-func builtinEditorEntries() []marketTheme {
-	return []marketTheme{
-		{
-			ID:          "vditor",
-			Name:        "所见即所得编辑器（Vditor）",
-			Version:     coreVersion,
-			Description: "所见即所得 + 源码 + 分屏预览三模式；双链联想、图片粘贴/拖入上传、编辑器扩展插件协议。安装后在写作页「编辑器」下拉切换，阅读页快编同步生效",
-			Author:      "爱库录",
-			Tier:        "free",
-			Builtin:     true,
-			Applicable:  true,
-		},
-	}
-}
-
-// IsBuiltinEditor 判定 id 是否为内置源码编辑器（应用中心可一键安装）。
-func IsBuiltinEditor(id string) bool {
-	for _, e := range builtinEditorEntries() {
-		if e.ID == id {
-			return true
-		}
-	}
-	return false
-}
-
-// installBuiltinEditor 内置编辑器安装：无 zip，「安装」= 登记 blog_plugins
-// (kind=editor, enabled=1)。登记后 /public/blog/editors 立即可见 → 写作页/快编
-// 的编辑器下拉出现该项，即时生效无需重启。
-func (a *API) installBuiltinEditor(w http.ResponseWriter, r *http.Request, entry *marketPlugin) {
-	if !IsBuiltinEditor(entry.ID) {
-		writeErr(w, http.StatusUnprocessableEntity, "MARKET_BAD_REQ", "非内置编辑器")
-		return
-	}
-	if entry.Name == "" {
-		entry.Name = entry.ID
-	}
-	now := time.Now().UnixMilli()
-	ver := entry.Version
-	if ver == "" {
-		ver = coreVersion
-	}
-	if _, err := a.db.ExecContext(r.Context(),
-		`INSERT INTO blog_plugins (id, name, version, description, author, kind, enabled, created_at, updated_at)
-		 VALUES (?,?,?,?,?,'editor',1,?,?,?)
-		 ON CONFLICT(id) DO UPDATE SET name=excluded.name, version=excluded.version, description=excluded.description,
-		   author=excluded.author, kind='editor', enabled=1, updated_at=excluded.updated_at`,
-		entry.ID, entry.Name, ver, entry.Description, entry.Author, now, now); err != nil {
-		writeErr(w, http.StatusInternalServerError, "INTERNAL", err.Error())
-		return
-	}
-	log.Printf("应用中心：内置编辑器 %s 已登记（kind=editor，即时生效）", entry.ID)
-	writeJSON(w, http.StatusOK, map[string]any{
-		"ok": true, "id": entry.ID, "kind": "editor", "enabled": true, "builtin": true,
-		"apply": "immediate",
-		"message": "已安装：在写作页「编辑器」下拉选择即可使用",
-	})
-}
-
-// marketAiSupply 目录中的「平台 AI 供给」条目（B38）。
-// download_url 指向纯文本 JSON 供给凭据（schema=aiklog-ai-supply/v1：网关地址 + gw key +
-// 初始 token 额度）；开通 = 下载验 sha256 后解析凭据 → 登记/追加网关 provider + 站点池充值。
-// 与 license 同模式：索引整体 ed25519 验签，凭据文件靠 sha256 + 索引签名背书。
-type marketAiSupply struct {
-	ID            string   `json:"id"`
-	Name          string   `json:"name"`
-	Version       string   `json:"version"`
-	Description   string   `json:"description"`
-	Tier          string   `json:"tier,omitempty"`          // free|paid（付费预留；购买走 purchase_url）
-	Price         string   `json:"price,omitempty"`         // 展示价（如 ¥9.9/月）
-	BillingPeriod string   `json:"billing_period,omitempty"` // monthly|yearly|once
-	PurchaseURL   string   `json:"purchase_url,omitempty"`   // 购买引导
-	Provider      string   `json:"provider,omitempty"`       // 凭据缺省 provider 名提示（安装以凭据为准）
-	Target        []string `json:"target,omitempty"`
-	DownloadURL   string   `json:"download_url"`
-	SHA256        string   `json:"sha256"`
-	// 服务端补充
-	Installed  bool `json:"installed"`  // 本实例已登记对应网关 provider
-	Applicable bool `json:"applicable"` // target 含本壳
-}
-
 // marketCache 市场索引内存缓存（5 分钟）。
-// M4 修复：并发读写加锁（/market/index.json 与 /admin/apps/market 两轨并发访问同一缓存，
-// 无锁时 go test -race 可复现 data race；两处入口共用 marketCache.mu）。
 var marketCache struct {
-	mu    sync.Mutex
 	at    time.Time
 	index *marketIndex
 	url   string
 }
-
-// 官方应用中心站点（独立页面 /apps 的「打开官网」目标）。
-//
-// 产品约定（B33）：自部署实例的「应用中心」恒指向官方站点，不跟随用户自己的站点——
-// 用户装完 AiKlog 后点应用中心，看到的应是我们维护的官方目录，而不是某次部署的快照。
-// 该地址只用于前端跳转；目录数据仍走 marketIndexURL()（默认同一个官方索引）。
-const officialMarketSiteURL = "https://aikmap.cn/market"
 
 // marketIndexURL 返回市场索引地址（配置可覆盖）。
 func (a *API) marketIndexURL() string {
@@ -320,10 +92,8 @@ func (a *API) shellID() string {
 // marketList GET /api/v1/admin/apps/market：市场插件/主题列表（缓存 5 分钟；失败返回错误）。
 // 返回前补充 installed 标记（对照本实例已注册插件）与 applicable 标记（target 含本壳或通用）。
 func (a *API) marketList(w http.ResponseWriter, r *http.Request) {
-	marketCache.mu.Lock()
-	defer marketCache.mu.Unlock()
-	key := a.marketSourceKey()
-	if time.Since(marketCache.at) < 5*time.Minute && marketCache.index != nil && marketCache.url == key {
+	u := a.marketIndexURL()
+	if time.Since(marketCache.at) < 5*time.Minute && marketCache.index != nil && marketCache.url == u {
 		writeJSON(w, http.StatusOK, a.marketView(marketCache.index))
 		return
 	}
@@ -334,7 +104,7 @@ func (a *API) marketList(w http.ResponseWriter, r *http.Request) {
 	}
 	marketCache.index = idx
 	marketCache.at = time.Now()
-	marketCache.url = key
+	marketCache.url = u
 	writeJSON(w, http.StatusOK, a.marketView(idx))
 }
 
@@ -347,16 +117,6 @@ func (a *API) marketView(idx *marketIndex) map[string]any {
 			var id string
 			if rows.Scan(&id) == nil {
 				installed[id] = true
-			}
-		}
-	}
-	granted := map[string]bool{}
-	if rows, err := a.db.Query(`SELECT id FROM site_licenses`); err == nil {
-		defer rows.Close()
-		for rows.Next() {
-			var id string
-			if rows.Scan(&id) == nil {
-				granted[id] = true
 			}
 		}
 	}
@@ -374,93 +134,53 @@ func (a *API) marketView(idx *marketIndex) map[string]any {
 		t.Applicable = len(t.Target) == 0 || containsStr(t.Target, shell)
 		out.Themes = append(out.Themes, t)
 	}
-	// 内置源码主题（2026-10-09 主题改版）：随主系统编译、不进远程索引，本地注入目录。
-	// （修复：builtinSourceThemeEntries 此前定义未接线，应用中心看不到内置主题。）
-	for _, t := range builtinSourceThemeEntries() {
-		t.Installed = installed[t.ID]
-		out.Themes = append(out.Themes, t)
-	}
-	// 内置编辑器（2026-10-09 编辑器插件化）：安装=登记 blog_plugins kind=editor（免 zip）
-	for _, e := range builtinEditorEntries() {
-		e.Installed = installed[e.ID]
-		out.Editors = append(out.Editors, e)
-	}
-	for i := range idx.Licenses {
-		l := idx.Licenses[i]
-		l.Installed = granted[l.ID]
-		l.Applicable = len(l.Target) == 0 || containsStr(l.Target, shell)
-		out.Licenses = append(out.Licenses, l)
-	}
-	for i := range idx.AiSupplies {
-		s := idx.AiSupplies[i]
-		pn := s.Provider
-		if pn == "" {
-			pn = aiSiteSupplyProvider
-		}
-		_, s.Installed = a.ai.Providers()[pn]
-		s.Applicable = len(s.Target) == 0 || containsStr(s.Target, shell)
-		out.AiSupplies = append(out.AiSupplies, s)
-	}
 	return map[string]any{
 		"schema_version": idx.SchemaVersion,
 		"plugins":        out.Plugins,
 		"themes":         out.Themes,
-		"editors":        out.Editors,
-		"licenses":       out.Licenses,
-		"ai_supplies":    out.AiSupplies,
+		"third_party":    a.thirdPartyListings(),
 		"index_url":      a.marketIndexURL(),
-		"site_url":       officialMarketSiteURL, // 独立应用中心页的「打开官网」目标
 		"shell":          shell,
 		"edition":        a.licenseEdition(),
 	}
 }
 
+// thirdPartyListings 已通过审核的第三方开发者条目（应用中心「社区应用」分区数据源）。
+func (a *API) thirdPartyListings() []marketListing {
+	rows, err := a.db.Query(`SELECT id, developer_id, kind, name, description, icon, screenshots, version,
+		download_url, sha256, price_cents, tier, status, review_note, created_at, updated_at
+		FROM market_listings WHERE status='approved' ORDER BY updated_at DESC`)
+	if err != nil {
+		return []marketListing{}
+	}
+	defer rows.Close()
+	out := []marketListing{}
+	for rows.Next() {
+		m, err := scanListingRow(rows, false)
+		if err != nil {
+			continue
+		}
+		out = append(out, *m)
+	}
+	return out
+}
+
 // marketInstall POST /api/v1/admin/apps/market/install：安装市场插件/主题。
 // body: {"id":"..."}（从市场索引取 download_url+sha256）或 {"url":"...","sha256":"...","manifest":{...}}（直接安装）。
 func (a *API) marketInstall(w http.ResponseWriter, r *http.Request) {
-	// H2 修复：市场安装（插件/主题/Agent 工具，含任意 zip/URL 下载 → 写入主题目录与插件注册表）
-	// 仅站长（owner/admin）可执行；该端点同时挂在 /api/v1/blog/market/install（不带 /admin/ 前缀），
-	// 故必须在本处显式守卫，不能只靠路由级 admin 前缀拦截。
-	if !a.blogAdminOnly(w, r) {
-		return
-	}
 	var req struct {
-		ID   string `json:"id"`
-		URL  string `json:"url"`
-		SHA  string `json:"sha256"`
-		Kind string `json:"kind"` // 直装可显式声明（plugin|theme|license）；按 id 装时由索引类别覆盖
+		ID        string `json:"id"`
+		ListingID string `json:"listing_id"`
+		URL       string `json:"url"`
+		SHA       string `json:"sha256"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeErr(w, http.StatusBadRequest, "MARKET_BAD_REQ", "无效请求体")
 		return
 	}
 	dlURL, sha := req.URL, strings.ToLower(req.SHA)
-	kind := strings.TrimSpace(req.Kind)
+	var kind string
 	var indexSS []any
-	// 本地内置兜底（优先于远程索引）：builtin 主题/编辑器随主系统编译、不进远程索引，
-	// 离线/远程不可达时也必须可装。「安装」= 登记 blog_plugins，即时生效。
-	if req.ID != "" {
-		if kind == "theme" || kind == "" {
-			for _, t := range builtinSourceThemeEntries() {
-				if t.ID == req.ID {
-					a.installBuiltinTheme(w, r, &marketPlugin{
-						ID: t.ID, Name: t.Name, Version: t.Version, Description: t.Description, Author: t.Author,
-					})
-					return
-				}
-			}
-		}
-		if kind == "editor" || kind == "" {
-			for _, e := range builtinEditorEntries() {
-				if e.ID == req.ID {
-					a.installBuiltinEditor(w, r, &marketPlugin{
-						ID: e.ID, Name: e.Name, Version: e.Version, Description: e.Description, Author: e.Author,
-					})
-					return
-				}
-			}
-		}
-	}
 	// 按 id 从市场索引解析
 	if req.ID != "" {
 		idx, err := a.fetchMarketIndex(r)
@@ -484,36 +204,8 @@ func (a *API) marketInstall(w http.ResponseWriter, r *http.Request) {
 					found = &marketPlugin{
 						ID: t.ID, Name: t.Name, Version: t.Version, Description: t.Description,
 						Author: t.Author, DownloadURL: t.DownloadURL, SHA256: t.SHA256, Target: t.Target,
-						Cover: t.Cover, Screenshots: t.Screenshots,
-						Builtin: t.Builtin,
 					}
 					kind = "theme"
-					break
-				}
-			}
-		}
-		if found == nil {
-			for i := range idx.Licenses {
-				if idx.Licenses[i].ID == req.ID {
-					l := idx.Licenses[i]
-					found = &marketPlugin{
-						ID: l.ID, Name: l.Name, Version: l.Version, Description: l.Description,
-						DownloadURL: l.DownloadURL, SHA256: l.SHA256, Target: l.Target, Tier: l.Tier,
-					}
-					kind = "license"
-					break
-				}
-			}
-		}
-		if found == nil {
-			for i := range idx.AiSupplies {
-				if idx.AiSupplies[i].ID == req.ID {
-					s := idx.AiSupplies[i]
-					found = &marketPlugin{
-						ID: s.ID, Name: s.Name, Version: s.Version, Description: s.Description,
-						DownloadURL: s.DownloadURL, SHA256: s.SHA256, Target: s.Target, Tier: s.Tier,
-					}
-					kind = "ai_supply"
 					break
 				}
 			}
@@ -528,31 +220,39 @@ func (a *API) marketInstall(w http.ResponseWriter, r *http.Request) {
 				"该应用不适用于本壳（target="+strings.Join(found.Target, ",")+"，本壳="+a.shellID()+"）")
 			return
 		}
-		// 授权类商品与 AI 供给包本身即授权/凭据载体，不受 pro 门禁约束
-		// （否则形成"买授权需先买授权"死锁；凭据文件受索引签名 + sha256 保护）。
-		if kind != "license" && kind != "ai_supply" && found.Tier == "paid" && a.licenseEdition() != "pro" {
+		if found.Tier == "paid" && a.licenseEdition() != "pro" {
 			writeErr(w, http.StatusPaymentRequired, "MARKET_LICENSE_REQUIRED",
 				"该应用为付费应用（tier=paid），需要 pro 许可证（请先在设置中激活 license key）")
 			return
 		}
-		// 内置能力应用（builtin=true）：无安装包，安装=登记 blog_plugins capacity 记录（免下载免解包）。
-		// 生效时机遵循能力装配语义（restart）：重启主系统后路由挂载、侧栏出现入口。
-		if found.Builtin && kind == "theme" {
-			a.installBuiltinTheme(w, r, found)
-			return
-		}
-		if found.Builtin {
-			a.installBuiltinCapacity(w, r, found)
-			return
-		}
 		dlURL, sha = found.DownloadURL, strings.ToLower(found.SHA256)
 	}
+	// 第三方条目（已审核通过）：从 market_listings 取下载地址+校验和（开发者碰不到官方索引）
+	if dlURL == "" && req.ListingID != "" {
+		var dl, shaDB, kindDB, tierDB string
+		lerr := a.db.QueryRowContext(r.Context(),
+			`SELECT download_url, sha256, kind, tier FROM market_listings WHERE id=? AND status='approved'`, req.ListingID).
+			Scan(&dl, &shaDB, &kindDB, &tierDB)
+		if lerr != nil {
+			writeErr(w, http.StatusNotFound, "LISTING_NOT_FOUND", "第三方条目不存在或未通过审核")
+			return
+		}
+		if dl == "" {
+			writeErr(w, http.StatusBadRequest, "LISTING_NO_PACKAGE", "该条目尚未上传应用包")
+			return
+		}
+		dlURL, sha, kind = dl, strings.ToLower(shaDB), kindDB
+		if tierDB == "paid" && a.licenseEdition() != "pro" {
+			writeErr(w, http.StatusPaymentRequired, "MARKET_LICENSE_REQUIRED", "该应用为付费应用（tier=paid），需要 pro 许可证")
+			return
+		}
+	}
 	if dlURL == "" {
-		writeErr(w, http.StatusBadRequest, "MARKET_BAD_REQ", "缺少下载地址（url 或市场 id）")
+		writeErr(w, http.StatusBadRequest, "MARKET_BAD_REQ", "缺少下载地址（url / 市场 id / 第三方 listing_id）")
 		return
 	}
-	// 下载（限流 16MiB；15s 超时 + 逐跳 SSRF 校验）
-	resp, err := marketHTTPClient.Get(dlURL)
+	// 下载（限流 16MiB）
+	resp, err := http.Get(dlURL)
 	if err != nil {
 		writeErr(w, http.StatusBadGateway, "MARKET_DL_FAIL", "应用包下载失败")
 		return
@@ -585,43 +285,10 @@ func (a *API) marketInstall(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	// 站点数授权分发（SPEC-MS-001 M4）：license 包为纯文本 entitle key（非 zip），
-	// 验签通过后写入 site_licenses；必须在解包 zip 之前分流。
-	if kind == "license" {
-		raw, rerr := os.ReadFile(tmp.Name())
-		if rerr != nil {
-			writeErr(w, http.StatusUnprocessableEntity, "LICENSE_READ_FAILED", rerr.Error())
-			return
-		}
-		a.installLicenseFromBytes(w, r, string(raw))
-		return
-	}
-	// 平台 AI 供给分发（B38）：凭据为纯文本 JSON（非 zip），验 sha256 后解析开通；
-	// 必须在解包 zip 之前分流（同 license）。
-	if kind == "ai_supply" {
-		raw, rerr := os.ReadFile(tmp.Name())
-		if rerr != nil {
-			writeErr(w, http.StatusUnprocessableEntity, "AI_SUPPLY_READ_FAILED", rerr.Error())
-			return
-		}
-		a.installAiSupplyFromBytes(w, r, req.ID, string(raw))
-		return
-	}
 	// 解包并校验 manifest
 	m, err := installPluginZip(tmp.Name())
 	if err != nil {
 		writeErr(w, http.StatusUnprocessableEntity, "MARKET_BAD_PACKAGE", err.Error())
-		return
-	}
-	// 源包分流（SPEC-SP-001）：manifest.kind=source-pack 走采集源导入链路，
-	// 不进插件登记（必须在下面「索引分类强制覆盖 kind」之前判断，否则会被归成 plugin）。
-	if m.Kind == service.SourcePackKind {
-		raw, rerr := os.ReadFile(tmp.Name())
-		if rerr != nil {
-			writeErr(w, http.StatusUnprocessableEntity, "SOURCE_PACK_READ_FAILED", rerr.Error())
-			return
-		}
-		a.installSourcePack(w, r, raw, nil)
 		return
 	}
 	// 应用中心来的类型：按索引分类（theme/plugin）强制覆盖 zip 的 kind（AiKmap 用 ui/capacity 语义）；
@@ -663,227 +330,20 @@ func (a *API) marketInstall(w http.ResponseWriter, r *http.Request) {
 	a.upsertPluginManifest(w, r, m, "app.install")
 }
 
-// installBuiltinCapacity 内置能力应用登记：家族传承/组织架构等随主系统编译的能力，
-// "安装"=写一条 blog_plugins 记录（capability_mode='capacity' + capabilities 声明），
-// CapabilityEnabled 第 2 层命中后启动装配（重启生效）；停用/卸载即熄灭（数据保留）。
-// 🔴 不走 upsertPluginRecord：v2 校验的 capability 白名单只收插件侧能力（collector/im/...），
-// 内核能力名（family/org）不在其列，且这些能力无后端入口键——直写登记，语义等价于老数据口径。
-func (a *API) installBuiltinCapacity(w http.ResponseWriter, r *http.Request, entry *marketPlugin) {
-	if len(entry.Capabilities) == 0 {
-		writeErr(w, http.StatusUnprocessableEntity, "MARKET_BAD_REQ", "内置能力应用缺少 capabilities 声明")
-		return
-	}
-	caps, _ := json.Marshal(entry.Capabilities)
-	now := time.Now().UnixMilli()
-	ver := entry.Version
-	if ver == "" {
-		ver = coreVersion
-	}
-	_, err := a.db.ExecContext(r.Context(),
-		`INSERT INTO blog_plugins (id, name, version, description, author, kind, enabled, created_at, updated_at,
-		                           capability_mode, capabilities)
-		 VALUES (?,?,?,?,?,?,1,?,?,?,?)
-		 ON CONFLICT(id) DO UPDATE SET name=excluded.name, version=excluded.version, description=excluded.description,
-		   author=excluded.author, enabled=1, updated_at=excluded.updated_at,
-		   capability_mode=excluded.capability_mode, capabilities=excluded.capabilities`,
-		entry.ID, entry.Name, ver, entry.Description, entry.Author, "plugin", now, now, "capacity", string(caps))
-	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "INTERNAL", err.Error())
-		return
-	}
-	// installed 标记对照 blog_plugins.id（marketView 口径），此处 id 即条目 id → 列表立显「已安装」
-	log.Printf("应用中心：内置能力应用 %s 已登记（capabilities=%s，重启主系统后装配生效）", entry.ID, string(caps))
-	writeJSON(w, http.StatusOK, map[string]any{
-		"ok": true, "id": entry.ID, "kind": "plugin", "capability_mode": "capacity",
-		"enabled": true, "builtin": true, "apply": "restart",
-		"message": "已安装；重启主系统后生效（侧栏出现入口、路由挂载）",
-	})
-}
-
-// aiSiteSupplyProvider 应用中心平台 AI 供给的缺省 provider 名（凭据未声明 provider 时使用）。
-const aiSiteSupplyProvider = "aikgw"
-
-// installAiSupplyFromBytes 平台 AI 供给凭据开通（B38）。
-// 凭据 = 纯文本 JSON（schema=aiklog-ai-supply/v1）：网关地址 + gw key + 初始 token 额度。
-// 落地三件事：
-//  1. 登记/追加网关 provider：keys 池追加去重（增量包 = 池里加新 key，不缩容不覆盖）；
-//  2. 站点池充值：meter 主体 "site"（全站共享额度，主体余额不足时扣费自动兜底，见 meter.go）；
-//  3. 不擅自改写能力绑定 —— 提示站长在设置页把对应能力切到该 provider。
-func (a *API) installAiSupplyFromBytes(w http.ResponseWriter, r *http.Request, entryID, raw string) {
-	var cred struct {
-		Schema        string            `json:"schema"`
-		GatewayURL    string            `json:"gateway_url"`
-		GatewayKey    string            `json:"gateway_key"`
-		Provider      string            `json:"provider"`
-		Caps          []string          `json:"caps"`
-		Model         string            `json:"model"`
-		Models        map[string]string `json:"models"`
-		InitialTokens int               `json:"initial_tokens"`
-	}
-	if err := json.Unmarshal([]byte(strings.TrimSpace(raw)), &cred); err != nil {
-		writeErr(w, http.StatusUnprocessableEntity, "AI_SUPPLY_BAD_CRED", "供给凭据不是合法 JSON："+err.Error())
-		return
-	}
-	if cred.Schema != "" && cred.Schema != "aiklog-ai-supply/v1" {
-		writeErr(w, http.StatusUnprocessableEntity, "AI_SUPPLY_SCHEMA", "供给凭据 schema 不支持："+cred.Schema)
-		return
-	}
-	gw := strings.TrimRight(strings.TrimSpace(cred.GatewayURL), "/")
-	if !strings.HasPrefix(gw, "http://") && !strings.HasPrefix(gw, "https://") {
-		writeErr(w, http.StatusUnprocessableEntity, "AI_SUPPLY_BAD_URL", "供给凭据 gateway_url 非法（须 http/https 地址）")
-		return
-	}
-	if strings.TrimSpace(cred.GatewayKey) == "" {
-		writeErr(w, http.StatusUnprocessableEntity, "AI_SUPPLY_NO_KEY", "供给凭据缺少 gateway_key")
-		return
-	}
-	name := strings.TrimSpace(cred.Provider)
-	if name == "" {
-		name = aiSiteSupplyProvider
-	}
-	caps := cred.Caps
-	if len(caps) == 0 {
-		caps = []string{"llm"}
-	}
-	def := &ai.ProviderDef{
-		Endpoint: gw,
-		Model:    strings.TrimSpace(cred.Model),
-		Models:   cred.Models,
-		Caps:     caps,
-		Note:     "平台 AI 供给（key 由平台网关签发，应用中心开通）",
-	}
-	// keys 追加去重：老 key 保留（池不缩容），新 key 入池
-	keys := []string{}
-	seen := map[string]bool{}
-	if d, ok := a.ai.Providers()[name]; ok {
-		def.ModelCands = d.ModelCands
-		def.VoiceCands = d.VoiceCands
-		def.Builtin = d.Builtin
-		for _, k := range d.Keys {
-			if !seen[k] {
-				seen[k] = true
-				keys = append(keys, k)
-			}
-		}
-	}
-	if !seen[cred.GatewayKey] {
-		keys = append(keys, cred.GatewayKey)
-	}
-	def.Keys = keys
-	if err := ai.SaveProviderDef(a.db, name, def); err != nil {
-		writeErr(w, http.StatusInternalServerError, "AI_SUPPLY_SAVE_FAILED", err.Error())
-		return
-	}
-	a.ai.UpsertProvider(name, def)
-	a.ai.DropProviderPools(name) // 密钥/endpoint 变更后强制重建 token 池
-	granted, balance := 0, 0
-	if m := a.ai.Meter(); m != nil && cred.InitialTokens > 0 {
-		if bal, err := m.Grant(ai.SiteSubject, cred.InitialTokens, "应用中心供给包:"+entryID, "app_center"); err == nil {
-			granted = cred.InitialTokens
-			balance = bal
-		} else {
-			log.Printf("应用中心：AI 供给 %s 站点池充值失败（provider 已登记，可手工充值）：%v", entryID, err)
-		}
-	}
-	log.Printf("应用中心：平台 AI 供给 %s 已开通（provider=%s，keys=%d，站点池 +%d）", entryID, name, len(def.Keys), granted)
-	writeJSON(w, http.StatusOK, map[string]any{
-		"ok": true, "id": entryID, "kind": "ai_supply", "provider": name,
-		"endpoint": gw, "keys": len(def.Keys),
-		"granted": granted, "balance": balance,
-		"message": fmt.Sprintf("平台 AI 供给已开通（provider=%s）。请在 设置 → AI 里把要用的能力切换到该提供方。", name),
-	})
-}
-
 // fetchMarketIndex 拉取市场索引（不走缓存，供安装校验用）。
-// localMarketIndexPath 本实例自维护市场目录（自有市场源优先）：data/market/index.json。
-// 存在即作为市场目录直接读盘（不经 HTTP —— 严禁指向本实例 /market/index.json，
-// 该文件本身是拉源生成的合并视图，自引用会递归死循环）；不存在时回落远程索引。
-func localMarketIndexPath() string {
-	base := filepath.Join("data", "market")
-	if exe, err := os.Executable(); err == nil {
-		base = filepath.Join(filepath.Dir(exe), "..", "data", "market")
-	}
-	return filepath.Join(base, "index.json")
-}
-
-// marketSourceKey 市场源缓存键：本地目录含 mtime（改文件即生效，不走 5 分钟等待）；远程为索引 URL。
-func (a *API) marketSourceKey() string {
-	p := localMarketIndexPath()
-	if st, err := os.Stat(p); err == nil && !st.IsDir() {
-		return "local|" + p + "|" + st.ModTime().Format("20060102150405.000000000")
-	}
-	return "remote|" + a.marketIndexURL()
-}
-
-// marketHTTPClient 市场索引/应用包下载用客户端：15s 超时 + 逐跳 SSRF 校验
-// （管理员配置的 URL 也会被重定向到内网，必须按铁律接 SafeCheckRedirect）。
-var marketHTTPClient = &http.Client{
-	Timeout:       15 * time.Second,
-	CheckRedirect: service.SafeCheckRedirect,
-}
-
-// fetchMarketIndex 取市场索引：本地市场目录 data/market/index.json 优先；不存在回落远程。
-// 远程索引必须**通过 ed25519 签名验签**才采信（市场 v0.3）：验签失败直接报错，
-// 不按未签名处理——否则远程索引就成了任意方可否决包体的通道。
-func (a *API) fetchMarketIndex(r *http.Request) (*marketIndex, error) {
-	p := localMarketIndexPath()
-	b, err := os.ReadFile(p)
-	if err == nil {
-		var idx marketIndex
-		if err := json.Unmarshal(b, &idx); err != nil {
-			return nil, fmt.Errorf("本地市场目录 %s 格式非法：%v", p, err)
-		}
-		return &idx, nil
-	}
-	if !os.IsNotExist(err) {
-		return nil, fmt.Errorf("本地市场目录 %s 读取失败：%v", p, err)
-	}
+func (a *API) fetchMarketIndex(_ *http.Request) (*marketIndex, error) {
 	u := a.marketIndexURL()
-	if strings.TrimSpace(u) == "" {
-		return nil, fmt.Errorf("未配置市场索引地址（market.index_url）且无本地市场目录")
-	}
-	// B47：显式构造请求以携带匿名身份头（install_id / version / shell）。
-	// 这三个头是**纯附加信息** —— 官方侧不接收也不影响任何功能。
-	// 官方侧由此把回源请求去重成「装机数」并统计版本分布（见 market_telemetry.go）。
-	// 用入参 r 的 context：调用方（marketList / marketIndexFile）都传了真实请求，
-	// 保留取消链路（客户端断开时立即中止 15s 的远端拉取，不空耗连接）。
-	idx, err := func() (*marketIndex, error) {
-		req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, u, nil)
-		if err != nil {
-			return nil, fmt.Errorf("市场索引地址非法：%w", err)
-		}
-		a.attachMarketIdentity(req)
-		resp, err := marketHTTPClient.Do(req)
-		if err != nil {
-			return nil, fmt.Errorf("市场索引拉取失败：%w", err)
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("市场索引 HTTP %d", resp.StatusCode)
-		}
-		body, err := io.ReadAll(io.LimitReader(resp.Body, 4<<20))
-		if err != nil {
-			return nil, fmt.Errorf("市场索引读取不完整：%w", err)
-		}
-		var idx marketIndex
-		if err := json.Unmarshal(body, &idx); err != nil {
-			return nil, fmt.Errorf("市场索引格式非法")
-		}
-		if err := idx.verifySignature(); err != nil {
-			return nil, fmt.Errorf("市场索引验签失败：%w", err)
-		}
-		return &idx, nil
-	}()
+	resp, err := http.Get(u)
 	if err != nil {
-		// 降级：远程不可达/未签名 → 内置官方目录（iss=aiklog-market 签名，随二进制分发）。
-		// 不是静默放过远程内容：未签名的远程字节一律不采信，降级的只是「改用哪份已签名目录」。
-		if emb := embeddedMarketIndex(); emb != nil {
-			log.Printf("[market] 远程目录不可用（%v），降级使用内置官方目录（iss=%s）", err, MarketSignIssuer)
-			return emb, nil
-		}
 		return nil, err
 	}
-	return idx, nil
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(io.LimitReader(resp.Body, 4<<20))
+	var idx marketIndex
+	if err := json.Unmarshal(body, &idx); err != nil {
+		return nil, fmt.Errorf("市场索引格式非法")
+	}
+	return &idx, nil
 }
 
 // installPluginZip 解包应用 zip 并校验：manifest.json（zip slip 防护）+ 版本；返回 manifest。

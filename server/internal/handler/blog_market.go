@@ -11,7 +11,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -24,23 +23,15 @@ import (
 // 此处输出本实例合并视图（installed/applicable 标记），仅含目录本体（不带实例侧元数据）。
 // 降级策略：远程不可达时优先用缓存；全无缓存输出空索引 200（保证门户页可开，不整页挂掉）。
 func (a *API) marketIndexFile(w http.ResponseWriter, r *http.Request) {
-	// B47：官方侧就地记录回源（匿名去重装机 + 版本分布）。
-	// 放在最前面且**不区分缓存命中** —— 5 分钟缓存期内用户正在用应用中心，
-	// 若缓存命中不记，装机数会随缓存周期"消失"，看板就成了心跳图而非装机图。
-	// 纯旁路：内部吞掉所有错误，绝不影响索引输出（用户拿不到目录才是真故障）。
-	a.marketBeaconIngest(r)
-	// M4 修复：与 marketList 共用 marketCache，必须同锁（并发读写同一缓存 → data race）
-	marketCache.mu.Lock()
-	defer marketCache.mu.Unlock()
-	key := a.marketSourceKey()
-	if time.Since(marketCache.at) < 5*time.Minute && marketCache.index != nil && marketCache.url == key {
-		writeMarketIndexRaw(w, marketCache.index)
+	u := a.marketIndexURL()
+	if time.Since(marketCache.at) < 5*time.Minute && marketCache.index != nil && marketCache.url == u {
+		writeMarketIndexView(w, a.marketView(marketCache.index))
 		return
 	}
 	idx, err := a.fetchMarketIndex(r)
 	if err != nil {
-		if marketCache.index != nil && marketCache.url == key {
-			writeMarketIndexRaw(w, marketCache.index)
+		if marketCache.index != nil && marketCache.url == u {
+			writeMarketIndexView(w, a.marketView(marketCache.index))
 			return
 		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -50,28 +41,30 @@ func (a *API) marketIndexFile(w http.ResponseWriter, r *http.Request) {
 	}
 	marketCache.index = idx
 	marketCache.at = time.Now()
-	marketCache.url = key
-	writeMarketIndexRaw(w, idx)
+	marketCache.url = u
+	writeMarketIndexView(w, a.marketView(idx))
 }
 
-// writeMarketIndexRaw 输出**原样**索引（保留 signature），供跨实例分发。
-//
-// 🔴 B47 修掉的真实缺陷：本端点原先用 writeMarketIndexView **重建**文档
-// （只放 schema_version/plugins/themes），把 Signature 字段丢掉了。而这正是
-// **跨实例分发目录**的端点 —— 各壳 fetchMarketIndex 对远程索引强制验签，
-// 收到无签名的文档必然报「市场索引未签名」→ 自部署实例从官方拉目录恒为 502，
-// 应用中心永远是空的。连带后果：没有可拉的目录就没有回源信号，装机统计永不发生。
-//
-// 正确做法：分发端点必须输出**原样索引**（含签名）。任何改写都会破坏签名 ——
-// 签名的载荷就是「去掉 signature 后的 json.Marshal」，多一个字节都对不上。
-// 实例侧的 installed/applicable 标记属于**本实例视图**，由 marketList（登录态）
-// 在本地合并，不该污染对外分发的字节。
-func writeMarketIndexRaw(w http.ResponseWriter, idx *marketIndex) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Header().Set("Access-Control-Allow-Origin", "*") // 索引公开；壳端/第三方跨域拉取
-	enc := json.NewEncoder(w)
-	enc.SetEscapeHTML(false)
-	_ = enc.Encode(idx)
+// writeMarketIndexView 输出门户索引（精简：schema_version + plugins/themes 空数组兜底）。
+func writeMarketIndexView(w http.ResponseWriter, view map[string]any) {
+	plugins, _ := view["plugins"].([]marketPlugin)
+	themes, _ := view["themes"].([]marketTheme)
+	third, _ := view["third_party"].([]marketListing)
+	if plugins == nil {
+		plugins = []marketPlugin{}
+	}
+	if themes == nil {
+		themes = []marketTheme{}
+	}
+	if third == nil {
+		third = []marketListing{}
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"schema_version": view["schema_version"],
+		"plugins":        plugins,
+		"themes":         themes,
+		"third_party":    third,
+	})
 }
 
 // marketPortal GET /market：公开市场门户（无需登录浏览；安装引导登录后进后台应用中心）。
@@ -152,31 +145,23 @@ footer{text-align:center;color:var(--dim);font-size:12px;margin-top:60px}
 <script>
 function esc(s){return (s||'').toString().replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function goInstall(){window.open('/app#/settings?tab=apps','_blank');}
-// H4 修复：esc 只转义 &<>"，不拦协议 —— 远程索引里填 homepage:"javascript:alert(1)"
-// 就会渲染成一个可点击的 XSS 链接（点击即在本站 origin 下执行）。这里只放行 http/https。
-function safeURL(u){u=(u||'').toString().trim();return /^https?:\/\//i.test(u)?u:'';}
-// H4b 修复：原实现 ### → <h3> 只开不闭合、<li> 不包 <ul>、并靠一条引用了从未插入的
-// </ul> 的正则"清理"（死代码）—— 列表与标题渲染错乱。这里改为成对闭合 + 列表容器状态机。
 function md(s){
   s=(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var lines=s.split('\n'),out=[],inpre=false,inul=false;
-  function closeUl(){if(inul){out.push('</ul>');inul=false;}}
+  var lines=s.split('\n'),out=[],inpre=false;
   for(var i=0;i<lines.length;i++){
     var l=lines[i];
-    if(/^\u0060\u0060\u0060/.test(l)){closeUl();if(inpre){out.push('</code></pre>');inpre=false;}else{out.push('<pre><code>');inpre=true;}continue;}
+    if(/^\u0060\u0060\u0060/.test(l)){if(inpre){out.push('</pre>');inpre=false;}else{out.push('<pre><code>');inpre=true;}continue;}
     if(inpre){out.push(esc(l));continue;}
-    var h=l.match(/^(#{1,3})\s+(.+)$/);
-    if(h){closeUl();var n=h[1].length;out.push('<h'+n+'>'+h[2]+'</h'+n+'>');continue;}
-    if(/^-\s+/.test(l)){if(!inul){out.push('<ul>');inul=true;}out.push('<li>'+l.replace(/^-\s+/,'')+'</li>');continue;}
-    if(/^\d+\.\s+/.test(l)){if(!inul){out.push('<ul>');inul=true;}out.push('<li>'+l.replace(/^\d+\.\s+/,'')+'</li>');continue;}
-    if(l.trim()===''){closeUl();continue;}
-    closeUl();
+    l=l.replace(/^###\s+/, '<h3>').replace(/^##\s+/, '<h2>').replace(/^#\s+/, '<h1>');
+    if(/^<h[123]>/.test(l)){out.push(l);continue;}
+    if(/^-\s+/.test(l)){out.push('<li>'+l.replace(/^-\s+/,'')+'</li>');continue;}
+    if(/^\d+\.\s+/.test(l)){out.push('<li>'+l.replace(/^\d+\.\s+/,'')+'</li>');continue;}
+    if(l===''){out.push('</ul>');continue;}
     l=l.replace(/\u0060([^\u0060]+)\u0060/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
     out.push('<p>'+l+'</p>');
   }
-  if(inpre)out.push('</code></pre>');
-  closeUl();
-  return out.join('\n').replace(/<p><\/p>/g,'');
+  if(inpre)out.push('</pre>');
+  return out.join('\n').replace(/<\/ul><p><\/p><ul>/g,'').replace(/<\/ul><p><\/p>/g,'').replace(/<p><\/p>/g,'');
 }
 function showDetail(o){
   var rm=o.readme||'（该条目暂未提供使用说明）';
@@ -186,24 +171,19 @@ function showDetail(o){
   document.getElementById('mdlBox').innerHTML='<span class="x" onclick="closeDetail()">×</span><h3>'+esc(o.name)+' <span class="badge '+(o.tier==='paid'?'badge-paid':'badge-free')+'">'+tier+'</span></h3>'+
     '<div class="meta">作者 '+esc(o.author||'-')+' · v'+esc(o.version||'-')+' · 适用 '+esc(target)+'</div>'+
     '<div class="rm">'+md(rm)+'</div>'+
-    (safeURL(o.homepage)?'<div class="install"><a class="btn" href="'+esc(safeURL(o.homepage))+'" rel="noopener noreferrer" target="_blank">文档主页</a> ':'')+
+    (o.homepage?'<div class="install"><a class="btn" href="'+esc(o.homepage)+'" target="_blank">文档主页</a> ':'')+
     '<a class="btn" href="/app#/settings?tab=apps" target="_blank">去安装</a></div>';
   document.getElementById('mdl').classList.add('open');
 }
 function closeDetail(){document.getElementById('mdl').classList.remove('open');}
-// 远程索引字段一律按不可信处理：作者/版本号此前未转义；且整个条目被 JSON 内联进 onclick 属性
-// （esc 不转义单引号 —— 字段里带一个 ' 就能逃出 JS 字符串执行任意代码）。改为按下标引用。
-var ITEMS=[];
 function card(it){
-  var i=ITEMS.push(it)-1;
   var target=(it.target||[]).length?it.target.join(', '):'全壳兼容';
   var tier=it.tier==='paid'?'<span class="badge badge-paid">付费</span>':'<span class="badge badge-free">免费</span>';
-  return '<div class="card" style="cursor:pointer" onclick="showDetailIdx('+i+')"><h3>'+esc(it.name)+' '+tier+'<span class="badge badge-target">'+esc(target)+'</span></h3>'+
+  return '<div class="card" style="cursor:pointer" onclick="showDetail('+esc(JSON.stringify({id:it.id,name:it.name,version:it.version,author:it.author,tier:it.tier,target:it.target,readme:it.readme,homepage:it.homepage}))+')"><h3>'+esc(it.name)+' '+tier+'<span class="badge badge-target">'+esc(target)+'</span></h3>'+
     '<p class="desc">'+esc(it.description||'')+'</p>'+
-    '<div class="meta"><span>作者 '+esc(it.author||'-')+'</span><span>v'+esc(it.version||'-')+'</span></div>'+
+    '<div class="meta"><span>作者 '+(it.author||'-')+'</span><span>v'+(it.version||'-')+'</span></div>'+
     '<div class="actions"><a class="btn" href="/app#/settings?tab=apps" target="_blank" onclick="event.stopPropagation()">去安装</a></div></div>';
 }
-function showDetailIdx(i){showDetail(ITEMS[i]||{});}
 fetch('/market/index.json').then(function(r){return r.json();}).then(function(d){
   var plugins=d.plugins||[],themes=d.themes||[];
   document.getElementById('c-plugins').textContent='('+plugins.length+')';

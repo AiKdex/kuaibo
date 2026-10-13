@@ -5,13 +5,13 @@
       <div class="brand">
         <div class="brand-mark"><span>K</span><i class="brand-dot"></i></div>
         <div v-if="!sidebarCollapsed" class="brand-text">
-          <h1>{{  $t('爱库录')  }}</h1>
-          <p>{{  $t('AiKlog · AI 知识库博客')  }}</p>
+          <h1>爱库录</h1>
+          <p>AiKlog · AI 知识库博客</p>
         </div>
       </div>
 
       <nav class="nav">
-        <button class="nav-pin" :title="sidebarCollapsed ? $t('nav.pin.expand') : $t('nav.pin.collapse')" @click="sidebarCollapsed = !sidebarCollapsed">
+        <button class="nav-pin" :title="sidebarCollapsed ? '展开侧栏' : '收起侧栏'" @click="sidebarCollapsed = !sidebarCollapsed">
           <AikIcon :name="sidebarCollapsed ? 'menu' : 'chevronLeft'" :size="15" />
         </button>
 
@@ -19,11 +19,11 @@
         <div class="nav-group">
           <div class="nav-group-head" @click="toggleGroup('content')">
             <AikIcon name="chevronDown" :size="11" class="arw" :class="{ closed: !groups.content }" />
-            {{  t('nav.group.content')  }}
+            <span>内容</span>
           </div>
           <div v-show="groups.content" class="nav-group-body">
-            <RouterLink to="/write" class="nav-item" active-class="active" :title="t('nav.writeTip')">
-              <AikIcon name="edit" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.write')  }}</span>
+            <RouterLink to="/write" class="nav-item" active-class="active" title="新建 / 编辑文章">
+              <AikIcon name="edit" :size="15" /><span v-if="!sidebarCollapsed">写文章</span>
             </RouterLink>
             <div
               class="tree-root"
@@ -34,7 +34,7 @@
               @drop="onRootDrop($event)"
             >
               <AikIcon name="database" :size="15" />
-              <span v-if="!sidebarCollapsed" class="tree-root-name">{{  t('nav.files')  }}</span>
+              <span v-if="!sidebarCollapsed" class="tree-root-name">文件库</span>
             </div>
             <div v-if="!sidebarCollapsed" class="dir-tree">
               <DirTreeNode
@@ -50,17 +50,11 @@
                 @move="onTreeMove"
               />
             </div>
-            <RouterLink to="/drafts" class="nav-item-sub" active-class="active" :title="t('nav.draftsTip')">
-              <AikIcon name="fileText" :size="12" /><span v-if="!sidebarCollapsed">{{  t('nav.storage.drafts')  }}</span>
+            <RouterLink to="/drafts" class="nav-item-sub" active-class="active" title="未发布草稿">
+              <AikIcon name="edit" :size="12" /><span v-if="!sidebarCollapsed">草稿箱</span>
             </RouterLink>
-            <RouterLink to="/trash" class="nav-item-sub" active-class="active" :title="t('nav.trashTip')">
-              <AikIcon name="trash" :size="12" /><span v-if="!sidebarCollapsed">{{  t('nav.storage.trash')  }}</span>
-            </RouterLink>
-            <RouterLink to="/inbox" class="nav-item" active-class="active" :title="t('nav.inboxTip')">
-              <AikIcon name="bell" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.kb.inbox')  }}</span>
-            </RouterLink>
-            <RouterLink to="/mentions" class="nav-item" active-class="active" :title="t('nav.mentionsTip')">
-              <AikIcon name="user" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.mentions')  }}</span>
+            <RouterLink to="/trash" class="nav-item-sub" active-class="active" title="软删恢复 / 彻底删除">
+              <AikIcon name="trash" :size="12" /><span v-if="!sidebarCollapsed">回收站</span>
             </RouterLink>
           </div>
         </div>
@@ -69,20 +63,20 @@
         <div class="nav-group">
           <div class="nav-group-head" @click="toggleGroup('blog')">
             <AikIcon name="chevronDown" :size="11" class="arw" :class="{ closed: !groups.blog }" />
-            {{  t('nav.group.blog')  }}
+            <span>博客</span>
           </div>
           <div v-show="groups.blog" class="nav-group-body">
-            <RouterLink to="/manage/blog" class="nav-item" active-class="active" :title="t('nav.blogManageTip')">
-              <AikIcon name="book" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.blogManage')  }}</span>
+            <RouterLink to="/manage/blog" class="nav-item" active-class="active" title="站点设置、内容、统计、评论、Webhook">
+              <AikIcon name="book" :size="15" /><span v-if="!sidebarCollapsed">博客管理</span>
             </RouterLink>
-            <a class="nav-item" href="/blog" target="_blank" rel="noopener" :title="t('nav.staticBlogTip')">
-              <AikIcon name="globe" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.staticBlog')  }}</span>
+            <RouterLink to="/blog?view=public" class="nav-item" active-class="active" title="交互版读者页（主题可切换）">
+              <AikIcon name="fileText" :size="15" /><span v-if="!sidebarCollapsed">读者预览</span>
+            </RouterLink>
+            <a class="nav-item" href="/blog" target="_blank" rel="noopener" title="服务端静态页（SEO / 分享）">
+              <AikIcon name="book" :size="15" /><span v-if="!sidebarCollapsed">静态页 /blog</span>
             </a>
-            <RouterLink to="/shares" class="nav-item" active-class="active" :title="t('nav.sharesTip')">
-              <AikIcon name="share" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.publish.shares')  }}</span>
-            </RouterLink>
-            <RouterLink to="/analytics" class="nav-item" active-class="active" :title="t('nav.readStatsTip')">
-              <AikIcon name="eye" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.readStats')  }}</span>
+            <RouterLink to="/shares" class="nav-item" active-class="active" title="文件/目录分享列表">
+              <AikIcon name="share" :size="15" /><span v-if="!sidebarCollapsed">分享</span>
             </RouterLink>
           </div>
         </div>
@@ -91,34 +85,31 @@
         <div class="nav-group">
           <div class="nav-group-head" @click="toggleGroup('kb')">
             <AikIcon name="chevronDown" :size="11" class="arw" :class="{ closed: !groups.kb }" />
-            {{  t('nav.group.kbAi')  }}
+            <span>知识 · AI</span>
           </div>
           <div v-show="groups.kb" class="nav-group-body">
-            <RouterLink to="/kb" class="nav-item" active-class="active" :title="t('nav.kbOverTip')">
-              <AikIcon name="layers" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.kbOver')  }}</span>
+            <RouterLink to="/kb" class="nav-item" active-class="active" title="总览 / 集合 / 质量">
+              <AikIcon name="layers" :size="15" /><span v-if="!sidebarCollapsed">总览</span>
             </RouterLink>
-            <RouterLink to="/tags" class="nav-item" active-class="active" :title="t('nav.kb.tagsTip')">
-              <AikIcon name="tag" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.kb.tags')  }}</span>
+            <RouterLink to="/tags" class="nav-item" active-class="active" title="新建 / 重命名 / 删除标签">
+              <AikIcon name="tag" :size="15" /><span v-if="!sidebarCollapsed">标签管理</span>
             </RouterLink>
-            <RouterLink to="/digest" class="nav-item" active-class="active" :title="t('nav.digestTip')">
-              <AikIcon name="clock" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.digest')  }}</span>
+            <RouterLink to="/search" class="nav-item" active-class="active" title="关键词 + 语义检索">
+              <AikIcon name="search" :size="15" /><span v-if="!sidebarCollapsed">检索</span>
             </RouterLink>
-            <RouterLink to="/prompts" class="nav-item" active-class="active" :title="t('nav.promptsTip')">
-              <AikIcon name="sparkles" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.prompts')  }}</span>
-            </RouterLink>
-            <RouterLink to="/manage/webdav" class="nav-item" active-class="active" :title="t('nav.extMountTip')">
-              <AikIcon name="link" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.extMount')  }}</span>
-            </RouterLink>
+            <button type="button" class="nav-item nav-item-btn" title="打开右侧 AI 助手" @click="openAgent">
+              <AikIcon name="sparkles" :size="15" /><span v-if="!sidebarCollapsed">AI 助手</span>
+            </button>
             <div v-if="!sidebarCollapsed" class="tag-tree">
               <div class="tag-tree-head" @click="toggleTagTree">
                 <AikIcon name="chevronRight" :size="11" class="tag-tree-arw" :class="{ open: tagTreeOpen }" />
                 <AikIcon name="tag" :size="13" />
-                {{  t('nav.kb.tagTree')  }}
-                <span v-if="tagItems.length" class="tag-tree-count">{{  tagItems.length  }}</span>
+                <span>标签树</span>
+                <span v-if="tagItems.length" class="tag-tree-count">{{ tagItems.length }}</span>
               </div>
               <div v-show="tagTreeOpen" class="tag-tree-body">
-                <div v-if="tagLoading" class="tag-tree-hint">{{  t('nav.kb.tagTreeLoading')  }}</div>
-                <div v-else-if="!tagItems.length" class="tag-tree-hint">{{  t('nav.tagTreeEmptyShort')  }}</div>
+                <div v-if="tagLoading" class="tag-tree-hint">加载中…</div>
+                <div v-else-if="!tagItems.length" class="tag-tree-hint">暂无标签</div>
                 <template v-else>
                   <div
                     v-for="t in tagTreeRows"
@@ -126,11 +117,11 @@
                     class="tag-tree-item"
                     :class="{ active: isTagActive(t.id) }"
                     :style="{ paddingLeft: 8 + t.depth * 14 + 'px' }"
-                    :title="$t('{path}（{count} 个文件）', { path: t.path, count: t.count })"
+                    :title="t.path + '（' + t.count + ' 个文件）'"
                     @click="goTag(t.id)"
                   >
-                    <AikIcon name="tag" :size="11" /><span class="tag-tree-name">{{  t.name  }}</span>
-                    <span v-if="t.count" class="tag-tree-num">{{  t.count  }}</span>
+                    <AikIcon name="tag" :size="11" /><span class="tag-tree-name">{{ t.name }}</span>
+                    <span v-if="t.count" class="tag-tree-num">{{ t.count }}</span>
                   </div>
                 </template>
               </div>
@@ -138,45 +129,34 @@
           </div>
         </div>
 
+        <!-- 应用市场（第三方开发者体系） -->
+        <div class="nav-group">
+          <div class="nav-group-head" @click="toggleGroup('market')">
+            <AikIcon name="chevronDown" :size="11" class="arw" :class="{ closed: !groups.market }" />
+            <span>应用市场</span>
+          </div>
+          <div v-show="groups.market" class="nav-group-body">
+            <RouterLink to="/dev" class="nav-item" active-class="active" title="开发者中心：申请 / 发布 / 上传">
+              <AikIcon name="user" :size="15" /><span v-if="!sidebarCollapsed">开发者中心</span>
+            </RouterLink>
+            <RouterLink to="/admin/market-review" class="nav-item" active-class="active" title="市场审核：开发者与应用上架闸门">
+              <AikIcon name="lock" :size="15" /><span v-if="!sidebarCollapsed">市场审核</span>
+            </RouterLink>
+          </div>
+        </div>
+
         <!-- 系统 -->
         <div class="nav-group">
           <div class="nav-group-head" @click="toggleGroup('sys')">
             <AikIcon name="chevronDown" :size="11" class="arw" :class="{ closed: !groups.sys }" />
-            {{  t('nav.group.system')  }}
+            <span>系统</span>
           </div>
           <div v-show="groups.sys" class="nav-group-body">
-            <RouterLink to="/apps" class="nav-item" active-class="active" :title="t('nav.appsTip')">
-              <AikIcon name="grid" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.apps')  }}</span>
+            <RouterLink to="/settings?tab=apps" class="nav-item" :class="{ active: route.path === '/settings' && route.query.tab === 'apps' }" title="应用中心：在线市场安装主题与插件">
+              <AikIcon name="grid" :size="15" /><span v-if="!sidebarCollapsed">应用中心</span>
             </RouterLink>
-            <RouterLink to="/manage/sites" class="nav-item" active-class="active" :title="t('nav.sitesTip')">
-              <AikIcon name="home" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.sites')  }}</span>
-            </RouterLink>
-            <RouterLink to="/manage/im-bind" class="nav-item" active-class="active" :title="t('nav.imBindTip')">
-              <AikIcon name="link" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.imBind')  }}</span>
-            </RouterLink>
-            <RouterLink to="/manage/skills" class="nav-item" active-class="active" :title="t('nav.skillsTip')">
-              <AikIcon name="sparkles" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.skills')  }}</span>
-            </RouterLink>
-            <RouterLink v-if="caps.org" to="/org" class="nav-item" active-class="active" :title="t('nav.orgTreeTip')">
-              <AikIcon name="grid" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.orgTree')  }}</span>
-            </RouterLink>
-            <RouterLink v-if="caps.family" to="/family" class="nav-item" active-class="active" :title="t('nav.familyTip')">
-              <AikIcon name="heart" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.family')  }}</span>
-            </RouterLink>
-            <RouterLink v-if="caps.csInbox" to="/cs" class="nav-item" active-class="active" :title="t('cs.title')">
-              <AikIcon name="chat" :size="15" /><span v-if="!sidebarCollapsed">{{  t('cs.title')  }}</span>
-            </RouterLink>
-            <RouterLink v-if="caps.store" to="/manage/store" class="nav-item" active-class="active" :title="t('store.admin')">
-              <AikIcon name="cart" :size="15" /><span v-if="!sidebarCollapsed">{{  t('store.admin')  }}</span>
-            </RouterLink>
-            <RouterLink to="/knowledge-graph" class="nav-item" active-class="active" :title="t('kg.title')">
-              <AikIcon name="grid" :size="15" /><span v-if="!sidebarCollapsed">{{  t('kg.title')  }}</span>
-            </RouterLink>
-            <RouterLink to="/manage/users" class="nav-item" active-class="active" :title="t('nav.usersTip')">
-              <AikIcon name="user" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.system.users')  }}</span>
-            </RouterLink>
-            <RouterLink to="/settings" class="nav-item" :class="{ active: route.path === '/settings' && !route.query.tab }" :title="t('nav.settingsTip')">
-              <AikIcon name="settings" :size="15" /><span v-if="!sidebarCollapsed">{{  t('nav.system.settings')  }}</span>
+            <RouterLink to="/settings" class="nav-item" :class="{ active: route.path === '/settings' && !route.query.tab }" title="站点、AI、消息、应用、数据（导入导出）">
+              <AikIcon name="settings" :size="15" /><span v-if="!sidebarCollapsed">设置</span>
             </RouterLink>
           </div>
         </div>
@@ -184,15 +164,15 @@
 
       <div class="sidebar-foot">
         <div class="kb-info">
-          <div class="kb-avatar">{{ $t('本') }}</div>
+          <div class="kb-avatar">本</div>
           <div v-if="!sidebarCollapsed" class="kb-text">
-            <span class="kb-name">{{  t('nav.foot.selfhost')  }}</span>
-            <span class="kb-sub">{{  t('nav.foot.phase1')  }}</span>
+            <span class="kb-name">本地存储 · 自部署</span>
+            <span class="kb-sub">v0.1 阶段 1</span>
           </div>
           <!-- 消息通知入口：侧栏底部个人区（铃铛 + 未读角标；脉冲仅新增时一次） -->
-          <button class="kb-bell" :class="{ 'has-unread': unread > 0, open: notifOpen }" :title="t('nav.foot.notif')" @click.stop="notifOpen = !notifOpen">
+          <button class="kb-bell" :class="{ 'has-unread': unread > 0, open: notifOpen }" title="消息通知" @click.stop="notifOpen = !notifOpen">
             <AikIcon name="bell" :size="16" />
-            <span v-if="unread > 0" class="kb-badge">{{  unread > 99 ? '99+' : unread  }}</span>
+            <span v-if="unread > 0" class="kb-badge">{{ unread > 99 ? '99+' : unread }}</span>
           </button>
         </div>
       </div>
@@ -201,8 +181,8 @@
       <transition name="notif-fade">
         <div v-if="notifOpen" class="notif-panel" @click.stop>
           <div class="notif-head">
-            {{  t('nav.foot.notif')  }}
-            <button class="notif-close" :title="t('nav.foot.close')" @click="notifOpen = false"><AikIcon name="close" :size="14" /></button>
+            <span>消息通知</span>
+            <button class="notif-close" title="关闭" @click="notifOpen = false"><AikIcon name="close" :size="14" /></button>
           </div>
           <div class="notif-body">
             <template v-if="notifItems.length">
@@ -215,23 +195,23 @@
                 <AikIcon :name="notifIcon(n.type)" :size="14" class="notif-ic" />
                 <div class="notif-main">
                   <div class="notif-title">
-                    <span>{{  n.title  }}</span>
+                    <span>{{ n.title }}</span>
                     <span v-if="!n.read_at" class="notif-dot"></span>
                   </div>
-                  <div v-if="n.message" class="notif-msg">{{  n.message  }}</div>
-                  <div class="notif-time">{{  fmtNotifTime(n.created_at)  }}</div>
+                  <div v-if="n.message" class="notif-msg">{{ n.message }}</div>
+                  <div class="notif-time">{{ fmtNotifTime(n.created_at) }}</div>
                 </div>
               </div>
               <div class="notif-foot">
                 <button class="notif-allread" :disabled="notifBusy" @click="readAll">
-                  {{  notifBusy ? $t('处理中…') : $t('全部标为已读')  }}
+                  {{ notifBusy ? '处理中…' : '全部标为已读' }}
                 </button>
               </div>
             </template>
             <div v-else class="notif-empty">
               <AikIcon name="bell" :size="22" />
-              <p>{{ $t('暂无通知') }}</p>
-              <p class="notif-tip">{{ $t('导入导出终态 / 系统事件会在这里提醒你') }}</p>
+              <p>暂无通知</p>
+              <p class="notif-tip">导入导出终态 / 系统事件会在这里提醒你</p>
             </div>
           </div>
         </div>
@@ -249,25 +229,22 @@
               class="crumb-btn"
               :class="{ current: i === files.breadcrumbs.length - 1 }"
               @click="openDir(c.id)"
-            >{{  c.name  }}</button>
+            >{{ c.name }}</button>
           </template>
         </div>
-        <div v-else class="crumb"><span class="crumb-btn current">{{  pageTitle  }}</span></div>
+        <div v-else class="crumb"><span class="crumb-btn current">{{ pageTitle }}</span></div>
 
         <div class="search">
           <AikIcon name="search" :size="14" />
           <input
             v-model="quickQuery"
-            :placeholder="$t('搜索文件、内容…（Enter 跳转）')"
+            placeholder="搜索文件、内容…（Enter 跳转）"
             @keydown.enter="goSearch"
           />
           <span class="kbd">Enter</span>
         </div>
 
         <div class="tb-actions">
-          <a class="btn btn-ghost site-link" href="/#/blog?view=public" target="_blank" rel="noopener" :title="$t('nav.visitSiteTip')">
-            <AikIcon name="globe" :size="15" /><span class="site-link-text">{{ $t('nav.visitSite') }}</span>
-          </a>
           <div class="theme-switcher">
             <button
               v-for="t in THEMES"
@@ -280,17 +257,16 @@
               <span :class="'dot dot-' + t.id"></span>
             </button>
           </div>
-          <LangSwitch mode="topbar" />
-          <button class="btn btn-ghost icon-btn ai-toggle" :class="{ on: aiOpen }" :title="$t('AI 助手（点击隐藏/展开）')" @click="aiOpen = !aiOpen">
+          <button class="btn btn-ghost icon-btn ai-toggle" :class="{ on: aiOpen }" title="AI 助手（点击隐藏/展开）" @click="aiOpen = !aiOpen">
             <span class="ai-text-btn">AI</span>
           </button>
-          <div class="user-avatar" :title="$t('管理员')" @click.stop="userMenuOpen = !userMenuOpen">{{ $t('管') }}</div>
+          <div class="user-avatar" title="管理员" @click.stop="userMenuOpen = !userMenuOpen">管</div>
           <div v-if="userMenuOpen" class="user-menu" @click.stop>
             <button class="user-menu-item" @click="openPasswordModal">
-              <AikIcon name="lock" :size="13" /><span>{{ $t('修改密码') }}</span>
+              <AikIcon name="lock" :size="13" /><span>修改密码</span>
             </button>
             <button class="user-menu-item danger" @click="doLogout">
-              <AikIcon name="logout" :size="13" /><span>{{ $t('退出登录') }}</span>
+              <AikIcon name="logout" :size="13" /><span>退出登录</span>
             </button>
           </div>
         </div>
@@ -302,53 +278,53 @@
 
       <!-- 底部状态栏（KodExplorer 式：项目数 / 选中数，低调不抖动） -->
       <footer v-if="isFilesView" class="status-bar">
-        <span class="st-item">{{  files.items.length  }} {{ $t('个项目') }}</span>
+        <span class="st-item">{{ files.items.length }} 个项目</span>
         <span v-if="files.selected.length" class="st-item st-strong">
-          {{ $t('已选') }} {{  files.selected.length  }} {{ $t('项') }}{{  selectedSizeLabel  }}
+          已选 {{ files.selected.length }} 项{{ selectedSizeLabel }}
         </span>
-        <span v-else class="st-item st-hint">{{ $t('单击选中 · 双击打开 · 右键更多操作') }}</span>
+        <span v-else class="st-item st-hint">单击选中 · 双击打开 · 右键更多操作</span>
       </footer>
     </div>
 
     <!-- 右侧：AI 助手面板（全局可用，可收起；左缘可自由拖宽，持久化） -->
     <aside v-if="aiOpen" class="ai-panel">
-      <div class="ai-resize" :title="$t('拖拽调整宽度')" @mousedown.prevent="startAiResize($event)"></div>
+      <div class="ai-resize" title="拖拽调整宽度" @mousedown.prevent="startAiResize($event)"></div>
       <div class="ai-head">
         <div class="ai-badge"><span class="ai-text-btn">AI</span></div>
         <div class="ai-title">
-          <h3>{{ $t('AI 助手') }}</h3>
-          <p>{{ $t('基于你的知识库回答') }}</p>
+          <h3>AI 助手</h3>
+          <p>基于你的知识库回答</p>
         </div>
-        <button class="ai-close" :title="$t('隐藏 AI 助手')" @click="aiOpen = false"><AikIcon name="close" :size="14" /></button>
+        <button class="ai-close" title="隐藏 AI 助手" @click="aiOpen = false"><AikIcon name="close" :size="14" /></button>
       </div>
       <div class="ai-convbar">
         <select v-model="currentConvId" class="ai-conv-select" :disabled="aiConvLoading" @change="switchConv">
-          <option value="" disabled>{{ $t('选择对话话题…') }}</option>
-          <option v-for="c in aiConvs" :key="c.id" :value="c.id">{{  c.title  }}</option>
+          <option value="" disabled>选择对话话题…</option>
+          <option v-for="c in aiConvs" :key="c.id" :value="c.id">{{ c.title }}</option>
         </select>
-        <button class="ai-conv-btn" :title="$t('新建对话')" @click="newConv"><AikIcon name="plus" :size="14" /></button>
-        <button class="ai-conv-btn" :title="$t('删除当前对话')" :disabled="!currentConvId" @click="delConv"><AikIcon name="trash" :size="14" /></button>
+        <button class="ai-conv-btn" title="新建对话" @click="newConv"><AikIcon name="plus" :size="14" /></button>
+        <button class="ai-conv-btn" title="删除当前对话" :disabled="!currentConvId" @click="delConv"><AikIcon name="trash" :size="14" /></button>
       </div>
       <div class="ai-body" ref="aiBodyRef">
         <template v-if="aiMsgs.length === 0">
           <div class="ai-placeholder">
             <AikIcon name="sparkles" :size="28" />
-            <p>{{ $t('对话 Agent 已接入') }}</p>
-            <p class="muted-3">{{ $t('问它找文件、查内容，工具自动检索你的知识库') }}</p>
+            <p>对话 Agent 已接入</p>
+            <p class="muted-3">问它找文件、查内容，工具自动检索你的知识库</p>
           </div>
           <div class="ai-sug">
-            <button v-for="s in AI_SUGGESTIONS" :key="s" class="ai-sug-item" @click="askSug(s)">{{  s  }}</button>
+            <button v-for="s in AI_SUGGESTIONS" :key="s" class="ai-sug-item" @click="askSug(s)">{{ s }}</button>
           </div>
         </template>
         <div v-for="(m, i) in aiMsgs" :key="i" class="ai-msg" :class="m.role">
-          <div class="ai-msg-bubble">{{  m.content  }}</div>
+          <div class="ai-msg-bubble">{{ m.content }}</div>
           <div v-if="m.tools && m.tools.length" class="ai-tool-card">
             <div v-for="(t, ti) in m.tools" :key="ti" class="ai-tool">
               <div class="ai-tool-head">
                 <AikIcon name="search" :size="12" />
-                {{  toolSummary(t)  }}
+                {{ toolSummary(t) }}
               </div>
-              <div v-if="toolExpanded(t)" class="ai-tool-expanded">{{  toolExpanded(t)  }}</div>
+              <div v-if="toolExpanded(t)" class="ai-tool-expanded">{{ toolExpanded(t) }}</div>
               <div class="ai-tool-files">
                 <button
                   v-for="(f, fi) in toolFiles(t)"
@@ -357,51 +333,51 @@
                   @click="openAiFile(f)"
                 >
                   <AikIcon :name="f.kind === 'dir' ? 'folder' : 'fileText'" :size="13" />
-                  <span class="tf-name">{{  f.name  }}</span>
-                  <span class="tf-meta">{{  f.kind === 'dir' ? $t('文件夹') : fmtSize(f.size)  }}</span>
+                  <span class="tf-name">{{ f.name }}</span>
+                  <span class="tf-meta">{{ f.kind === 'dir' ? '文件夹' : fmtSize(f.size) }}</span>
                 </button>
-                <div v-if="toolPreview(t)" class="ai-tool-preview">{{  toolPreview(t)  }}</div>
-                <div v-if="!toolFiles(t).length && !toolPreview(t)" class="ai-tool-empty">{{ $t('未找到匹配的文件') }}</div>
+                <div v-if="toolPreview(t)" class="ai-tool-preview">{{ toolPreview(t) }}</div>
+                <div v-if="!toolFiles(t).length && !toolPreview(t)" class="ai-tool-empty">未找到匹配的文件</div>
               </div>
             </div>
           </div>
         </div>
         <div v-if="aiBusy" class="ai-msg assistant">
-          <div class="ai-msg-bubble thinking"><span class="spinner"></span>{{ $t('思考中…') }}</div>
+          <div class="ai-msg-bubble thinking"><span class="spinner"></span>思考中…</div>
         </div>
       </div>
       <div class="ai-input">
         <input
           v-model="aiInput"
-          :placeholder="$t('问 AiKMap：找文件、查内容…')"
+          placeholder="问 AiKMap：找文件、查内容…"
           :disabled="aiBusy"
           @keydown.enter="sendAi"
         />
-        <button class="btn btn-sm ai-send" :disabled="aiBusy || !aiInput.trim()" @click="sendAi">{{ $t('发送') }}</button>
+        <button class="btn btn-sm ai-send" :disabled="aiBusy || !aiInput.trim()" @click="sendAi">发送</button>
       </div>
     </aside>
 
     <!-- 修改密码弹窗（安全加固） -->
     <div v-if="pwdModal" class="modal-mask" @click.self="pwdModal = false">
       <div class="modal-box pwd-box">
-        <h3 class="pwd-title">{{ $t('修改密码') }}</h3>
+        <h3 class="pwd-title">修改密码</h3>
         <div class="pwd-field">
-          <label>{{ $t('当前密码') }}</label>
+          <label>当前密码</label>
           <input v-model="pwdOld" type="password" autocomplete="current-password" @keyup.enter="doChangePwd" />
         </div>
         <div class="pwd-field">
-          <label>{{ $t('新密码（至少 8 位）') }}</label>
+          <label>新密码（至少 8 位）</label>
           <input v-model="pwdNew" type="password" autocomplete="new-password" @keyup.enter="doChangePwd" />
         </div>
         <div class="pwd-field">
-          <label>{{ $t('确认新密码') }}</label>
+          <label>确认新密码</label>
           <input v-model="pwdNew2" type="password" autocomplete="new-password" @keyup.enter="doChangePwd" />
         </div>
-        <p v-if="pwdErr" class="pwd-err">{{  pwdErr  }}</p>
+        <p v-if="pwdErr" class="pwd-err">{{ pwdErr }}</p>
         <div class="pwd-actions">
-          <button class="btn" @click="pwdModal = false">{{ $t('取消') }}</button>
+          <button class="btn" @click="pwdModal = false">取消</button>
           <button class="btn btn-primary" :disabled="pwdBusy" @click="doChangePwd">
-            {{  pwdBusy ? $t('提交中…') : $t('确认修改')  }}
+            {{ pwdBusy ? '提交中…' : '确认修改' }}
           </button>
         </div>
       </div>
@@ -410,16 +386,13 @@
 </template>
 
 <script setup>
-import { t as i18t } from '@/i18n'
-import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AikIcon from './AikIcon.vue'
-import LangSwitch from './LangSwitch.vue'
 import DirTreeNode from './DirTreeNode.vue'
 import { useThemeStore, THEMES } from '@/stores/theme'
 import { useFilesStore } from '@/stores/files'
 import { useToastStore } from '@/stores/toast'
-import { t } from '@/i18n'
 import { aiChat, aiConversations, aiCreateConversation, aiDeleteConversation, aiConversationMessages, authMe, setAuthFlag } from '@/api'
 import * as api from '@/api'
 
@@ -450,11 +423,11 @@ function openPasswordModal() {
 async function doChangePwd() {
   if (pwdBusy.value) return
   if (pwdNew.value.length < 8) {
-    pwdErr.value = t('新密码至少 8 位')
+    pwdErr.value = '新密码至少 8 位'
     return
   }
   if (pwdNew.value !== pwdNew2.value) {
-    pwdErr.value = i18t('两次输入的新密码不一致')
+    pwdErr.value = '两次输入的新密码不一致'
     return
   }
   pwdBusy.value = true
@@ -462,9 +435,9 @@ async function doChangePwd() {
   try {
     await api.authPassword(pwdOld.value, pwdNew.value)
     pwdModal.value = false
-    toastStore.push(t('密码已修改'))
+    toastStore.push('密码已修改')
   } catch (e) {
-    pwdErr.value = e.message || t('修改失败')
+    pwdErr.value = e.message || '修改失败'
   } finally {
     pwdBusy.value = false
   }
@@ -540,10 +513,10 @@ function isTagActive(id) {
   return route.query.tag === id
 }
 const pageTitle = computed(() => {
-  if (route.path.startsWith('/search')) return i18t('智能检索')
-  if (route.path.startsWith('/settings')) return i18t('设置')
-  if (route.path.startsWith('/read/')) return i18t('阅读')
-  return i18t('我的空间')
+  if (route.path.startsWith('/search')) return '智能检索'
+  if (route.path.startsWith('/settings')) return '设置'
+  if (route.path.startsWith('/read/')) return '阅读'
+  return '我的空间'
 })
 const selectedSizeLabel = computed(() => {
   if (!files.selected.length) return ''
@@ -608,9 +581,9 @@ async function onTreeMove({ id, target }) {
     await api.moveFile(id, target)
     await files.refresh()
     await files.loadTree()
-    toastStore.push(t('已移动到目标文件夹'))
+    toastStore.push('已移动到目标文件夹')
   } catch (e) {
-    toastStore.push(t('移动失败：') + e.message)
+    toastStore.push('移动失败：' + e.message)
   }
 }
 
@@ -633,6 +606,10 @@ watch(
 
 const sidebarCollapsed = ref(false)
 const aiOpen = ref(true)
+
+function openAgent() {
+  aiOpen.value = true
+}
 
 // 消息通知：采集/导入导出等终态 → 铃铛未读红点（新增脉冲）+ 面板列表（点击跳转/标记已读）
 const notifOpen = ref(false)
@@ -660,9 +637,6 @@ function notifIcon(type) {
   if (type === 'collect') return 'book'
   if (type === 'impex') return 'upload'
   if (type === 'index') return 'layers'
-  if (type === 'subscription') return 'star'
-  if (type === 'mention') return 'user'
-  if (type === 'comment') return 'chat'
   return 'bell'
 }
 function goNotif(n) {
@@ -692,40 +666,18 @@ function fmtNotifTime(ts) {
   const d = new Date(ts * 1000)
   const now = new Date()
   const diff = Math.floor((now - d) / 60000)
-  if (diff < 1) return t('刚刚')
-  if (diff < 60) return diff + t(' 分钟前')
-  if (diff < 1440) return Math.floor(diff / 60) + t(' 小时前')
+  if (diff < 1) return '刚刚'
+  if (diff < 60) return diff + ' 分钟前'
+  if (diff < 1440) return Math.floor(diff / 60) + ' 小时前'
   return `${d.getMonth() + 1}-${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 watch(notifOpen, (open) => {
   if (open) loadNotifs()
 })
-// F2 修复：未读数轮询定时器必须持有句柄并在卸载时清理 ——
-// 此前 setInterval 从不 clearInterval，登出后仍每 30s 打接口，401 反复触发 handle401 重定向。
-let _unreadTimer = null
-// 可安装能力启用态（应用中心装了才亮）：family/org 默认按已启用渲染，探测到未安装即隐藏，
-// 接口失败保持现状（宁可多显示入口，不因探测失败藏功能）。
-const caps = reactive({ family: true, org: true, csInbox: true, store: true })
-async function loadCaps() {
-  try {
-    const d = await api.publicCapabilities()
-    caps.family = d.family !== false
-    caps.org = d.org !== false
-    caps.csInbox = d['cs.inbox'] !== false
-    caps.store = d.store !== false
-  } catch (_) { /* 探测失败保持默认 */ }
-}
 onMounted(() => {
-  loadCaps()
   refreshUnread()
   // 30s 轮询未读数（轻量接口，仅查 count）
-  if (!_unreadTimer) _unreadTimer = setInterval(refreshUnread, 30000)
-})
-onUnmounted(() => {
-  if (_unreadTimer) {
-    clearInterval(_unreadTimer)
-    _unreadTimer = null
-  }
+  setInterval(refreshUnread, 30000)
 })
 
 // AI 面板宽度：可拖拽自由调宽（无上限），持久化
@@ -779,9 +731,9 @@ const aiBusy = ref(false)
 const aiMsgs = ref([])
 const aiBodyRef = ref(null)
 const AI_SUGGESTIONS = [
-  t('找一下 upload 相关的文件'),
-  t('最近上传了哪些文件？'),
-  t('有哪些图片文件？')
+  '找一下 upload 相关的文件',
+  '最近上传了哪些文件？',
+  '有哪些图片文件？'
 ]
 
 function pushMsg(m) {
@@ -815,7 +767,7 @@ async function sendAi() {
       refreshConvTitle()
     }
   } catch (e) {
-    pushMsg({ role: 'assistant', content: t('出错了：') + (e.message || e) })
+    pushMsg({ role: 'assistant', content: '出错了：' + (e.message || e) })
   } finally {
     aiBusy.value = false
   }
@@ -916,10 +868,10 @@ function toolPreview(t) {
   try {
     const d = JSON.parse(t.result)
     if (t.name === 'read_file') {
-      if (d.readable === false) return d.note || i18t('无法读取该文件内容')
-      if (d.ai_summary) return (d.summary || '') + (d.tags && d.tags.length ? t(' ｜ 标签：') + d.tags.join('、') : '')
+      if (d.readable === false) return d.note || '无法读取该文件内容'
+      if (d.ai_summary) return (d.summary || '') + (d.tags && d.tags.length ? ' ｜ 标签：' + d.tags.join('、') : '')
       const c = d.content || ''
-      return (d.truncated ? c + t('…（内容较长已截断）') : c).slice(0, 140)
+      return (d.truncated ? c + '…（内容较长已截断）' : c).slice(0, 140)
     }
     return ''
   } catch (_) {
@@ -931,7 +883,7 @@ function toolExpanded(t) {
   try {
     const d = JSON.parse(t.result)
     if (t.name === 'search_files' && Array.isArray(d.expanded) && d.expanded.length) {
-      return t('语义扩展：') + d.expanded.slice(0, 8).join('、')
+      return '语义扩展：' + d.expanded.slice(0, 8).join('、')
     }
     return ''
   } catch (_) {
@@ -941,10 +893,10 @@ function toolExpanded(t) {
 function toolSummary(t) {
   try {
     const d = JSON.parse(t.result)
-    if (t.name === 'read_file') return i18t('已读取：') + (d.name || '')
-    return `检索到 ${d.count ?? 0} 项` + (d.semantic ? t('（语义检索）') : '')
+    if (t.name === 'read_file') return '已读取：' + (d.name || '')
+    return `检索到 ${d.count ?? 0} 项` + (d.semantic ? '（语义检索）' : '')
   } catch (_) {
-    return t('已执行 ') + t.name
+    return '已执行 ' + t.name
   }
 }
 function openAiFile(f) {
@@ -966,6 +918,7 @@ const groups = reactive({
   content: true,
   blog: false,
   kb: false,
+  market: false,
   sys: false,
 })
 
@@ -977,14 +930,10 @@ function toggleGroup(k) {
   groups[k] = !groups[k]
 }
 
-// 按当前路由自动展开对应分组（系统 / 知识·AI / 博客 / 内容）
+// 按当前路由自动展开对应分组（设置/应用中心 → 系统组；开发者/审核 → 应用市场组）
 watch(() => route.path, (p) => {
-  if (p === '/settings' || p.startsWith('/manage/') || p === '/org') groups.sys = true
-  else if (p === '/digest') groups.kb = true
-  else if (p === '/prompts') groups.kb = true
-  else if (p === '/analytics') groups.blog = true
-  else if (p === '/inbox') groups.content = true
-  else if (p === '/mentions') groups.content = true
+  if (p === '/settings') groups.sys = true
+  if (p === '/dev' || p === '/admin/market-review') groups.market = true
 }, { immediate: true })
 
 const isReading = computed(() => route.meta?.reading === true)
@@ -1927,26 +1876,6 @@ function goSearch() {
 .ai-toggle.on .ai-text-btn { box-shadow: 0 0 0 2px var(--primary-soft); }
 .ai-toggle:not(.on) .ai-text-btn { background: var(--text-3); }
 
-/* 顶栏「访问站点」入口（新窗口打开站点首页） */
-.site-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  height: 28px;
-  padding: 0 8px;
-  border-radius: 8px;
-  color: var(--text-2);
-  text-decoration: none;
-  font-size: 12px;
-  white-space: nowrap;
-  flex: none;
-}
-.site-link:hover { background: var(--bg-3); color: var(--text-1); }
-@media (max-width: 900px) {
-  .site-link-text { display: none; }
-  .site-link { padding: 0 6px; }
-}
-
 .ai-badge {
   width: 28px;
   height: 28px;
@@ -2269,7 +2198,7 @@ function goSearch() {
   gap: 6px;
   padding: 7px 10px;
   cursor: pointer;
-  color: var(--sidebar-text);
+  color: var(--nav-text, rgba(235, 238, 245, 0.82));
   font-size: 12.5px;
   user-select: none;
 }

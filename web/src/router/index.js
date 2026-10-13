@@ -69,32 +69,17 @@ const routes = [
     component: () => import('@/views/BlogPostView.vue'),
     meta: { title: '文章', public: true }
   },
-  // 商城店铺（B39）：公开店铺 —— 与博客同理，脱离应用外壳，访客可直接浏览/加购/下单。
-  // meta.public 让登录守卫放行（购物车与收银台后端均支持匿名 cookie）。
-  {
-    path: '/store',
-    component: () => import('@/components/StoreLayout.vue'),
-    meta: { public: true },
-    children: [
-      { path: '', name: 'store', component: () => import('@/views/StoreView.vue'), meta: { title: '商城', public: true } },
-      { path: 'product/:slug', name: 'store-product', component: () => import('@/views/StoreProductView.vue'), meta: { title: '商品详情', public: true } },
-      { path: 'cart', name: 'store-cart', component: () => import('@/views/CartView.vue'), meta: { title: '购物车', public: true } },
-      { path: 'checkout', name: 'store-checkout', component: () => import('@/views/CheckoutView.vue'), meta: { title: '收银台', public: true } },
-      { path: 'orders', name: 'store-orders', component: () => import('@/views/OrdersView.vue'), meta: { title: '订单查询', public: true } }
-    ]
-  },
-  // 产品介绍落地页（根路径门面，公开）：在任何路由之前匹配 #/，
-  // 访客与已登录用户都能看到；提供进入博客 / 控制台入口。
-  {
-    path: '/',
-    name: 'home',
-    component: () => import('@/views/LandingView.vue'),
-    meta: { title: '爱库录 AiKlog', public: true }
-  },
   {
     path: '/',
     component: () => import('@/components/AppShell.vue'),
     children: [
+      // 落地页（根路径）：未登录 → 对外博客首页（给人看的门面）；
+      // 已登录 → 工作台文件库。避免访客落到登录页。
+      {
+        path: '',
+        name: 'home',
+        redirect: () => (isAuthed() ? '/files' : { path: '/blog', query: { view: 'public' } })
+      },
       {
         path: 'files',
         name: 'files',
@@ -150,90 +135,6 @@ const routes = [
         meta: { title: '博客管理' }
       },
       {
-        path: 'manage/sites',
-        name: 'sites-manage',
-        component: () => import('@/views/SitesManage.vue'),
-        meta: { title: '多站点' }
-      },
-      {
-        path: 'manage/im-bind',
-        name: 'im-bind',
-        component: () => import('@/views/ImBindView.vue'),
-        meta: { title: 'IM 绑定' }
-      },
-      {
-        path: 'manage/skills',
-        name: 'skills',
-        component: () => import('@/views/SkillsView.vue'),
-        meta: { title: '技能包' }
-      },
-      {
-        path: 'inbox',
-        name: 'inbox',
-        component: () => import('@/views/InboxView.vue'),
-        meta: { title: '收件箱' }
-      },
-      {
-        path: 'mentions',
-        name: 'mentions',
-        component: () => import('@/views/MentionsView.vue'),
-        meta: { title: '@我' }
-      },
-      {
-        path: 'digest',
-        name: 'digest',
-        component: () => import('@/views/DigestView.vue'),
-        meta: { title: '知识日报' }
-      },
-      {
-        path: 'analytics',
-        name: 'analytics',
-        component: () => import('@/views/AnalyticsView.vue'),
-        meta: { title: '阅读数据' }
-      },
-      {
-        path: 'prompts',
-        name: 'prompts',
-        component: () => import('@/views/PromptsView.vue'),
-        meta: { title: '提示词模板' }
-      },
-      {
-        path: 'manage/webdav',
-        name: 'webdav',
-        component: () => import('@/views/WebdavView.vue'),
-        meta: { title: '外部挂载' }
-      },
-      {
-        path: 'org',
-        name: 'org',
-        component: () => import('@/views/OrgView.vue'),
-        meta: { title: '组织架构' }
-      },
-      {
-        path: 'family',
-        name: 'family',
-        component: () => import('@/views/FamilyView.vue'),
-        meta: { title: '家族传承' }
-      },
-      {
-        path: 'cs',
-        name: 'cs-inbox',
-        component: () => import('@/views/CsInboxView.vue'),
-        meta: { title: '客服收件箱' }
-      },
-      {
-        path: 'knowledge-graph',
-        name: 'knowledge-graph',
-        component: () => import('@/views/KnowledgeGraphView.vue'),
-        meta: { title: '知识图谱' }
-      },
-      {
-        path: 'manage/users',
-        name: 'users',
-        component: () => import('@/views/UsersView.vue'),
-        meta: { title: '用户管理' }
-      },
-      {
         path: 'shares',
         name: 'shares',
         component: () => import('@/views/SharesView.vue'),
@@ -246,18 +147,16 @@ const routes = [
         meta: { title: '设置' }
       },
       {
-        // 独立应用中心（B33）：官方目录，与设置页分离
-        path: 'apps',
-        name: 'app-center',
-        component: () => import('@/views/AppCenterView.vue'),
-        meta: { title: '应用中心' }
+        path: 'dev',
+        name: 'dev-console',
+        component: () => import('@/views/DeveloperConsoleView.vue'),
+        meta: { title: '开发者中心' }
       },
       {
-        // 商城后台（B39）：商品/订单/优惠券/支付配置；isAdmin 由后端端点强制
-        path: 'manage/store',
-        name: 'store-admin',
-        component: () => import('@/views/StoreAdminView.vue'),
-        meta: { title: '商城管理' }
+        path: 'admin/market-review',
+        name: 'admin-market-review',
+        component: () => import('@/views/AdminMarketReviewView.vue'),
+        meta: { title: '市场审核' }
       },
       {
         path: 'impex',
