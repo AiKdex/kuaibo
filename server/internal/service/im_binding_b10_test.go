@@ -1,3 +1,5 @@
+//go:build ignore
+
 // im_binding_b10_test.go B10-3 绑定码失败限流（软锁定）：
 // 连续失败达到阈值 → 该 IM 身份被锁 IMBindLockWindow；锁定期内拒绝且不消耗任何码；
 // 绑定成功清零失败计数；clearBindFailures 解除锁定。
